@@ -1,0 +1,30 @@
+{
+  "name": "Tabby",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "esbuild app/javascript/*.js --outdir=app/assets/builds --bundle --sourcemap --format=esm",
+    "watch": "esbuild app/javascript/*.js --outdir=app/assets/builds --bundle --sourcemap --format=esm --watch",
+    "build:css": "sass ./app/assets/stylesheets/application.sass:./app/assets/builds/application.css ./app/assets/stylesheets/player.sass:./app/assets/builds/player.css --no-source-map --load-path=node_modules"
+  },
+  "dependencies": {
+    "@coderline/alphatab": "^1.7.1",
+    "esbuild": "^0.27.2",
+    "sass": "^1.97.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0"
+  }
+}
