@@ -1,0 +1,2 @@
+class ApplicationUploader < Shrine
+end

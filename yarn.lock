@@ -4,7 +4,7 @@
 
 "@coderline/alphatab@^1.7.1":
   version "1.7.1"
-  resolved "https://registry.npmjs.org/@coderline/alphatab/-/alphatab-1.7.1.tgz"
+  resolved "https://registry.yarnpkg.com/@coderline/alphatab/-/alphatab-1.7.1.tgz#ee36e2aee949346d86affdf53bf4dddf7baa81e0"
   integrity sha512-Rsh+HEWJxcn2ahMR/5bzPkmeadL3ZSXFboZ46t1Y71tdsysJqlrrKtjx/yaOhULDWL4q1kq0EVcbqlYngcFRyQ==
 
 "@esbuild/aix-ppc64@0.27.2":

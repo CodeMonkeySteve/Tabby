@@ -6,13 +6,13 @@ class SongsController < ApplicationController
 
   def score
     @song = Song.find(params[:id])
-    send_data(@song.score.download, filename: @song.score.filename.to_s, content_type: @song.score.content_type, disposition: 'inline')
+    send_data(@song.score.read, filename: @song.score.original_filename, content_type: @song.score.mime_type, disposition: 'inline')
   end
 
   def audio
     @song = Song.find(params[:id])
-    if @song.audio.attached?
-      send_data(@song.audio.download, filename: @song.audio.filename.to_s, content_type: @song.audio.content_type, disposition: 'inline')
+    if @song.audio
+      send_data(@song.audio.read, filename: @song.audio.original_filename, content_type: @song.audio.mime_type, disposition: 'inline')
     else
       head :not_found
     end

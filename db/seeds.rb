@@ -1,7 +1,6 @@
-
 Song.create!(
   title: "Head Over Heels",
   artist: "Tears For Fears",
-  score: Rails.root.join('sandbox', 'Tears For Fears - Head Over Heels.gpx').open,
-  audio: Rails.root.join('sandbox', 'Tears for Fears - Sowing the Seeds of Love - 17 - Head Over Heels.mp3')
+  score: Rails.root.join('spec/fixtures', 'Tears for Fears - Head Over Heels.gpx').open,
+  audio: Rails.root.join('spec/fixtures', 'Tears for Fears - Head Over Heels.mp3').open,
 )

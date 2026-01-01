@@ -2,14 +2,7 @@ require_relative "boot"
 
 require "rails"
 # Pick the frameworks you want:
-require "active_model/railtie"
-require "active_job/railtie"
-require "active_record/railtie"
-require "active_storage/engine"
 require "action_controller/railtie"
-require "action_mailer/railtie"
-require "action_mailbox/engine"
-require "action_text/engine"
 require "action_view/railtie"
 require "action_cable/engine"
 # require "rails/test_unit/railtie"
@@ -26,7 +19,7 @@ module Tabby
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    config.autoload_lib(ignore: %w[. assets tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -38,5 +31,17 @@ module Tabby
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    config.time_zone = 'PST8PDT'
+
+    config.app_generators do |g|
+      g.orm :nobrainer
+      g.template_engine :haml
+      g.integration_tool :rspec
+      g.test_framework :rspec, fixture: true
+      g.fixture_replacement :factory_bot, dir: 'spec/factories'
+    end
   end
 end
+
+Dir[File.join(Rails.root, 'lib/**/*_ext.rb')].sort.each { |l| require(l) }

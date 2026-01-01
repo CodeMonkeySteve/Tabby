@@ -1,10 +1,18 @@
 source 'https://rubygems.org'
 
+# core
 gem 'rails', '~> 8.1.1'
-gem 'sqlite3', '>= 2.1'
 gem 'falcon'
 gem 'bootsnap', require: false
 
+# storage
+gem 'nobrainer', github: 'CodeMonkeySteve/nobrainer', branch: 'rails-8.1'
+  #, branch: 'main'    # https://github.com/NoBrainerORM/nobrainer/pull/292
+gem 'nobrainer-references'
+gem 'normalizr'
+gem 'shrine'
+
+# assets
 gem 'propshaft'
 gem 'cssbundling-rails'
 gem 'jsbundling-rails'
@@ -35,7 +43,13 @@ group :development, :test do
 end
 
 group :test do
-  gem 'rspec'
+  gem 'factory_bot_rails'
+  gem 'faker'
+  gem 'rails-controller-testing'
   gem 'rspec-rails'
   gem 'rspec-collection_matchers'
+
+  # gem 'timecop'
+  # gem 'webmock', require: nil
+  # gem 'vcr'
 end

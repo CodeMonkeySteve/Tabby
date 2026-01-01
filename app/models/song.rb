@@ -1,11 +1,16 @@
 class Song < ApplicationRecord
-  has_one_attached :score
-  has_one_attached :audio
+  include NoBrainer::Document::Timestamps
 
-  validates :title, presence: true
-  validates :score, presence: true
+  field :title, type: String, required: true
+  field :artist, type: String
 
-def sync_points
-  []
-end
+  include ApplicationUploader::Attachment(:score)
+  field :score_data, type: Hash, required: true
+
+  include ApplicationUploader::Attachment(:audio)
+  field :audio_data, type: Hash, required: true
+
+  field :sync_points, type: Array
+
+def sync_points = []
 end
