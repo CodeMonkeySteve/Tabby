@@ -5,6 +5,10 @@ gem 'rails', '~> 8.1.1'
 gem 'falcon'
 gem 'bootsnap', require: false
 
+# gem 'solid_cache'
+# gem 'solid_queue'
+# gem 'solid_cable'
+
 # storage
 gem 'nobrainer', github: 'CodeMonkeySteve/nobrainer', branch: 'rails-8.1'
   #, branch: 'main'    # https://github.com/NoBrainerORM/nobrainer/pull/292
@@ -12,25 +16,23 @@ gem 'nobrainer-references'
 gem 'normalizr'
 gem 'shrine'
 
+# authentication / authorization
+gem 'omniauth-google-oauth2', github: 'zquestz/omniauth-google-oauth2'  # https://github.com/zquestz/omniauth-google-oauth2/pull/464
+gem 'omniauth-rails_csrf_protection'
+gem 'cancancan'
+
 # assets
 gem 'propshaft'
-gem 'cssbundling-rails'
+gem 'dartsass-rails'
 gem 'jsbundling-rails'
 gem 'haml-rails'
 gem 'turbo-rails'
-gem 'stimulus-rails'
 gem 'jbuilder'
 
-# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem 'bcrypt', '~> 3.1.7'
+gem 'bootstrap'
+gem 'stimulus-rails'
 
-# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
-# gem 'solid_cache'
-# gem 'solid_queue'
-# gem 'solid_cable'
-
-# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem 'image_processing', '~> 1.2'
+gem 'marcel'
 
 group :development do
   gem 'web-console'

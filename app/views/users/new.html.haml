@@ -1,0 +1,5 @@
+- content_for :title, "Login"
+
+.container
+  - Credential::PROVIDERS.each do |type, name|
+    = button_to "Sign in with #{name}", "/auth/#{type}", class: 'btn btn-primary', method: :post, data: { turbo: :false }

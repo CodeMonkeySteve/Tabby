@@ -1,0 +1,1 @@
+require 'cancancan/model_adapters/nobrainer_adapter'

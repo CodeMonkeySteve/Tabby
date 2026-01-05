@@ -1,4 +1,4 @@
 class User < ApplicationRecord
-  # include NoBrainer::Document
   include NoBrainer::Document::Timestamps
+  include AuthenticationModel
 end
