@@ -1,0 +1,112 @@
+- content_for :head do
+  %link{:crossorigin => 'anonymous', :href => 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css', :integrity => 'sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh', :rel => 'stylesheet'}/
+  %script{:crossorigin => 'anonymous', :integrity => 'sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=', :src => 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js'}
+  %script{:crossorigin => 'anonymous', :integrity => 'sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo', :src => 'https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js'}
+  %script{:crossorigin => 'anonymous', :integrity => 'sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6', :src => 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js'}
+  %link{:href => 'https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700&display=swap', :rel => 'stylesheet'}/
+  %link{:href => 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css', :rel => 'stylesheet'}/
+  %script{:crossorigin => 'anonymous', :integrity => 'sha256-GwjGuGudzIwyNtTEBZuBYYPDvNlSMSKEDwECr6x6H9c=', :src => 'https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js'}
+
+  = stylesheet_link_tag 'player', integrity: true, data: { 'turbo-track': 'reload' }
+
+.at-wrap.loading
+  .at-overlay
+    .at-overlay-content
+      .spinner-border{:role => "status", :style => "width: 3rem; height: 3rem;"}
+  .at-content
+    .at-sidebar
+      .at-sidebar-content
+        .at-track-list
+    .at-viewport
+      #alphaTab.at-canvas
+  .at-footer
+    .at-time-slider
+      .at-time-slider-value
+    .at-player
+      .at-player-left
+        %a.at-stop.disabled{"data-placement" => "top", "data-toggle" => "tooltip", :href => "#", :title => "Stop"}
+          %i.fas.fa-stop
+        %a.at-play-pause.disabled{"data-placement" => "top", "data-toggle" => "tooltip", :href => "#", :title => "Play/Pause"}
+          %i.fas.fa-play
+        .btn-group.dropup
+          %button.btn.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :type => "button"}
+            %i.fas.fa-gauge
+            %span.at-speed-label 1x
+          .dropdown-menu.dropdown-menu.at-speed-options
+            %a.dropdown-item{:href => "#"} 0.25x
+            %a.dropdown-item{:href => "#"} 0.5x
+            %a.dropdown-item{:href => "#"} 0.75x
+            %a.dropdown-item{:href => "#"} 0.9x
+            %a.dropdown-item{:href => "#"} 1x
+            %a.dropdown-item{:href => "#"} 1.1x
+            %a.dropdown-item{:href => "#"} 1.25x
+            %a.dropdown-item{:href => "#"} 1.50x
+            %a.dropdown-item{:href => "#"} 2x
+        .at-player-loading.progress
+          %span.progress-left
+            %span.progress-bar
+          %span.progress-right
+            %span.progress-bar
+          .progress-value.w-100.h-100.rounded-circle.d-flex.align-items-center.justify-content-center.font-weight-bold
+            %span.progress-value-number 0
+            %sup.small %
+        .at-song-details
+          %span.at-song-title
+          \-
+          %span.at-song-artist
+        .at-time-position{"data-placement" => "top", "data-toggle" => "tooltip", :title => "Time Position"}
+      .at-player-right
+        %a.at-count-in.disabled{"data-placement" => "top", "data-toggle" => "tooltip", :href => "#", :title => "Count-In"}
+          %i.fas.fa-hourglass-half
+        %a.at-metronome.disabled{"data-placement" => "top", "data-toggle" => "tooltip", :href => "#", :title => "Metronome"}
+          %i.fas.fa-edit
+        %a.at-loop.disabled{"data-placement" => "top", "data-toggle" => "tooltip", :href => "#", :title => "Loop"}
+          %i.fas.fa-retweet
+        %a.at-print{"data-placement" => "top", "data-toggle" => "tooltip", :href => "#", :title => "Print"}
+          %i.fas.fa-print
+        %a.at-download{"data-placement" => "top", "data-toggle" => "tooltip", :href => "#", :title => "Download"}
+          %i.fas.fa-download
+        .btn-group.dropup
+          %button.btn.dropdown-toggle{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :type => "button"}
+            %i.fas.fa-search
+            %span.at-zoom-label 100%
+          .dropdown-menu.dropdown-menu-right.at-zoom-options
+            %a.dropdown-item{:href => "#"} 25%
+            %a.dropdown-item{:href => "#"} 50%
+            %a.dropdown-item{:href => "#"} 75%
+            %a.dropdown-item{:href => "#"} 90%
+            %a.dropdown-item{:href => "#"} 100%
+            %a.dropdown-item{:href => "#"} 110%
+            %a.dropdown-item{:href => "#"} 125%
+            %a.dropdown-item{:href => "#"} 150%
+            %a.dropdown-item{:href => "#"} 200%
+        .btn-group.dropup
+          %button.btn.dropdown-toggle.at-layout-button{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :type => "button"}
+            Layout
+          .dropdown-menu.dropdown-menu-right.at-layout-options
+            %a.dropdown-item{"data-layout" => "horizontal-screen", :href => "#"}
+              %i.far.fa-caret-square-right
+              Horizontal Layout (Off-Screen)
+            %a.dropdown-item{"data-layout" => "horizontal-bar", :href => "#"}
+              %i.fas.fa-caret-square-right
+              Horizontal Layout (Bar Wise)
+            %a.dropdown-item{"data-layout" => "page", :href => "#"}
+              %i.fas.fa-caret-square-down
+              Vertical Layout
+%template#at-track-template
+  .at-track
+    .at-track-icon
+      %i.fas.fa-guitar
+    %span.at-track-name {{name}}
+    .at-track-controls
+      %button.btn.btn-sm.btn-outline-danger.at-track-mute{:type => "button"} Mute
+      %button.btn.btn-sm.btn-outline-success.at-track-solo{:type => "button"} Solo
+      %i.fas.fa-volume-up
+      %input.at-track-volume{:max => "16", :min => "0", :type => "range", :value => "8"}/
+
+%script{type: 'module', defer: true}
+  :plain
+    import setupControl from '#{javascript_path('app/javascript/player')}'
+    document.addEventListener('DOMContentLoaded', function() {
+      setupControl("#alphaTab", {id: #{@song.to_param.to_json}, syncPoints: #{@song.sync_points.to_json}});
+    });
