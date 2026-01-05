@@ -1,0 +1,43 @@
+%nav.navbar.navbar-expand-lg.navbar-dark{role: 'navigation'}
+  .container
+    %a.navbar-brand{href: root_path} Tabby
+
+    .navbar-nav.ms-2.me-auto
+      .spinner-border.spinner-border-sm.invisible#poll-status{role: 'status'}
+        %span.visually-hidden Loading...
+
+    %button.navbar-toggler{type: 'button', data: { bs: { toggle: 'collapse',  target: '#navbar-collapse' } }, aria: { controls: 'navbar-collapse', expanded: false, label: "Toggle navigation" }}
+      %span.navbar-toggler-icon
+
+    .collapse.navbar-collapse#navbar-collapse
+      %ul.navbar-nav
+        = nav_link songs_path, "Songs"
+
+      %ul.navbar-nav.ms-auto
+        %li.nav-item.dropdown
+          %button#bd-theme.btn.btn-link.nav-link.py-2.px-0.px-lg-2.dropdown-toggle.d-flex.align-items-center{type: 'button', 'aria-expanded' => 'false', 'aria-label' => 'Toggle theme (dark)', 'data-bs-display' => 'static', 'data-bs-toggle' => 'dropdown'}
+            %span#bd-theme-text.d-lg-none.me-2 Theme
+            %i.bi.bi-moon-stars-fill.theme-icon-active
+
+          %ul.dropdown-menu.dropdown-menu-end{'aria-labelledby' => 'bd-theme-text'}
+            %li
+              %button.dropdown-item.d-flex.align-items-center{'aria-pressed' => 'false', 'data-bs-theme-value' => 'light', type: 'button'}
+                %i.bi.bi-sun-fill.me-2.opacity-50
+                Light
+                %i.bi.bi-check2.ms-auto.d-none
+            %li
+              %button.dropdown-item.d-flex.align-items-center.active{'aria-pressed' => 'true', 'data-bs-theme-value' => 'dark', type: 'button'}
+                %i.bi.bi-moon-stars-fill.me-2.opacity-50
+                Dark
+                %i.bi.bi-check2.ms-auto.d-none
+            %li
+              %button.dropdown-item.d-flex.align-items-center{'aria-pressed' => 'false', 'data-bs-theme-value' => 'auto', type: 'button'}
+                %i.bi.bi-circle-half.me-2.opacity-50
+                Auto
+                %i.bi.bi-check2.ms-auto.d-none
+
+        - if current_user
+          %li.nav-item
+            %a.nav-link{href: logout_path, title: "Logout"}
+              %span.d-lg-none.me-2 Logout
+              %i.bi.bi-box-arrow-right

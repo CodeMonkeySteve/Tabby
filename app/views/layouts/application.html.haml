@@ -1,13 +1,17 @@
 !!!
-%html
+%html{ xmlns: 'http://www.w3.org/1999/xhtml', 'xml:lang': 'en', lang: 'en', data: { bs: { theme: 'auto' } } }
   %head
-    %title= content_for(:title) || "Tab Player"
+    %title= content_for(:title) || "Tabby"
 
-    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
-    %meta{:content => "width=device-width,initial-scale=1", :name => "viewport"}/
-    %meta{:content => "yes", :name => "apple-mobile-web-app-capable"}/
-    %meta{:content => "Tab Player", :name => "application-name"}/
-    %meta{:content => "yes", :name => "mobile-web-app-capable"}/
+    %meta{'http-equiv' => 'Content-Type', content: 'text/html; charset=UTF-8'}/
+    %meta{name: 'viewport', content: 'width=device-width,initial-scale=1'}/
+    %meta{name: 'apple-mobile-web-app-capable', content: 'yes'}/
+    %meta{name: 'application-name', content: 'Tabby'}/
+    %meta{name: 'mobile-web-app-capable', content: 'yes'}/
+
+    = javascript_include_tag 'vendor/javascript/color-modes'
+    = csrf_meta_tag
+    = csp_meta_tag
 
     = stylesheet_link_tag 'application', 'data-turbo-track': 'reload'
 
@@ -19,8 +23,23 @@
     %link{:href => "/icon.svg", :rel => "icon", :type => "image/svg+xml"}/
     %link{:href => "/icon.png", :rel => "apple-touch-icon"}/
 
-    = javascript_include_tag 'application', 'data-turbo-track': 'reload', type: 'module', defer: true
+    = javascript_include_tag 'app/javascript/application', 'data-turbo-track': 'reload', type: 'module', defer: true
 
   %body
+    = render partial: 'layouts/header'
+
+    .container
+      - if controller.flash.present?
+        .navbar.flash-messages
+          - if controller.flash[:success].present?
+            .alert.alert-success= controller.flash[:success]
+
+          - if controller.flash[:notice].present?
+            .alert.alert-info= controller.flash[:notice]
+
+          - if controller.flash[:error].present?
+            .alert.alert-error= controller.flash[:error]
+
     = yield
 
+    #footer
