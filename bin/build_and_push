@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+REGISTRY=docker.finagle.org
+IMAGE=tabby
+
+if (( $# > 1 )); then
+  echo -e "Usage: $(basename $0) [commit]\n"
+  echo "'commit' can be any git commit, branch, or tag (defaults to 'staging')"
+  exit -1
+fi
+
+# get git commit ID, version tag
+COMMIT=${1:-main}
+LONG_VERSION=$(git rev-parse $COMMIT)
+VERSION=$(echo $LONG_VERSION | cut -c -8)
+
+# find docker client app
+if which podman >/dev/null ; then
+  DOCKER='podman'
+else
+  DOCKER='sudo docker'
+fi
+
+# get number of build cores
+NUM_CORES=$(nproc)
+JOBS=$(($NUM_CORES - 1))
+
+echo "Building $COMMIT ($VERSION) using $JOBS cores ..."
+TEMP_DIR=$(mktemp -d -t $IMAGE-build-XXXXX)
+git archive $COMMIT | tar -x -C $TEMP_DIR
+$DOCKER build -t $IMAGE:$VERSION --build-arg GIT_VERSION=$VERSION --build-arg JOBS=$JOBS $TEMP_DIR
+rm -rf $TEMP_DIR
+
+# push image to registry
+$DOCKER tag $IMAGE:$VERSION $REGISTRY/$IMAGE:$VERSION
+$DOCKER push $REGISTRY/$IMAGE:$VERSION

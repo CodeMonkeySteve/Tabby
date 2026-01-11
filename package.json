@@ -3,8 +3,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "esbuild {app,vendor}/javascript/*.js --outdir=app/assets/builds --bundle --sourcemap --format=esm",
-    "watch": "esbuild {app,vendor}/javascript/*.js --outdir=app/assets/builds --bundle --sourcemap --format=esm --watch"
+    "build": "esbuild app/javascript/*.js vendor/javascript/*.js --outdir=app/assets/builds --bundle --sourcemap --format=esm",
+    "watch": "esbuild app/javascript/*.js vendor/javascript/*.js --outdir=app/assets/builds --bundle --sourcemap --format=esm --watch"
   },
   "dependencies": {
     "@coderline/alphatab": "^1.7.1",

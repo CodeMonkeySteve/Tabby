@@ -30,7 +30,7 @@ module Tabby
     # Don't generate system test files.
     config.generators.system_tests = nil
 
-    config.time_zone = 'PST8PDT'
+    config.time_zone = 'America/Los_Angeles'
 
     config.app_generators do |g|
       g.orm :nobrainer
