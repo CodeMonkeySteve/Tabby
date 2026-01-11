@@ -1,2 +1,6 @@
-%h1 Songs#edit
-%p Find me in app/views/songs/edit.html.haml
+- content_for :title, "Editing #{@song.title} (#{@song.artist})"
+
+%h1 #{@song.title}
+
+= render 'form', song: @song
+

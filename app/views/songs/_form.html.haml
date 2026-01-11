@@ -1,0 +1,27 @@
+= simple_form_for(@song) do |f|
+  = f.error_notification
+  = f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present?
+
+  .form-inputs
+    = f.input :title, required: true
+    = f.input :artist
+
+    %div{data: { controller: 'array-input' }}
+      %div{data: { 'array-input-target': 'list' }}
+        = f.input :instruments, as: :array
+        %template{data: { 'array-input-target': 'template' }}
+          .array-input-field
+            f.input :instruments, label: false, input_html: { value: "", name: "#{f.object_name}[instruments][]" } %>
+            %button.btn{type: 'button', data: { action: 'click->array-input#removeField' }} Remove
+
+    = f.input :score, as: :hidden, input_html: { value: @song.cached_score_data }
+    = f.input :score, as: :file
+
+    = f.input :audio, as: :hidden, input_html: { value: @song.cached_audio_data }
+    = f.input :audio, as: :file
+
+    = f.input :sync_points, as: :json, input_html: { rows: 5, cols: 20, value: (@song.sync_points || []).to_json }
+
+  .form-actions
+    = f.button :submit, class: 'btn btn-primary'
+    = link_to "Cancel", :back, class: 'btn'

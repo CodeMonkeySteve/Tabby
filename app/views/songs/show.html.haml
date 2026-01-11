@@ -1,3 +1,7 @@
-%h1= @song.title
+- content_for :title, "#{@song.title} (#{@song.artist})"
 
-= link_to "Play", player_path(@song), class: 'btn btn-primary'
+= render @song
+
+.d-flex.justify-content-start.mt-3
+  = link_to "Edit", edit_song_path(@song), class: 'btn btn-primary btn-sm mx-1'
+  = button_to "Delete", @song, method: :delete, class: 'btn btn-danger btn-sm mx-1'

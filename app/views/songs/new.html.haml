@@ -1,2 +1,10 @@
-%h1 Songs#new
-%p Find me in app/views/songs/new.html.haml
+- content_for :title, "New song"
+
+%h1 New song
+
+= render "form", song: @song
+
+%br
+
+%div
+  = link_to "Back to songs", songs_path

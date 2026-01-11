@@ -27,15 +27,19 @@ RSpec.describe SongsController do
     expect(response).to be_successful
   end
 
-  xit "#create" do
+  it "#create" do
     expect {
-      post :create, params: {    }
+      attrs = attributes_for(:song).as_json
+      post :create, params: { song: attrs }
     }.to change(Song, :count).by(1)
-    expect(response).to be_successful
+    expect(response).to be_redirect(to: song_path(song))
   end
 
-  xit "#update" do
-    # ...
+  it "#update" do
+    song
+    patch :update, params: { id: song, song: { title: "New title" } }
+    expect(response).to have_http_status(:see_other)
+    expect(song.reload.title).to eq "New title"
   end
 
   it "#destroy" do
@@ -43,7 +47,7 @@ RSpec.describe SongsController do
     expect {
       delete :destroy, params: { id: song }
     }.to change(Song, :count).by(-1)
-    expect(response).to be_successful
+    expect(response).to have_http_status(:see_other)
   end
 
   it "#player" do

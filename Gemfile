@@ -31,6 +31,7 @@ gem 'jbuilder'
 
 gem 'bootstrap'
 gem 'stimulus-rails'
+gem 'simple_form'
 
 gem 'marcel'
 

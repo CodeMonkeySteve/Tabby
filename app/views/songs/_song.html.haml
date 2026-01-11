@@ -1,0 +1,5 @@
+%div{id: dom_id(@song)}
+  %h1= @song.title
+  %h3= @song.artist
+
+  = link_to "Play", player_path(@song), class: 'btn btn-success'

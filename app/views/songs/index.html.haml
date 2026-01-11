@@ -1,3 +1,6 @@
 %ul
   - @songs.each do |song|
-    %li= link_to song.title, player_path(song)
+    %li= link_to song.title, song
+
+%a{href: new_song_path, class: 'btn btn-primary'}
+  New Song
