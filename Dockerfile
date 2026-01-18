@@ -36,7 +36,7 @@ RUN \
 
 # app
 ADD . /app
-RUN RAILS_ENV=test bundle exec rake javascript:build dartsass:build  # use test environment to get dummy credentials
+RUN RAILS_ENV=test bundle exec bin/rails assets:precompile # use test environment to get dummy credentials
 
 CMD ["bundle", "exec", "falcon", "host"]
 EXPOSE 80

@@ -4,7 +4,7 @@ class Song < ApplicationRecord
   slug_from :title, :artist
 
   field :title,       type: String,           required: true
-  field :instruments, type: Array.of(String), required: true
+  field :instruments, type: Array.of(String) #, required: true
   field :artist,      type: String
 
   include ApplicationUploader::Attachment(:score)

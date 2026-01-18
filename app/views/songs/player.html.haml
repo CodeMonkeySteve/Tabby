@@ -108,7 +108,7 @@
 
 %script{type: 'module', defer: true}
   :plain
-    import setupControl from '#{javascript_path('app/javascript/player')}'
+    import setupControl from '#{javascript_path('player')}'
     document.addEventListener('DOMContentLoaded', function() {
       setupControl("#alphaTab", {id: #{@song.to_param.to_json}, syncPoints: #{(@song.sync_points || []).to_json}});
     });

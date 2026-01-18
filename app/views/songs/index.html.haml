@@ -1,6 +1,6 @@
-%ul
+%ul.list-group
   - @songs.each do |song|
-    %li= link_to song.title, song
+    %li.list-group-item= link_to "#{song.title} - #{song.artist}", song
 
-%a{href: new_song_path, class: 'btn btn-primary'}
-  New Song
+%a.mt-3{href: new_song_path, class: 'btn btn-primary'}
+  Add Song

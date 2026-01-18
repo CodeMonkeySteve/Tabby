@@ -15,23 +15,23 @@
 
       %ul.navbar-nav.ms-auto
         %li.nav-item.dropdown
-          %button#bd-theme.btn.btn-link.nav-link.py-2.px-0.px-lg-2.dropdown-toggle.d-flex.align-items-center{type: 'button', 'aria-expanded' => 'false', 'aria-label' => 'Toggle theme (dark)', 'data-bs-display' => 'static', 'data-bs-toggle' => 'dropdown'}
+          %button#bd-theme.btn.btn-link.nav-link.py-2.px-0.px-lg-2.dropdown-toggle.d-flex.align-items-center{type: 'button', 'aria-expanded': 'false', 'aria-label': 'Toggle theme (dark)', 'data-bs-display': 'static', 'data-bs-toggle': 'dropdown'}
             %span#bd-theme-text.d-lg-none.me-2 Theme
             %i.bi.bi-moon-stars-fill.theme-icon-active
 
-          %ul.dropdown-menu.dropdown-menu-end{'aria-labelledby' => 'bd-theme-text'}
+          %ul.dropdown-menu.dropdown-menu-end{'aria-labelledby': 'bd-theme-text'}
             %li
-              %button.dropdown-item.d-flex.align-items-center{'aria-pressed' => 'false', 'data-bs-theme-value' => 'light', type: 'button'}
+              %button.dropdown-item.d-flex.align-items-center{'aria-pressed': 'false', 'data-bs-theme-value': 'light', type: 'button'}
                 %i.bi.bi-sun-fill.me-2.opacity-50
                 Light
                 %i.bi.bi-check2.ms-auto.d-none
             %li
-              %button.dropdown-item.d-flex.align-items-center.active{'aria-pressed' => 'true', 'data-bs-theme-value' => 'dark', type: 'button'}
+              %button.dropdown-item.d-flex.align-items-center.active{'aria-pressed': 'true', 'data-bs-theme-value': 'dark', type: 'button'}
                 %i.bi.bi-moon-stars-fill.me-2.opacity-50
                 Dark
                 %i.bi.bi-check2.ms-auto.d-none
             %li
-              %button.dropdown-item.d-flex.align-items-center{'aria-pressed' => 'false', 'data-bs-theme-value' => 'auto', type: 'button'}
+              %button.dropdown-item.d-flex.align-items-center{'aria-pressed': 'false', 'data-bs-theme-value': 'auto', type: 'button'}
                 %i.bi.bi-circle-half.me-2.opacity-50
                 Auto
                 %i.bi.bi-check2.ms-auto.d-none

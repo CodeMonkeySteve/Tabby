@@ -1,13 +1,9 @@
 source 'https://rubygems.org'
 
 # core
-gem 'rails', '~> 8.1.1'
+gem 'rails', '~> 8.1'
 gem 'falcon'
 gem 'bootsnap', require: false
-
-# gem 'solid_cache'
-# gem 'solid_queue'
-# gem 'solid_cable'
 
 # storage
 gem 'nobrainer', github: 'CodeMonkeySteve/nobrainer', branch: 'rails-8.1'
@@ -22,17 +18,15 @@ gem 'omniauth-rails_csrf_protection'
 gem 'cancancan'
 
 # assets
-gem 'propshaft'
-gem 'dartsass-rails'
-gem 'jsbundling-rails'
 gem 'haml-rails'
-gem 'turbo-rails'
-gem 'jbuilder'
-
-gem 'bootstrap'
+gem 'hotwire-rails'
+gem 'importmap-rails'
 gem 'stimulus-rails'
+gem 'sassc-rails'
+gem 'bootstrap'
+gem 'turbo-rails'
+gem 'turbo_power'
 gem 'simple_form'
-
 gem 'marcel'
 
 group :development do
