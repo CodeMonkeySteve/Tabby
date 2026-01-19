@@ -1,12 +1,7 @@
 - content_for :title, "#{@song.title} (#{@song.artist})"
 
 - content_for :head do
-  %link{:crossorigin => 'anonymous', :href => 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css', :integrity => 'sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh', :rel => 'stylesheet'}/
-  %script{:crossorigin => 'anonymous', :integrity => 'sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=', :src => 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js'}
-  %script{:crossorigin => 'anonymous', :integrity => 'sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo', :src => 'https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js'}
-  %script{:crossorigin => 'anonymous', :integrity => 'sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6', :src => 'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js'}
   %link{:href => 'https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700&display=swap', :rel => 'stylesheet'}/
-  %link{:href => 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css', :rel => 'stylesheet'}/
   %script{:crossorigin => 'anonymous', :integrity => 'sha256-GwjGuGudzIwyNtTEBZuBYYPDvNlSMSKEDwECr6x6H9c=', :src => 'https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js'}
 
   = stylesheet_link_tag 'player', integrity: true, data: { 'turbo-track': 'reload' }

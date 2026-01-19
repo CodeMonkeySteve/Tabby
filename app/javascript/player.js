@@ -1,4 +1,5 @@
 import * as alphaTab from "https://cdn.jsdelivr.net/npm/@coderline/alphatab@alpha/dist/alphaTab.min.mjs";
+import $ from 'jquery'
 
 const toDomElement = (() => {
   const parser = document.createElement("div");
@@ -62,8 +63,8 @@ function createTrackItem(at, track) {
 function setupControl(selector, { id, syncPoints }) {
   const el = document.querySelector(selector);
   const control = el.closest(".at-wrap");
-
   const viewPort = control.querySelector(".at-viewport");
+
   const at = new alphaTab.AlphaTabApi(el, {
     file: `/s/${id}/score`,
     player: {
@@ -182,7 +183,10 @@ function setupControl(selector, { id, syncPoints }) {
     }
   };
   document.addEventListener('keydown', (e) => {
-    if (e.key === ' ') { playPauseButton.click() }
+    if (e.key === ' ') {
+      playPauseButton.click();
+      e.preventDefault();
+    }
   });
 
   control.querySelector(".at-stop").onclick = (e) => {
@@ -226,11 +230,7 @@ function setupControl(selector, { id, syncPoints }) {
     e.stopPropagation();
     const link = e.target.closest("a");
     link.classList.toggle("active");
-    if (link.classList.contains("active")) {
-      at.isLooping = true;
-    } else {
-      at.isLooping = false;
-    }
+    at.isLooping = link.classList.contains("active")
   };
 
   control.querySelector(".at-print").onclick = () => {

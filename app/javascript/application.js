@@ -1,5 +1,5 @@
 // import { Turbo } from '@hotwired/turbo'
-import 'controllers'
+// import 'controllers'
 
 // import TurboPower from 'turbo_power'
 // TurboPower.initialize(Turbo.StreamActions)
