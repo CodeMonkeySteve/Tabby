@@ -182,11 +182,20 @@ function setupControl(selector, { id, syncPoints }) {
       at.playPause();
     }
   };
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === ' ') {
-      playPauseButton.click();
-      e.preventDefault();
+    switch (e.key) {
+      case 'ArrowUp':
+        at.masterVolume = Math.min(at.masterVolume + 0.05, 1.0)
+        break;
+      case 'ArrowDown':
+        at.masterVolume = Math.max(at.masterVolume - 0.05, 0.0)
+        break;
+      case ' ':
+        playPauseButton.click();
+        break;
     }
+    e.preventDefault();
   });
 
   control.querySelector(".at-stop").onclick = (e) => {
@@ -282,7 +291,7 @@ function setupControl(selector, { id, syncPoints }) {
     };
   }
 
-  $(control).find('[data-toggle="tooltip"]').tooltip();
+  // $(control).find('[data-toggle="tooltip"]').tooltip();
 
   return at;
 }
