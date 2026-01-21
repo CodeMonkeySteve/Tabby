@@ -12,6 +12,8 @@ class Song < ApplicationRecord
 
   include ApplicationUploader::Attachment(:audio)
   field :audio_data, type: Hash
-
   field :sync_points, type: Array
+
+  include ImageUploader::Attachment(:cover)
+  field :cover_data, type: Hash
 end

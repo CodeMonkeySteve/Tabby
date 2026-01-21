@@ -11,6 +11,7 @@ gem 'nobrainer', github: 'CodeMonkeySteve/nobrainer', branch: 'rails-8.1'
 gem 'nobrainer-references'
 gem 'normalizr'
 gem 'shrine'
+gem 'fastimage'
 
 # authentication / authorization
 gem 'omniauth-google-oauth2', github: 'zquestz/omniauth-google-oauth2'  # https://github.com/zquestz/omniauth-google-oauth2/pull/464
@@ -27,7 +28,6 @@ gem 'bootstrap'
 gem 'turbo-rails'
 gem 'turbo_power'
 gem 'simple_form'
-gem 'marcel'
 
 group :development do
   gem 'web-console'

@@ -1,6 +1,12 @@
-%ul.list-group
-  - @songs.each do |song|
-    %li.list-group-item= link_to "#{song.title} (#{song.artist})", song
+- @songs.each do |song|
+  .song.card
+    .card-body
+      %img.cover.img-fluid.rounded-start.float-start.me-3{src: song.cover&.url || image_path('cover-default.png')}
+      %a{href: song_path(song)}
+        %h5.card-title= song.title
+      %h6.card-text= song.artist
+      - song.instruments.each do |instrument|
+        %span.badge.text-bg-secondary= instrument
 
 %a.mt-3{href: new_song_path, class: 'btn btn-primary'}
   Add Song

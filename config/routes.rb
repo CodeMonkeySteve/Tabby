@@ -21,4 +21,5 @@ Rails.application.routes.draw do
   get '/p/:id' => 'songs#player', as: 'player'
 
   root to: redirect('/s')
+  mount ActionDispatch::Static.new(Rails.application, Rails.root.join('storage/files').to_s), at: '/files'
 end

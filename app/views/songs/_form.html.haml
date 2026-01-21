@@ -14,6 +14,9 @@
             f.input :instruments, label: false, input_html: { value: "", name: "#{f.object_name}[instruments][]" } %>
             %button.btn{type: 'button', data: { action: 'click->array-input#removeField' }} Remove
 
+    = f.input :cover, as: :hidden, input_html: { value: @song.cached_cover_data }
+    = f.input :cover, as: :file
+
     = f.input :score, as: :hidden, input_html: { value: @song.cached_score_data }
     = f.input :score, as: :file
 
