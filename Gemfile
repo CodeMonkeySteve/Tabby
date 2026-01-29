@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 gem 'rails', '~> 8.1'
 gem 'falcon'
 gem 'bootsnap', require: false
+gem 'kreds'                     # for Rails credentials
 
 # storage
 gem 'nobrainer', github: 'CodeMonkeySteve/nobrainer', branch: 'rails-8.1'
@@ -11,6 +12,7 @@ gem 'nobrainer', github: 'CodeMonkeySteve/nobrainer', branch: 'rails-8.1'
 gem 'nobrainer-references'
 gem 'normalizr'
 gem 'shrine'
+gem 'marcel'
 gem 'fastimage'
 
 # authentication / authorization
@@ -29,11 +31,15 @@ gem 'turbo-rails'
 gem 'turbo_power'
 gem 'simple_form'
 
+# import
+gem 'nodo'
+
 group :development do
   gem 'web-console'
 end
 
 group :development, :test do
+  gem 'awesome_print'
   gem 'bundler-audit', require: false
   gem 'brakeman', require: false
   gem 'rubocop-rails-omakase', require: false

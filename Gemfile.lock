@@ -133,6 +133,7 @@ GEM
       async
       async-container (~> 0.16)
       string-format (~> 0.2)
+    awesome_print (1.9.2)
     bake (0.24.1)
       bigdecimal
       samovar (~> 2.1)
@@ -236,6 +237,8 @@ GEM
     json (2.18.0)
     jwt (3.1.2)
       base64
+    kreds (1.1.7)
+      rails (>= 7.1, < 8.2)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     localhost (1.6.0)
@@ -278,6 +281,8 @@ GEM
     nio4r (2.7.5)
     nobrainer-references (1.0.0)
       nobrainer (~> 0.44)
+    nodo (1.8.2)
+      logger
     nokogiri (1.18.10-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.18.10-aarch64-linux-musl)
@@ -518,6 +523,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  awesome_print
   bootsnap
   bootstrap
   brakeman
@@ -530,8 +536,11 @@ DEPENDENCIES
   haml-rails
   hotwire-rails
   importmap-rails
+  kreds
+  marcel
   nobrainer!
   nobrainer-references
+  nodo
   normalizr
   omniauth-google-oauth2!
   omniauth-rails_csrf_protection
@@ -570,6 +579,7 @@ CHECKSUMS
   async-http-cache (0.4.6) sha256=2038d1f093182f16b50b4db271c25085e3938da10bfcfc2904cadb0530fddfd6
   async-pool (0.11.1) sha256=98e1583e199a75f7dc70f8e65fc8d0d3b28636c3f256595d43e206642ad8fbda
   async-service (0.16.0) sha256=49ee3dff495e997b3c2c40e799d474ff78d862b271bf72fefbfb1ca326d44815
+  awesome_print (1.9.2) sha256=e99b32b704acff16d768b3468680793ced40bfdc4537eb07e06a4be11133786e
   bake (0.24.1) sha256=8bfac7e61514b17720e3b13cf6a5e122243f43123c6802707b150904bec5f4c7
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   bigdecimal (4.0.1) sha256=8b07d3d065a9f921c80ceaea7c9d4ae596697295b584c296fe599dd0ad01c4a7
@@ -621,6 +631,7 @@ CHECKSUMS
   irb (1.16.0) sha256=2abe56c9ac947cdcb2f150572904ba798c1e93c890c256f8429981a7675b0806
   json (2.18.0) sha256=b10506aee4183f5cf49e0efc48073d7b75843ce3782c68dbeb763351c08fd505
   jwt (3.1.2) sha256=af6991f19a6bb4060d618d9add7a66f0eeb005ac0bc017cd01f63b42e122d535
+  kreds (1.1.7) sha256=5b5b0b0301323476fce56495b5534414a2812b4c862f60431c3338625ae40141
   language_server-protocol (3.17.0.5) sha256=fd1e39a51a28bf3eec959379985a72e296e9f9acfce46f6a79d31ca8760803cc
   lint_roller (1.1.0) sha256=2c0c845b632a7d172cb849cc90c1bce937a28c5c8ccccb50dfd46a485003cc87
   localhost (1.6.0) sha256=d99697c6344283d39d8ae8572c22fcd556c95347a30d361594c36846b112fa17
@@ -645,6 +656,7 @@ CHECKSUMS
   nio4r (2.7.5) sha256=6c90168e48fb5f8e768419c93abb94ba2b892a1d0602cb06eef16d8b7df1dca1
   nobrainer (0.44.1)
   nobrainer-references (1.0.0) sha256=0e9febda253eb53ddbbb09009f094b29332a0f88bf0c0d4124fcd2ed61de9918
+  nodo (1.8.2) sha256=c93c670cd6e41d674611d0e4ac7740255ad117763dc1d3e0e351ccb54ac296fe
   nokogiri (1.18.10-aarch64-linux-gnu) sha256=7fb87235d729c74a2be635376d82b1d459230cc17c50300f8e4fcaabc6195344
   nokogiri (1.18.10-aarch64-linux-musl) sha256=7e74e58314297cc8a8f1b533f7212d1999dbe2639a9ee6d97b483ea2acc18944
   nokogiri (1.18.10-arm-linux-gnu) sha256=51f4f25ab5d5ba1012d6b16aad96b840a10b067b93f35af6a55a2c104a7ee322

@@ -1,0 +1,14 @@
+{
+  "name": "score_info",
+  "version": "1.0.0",
+  "description": "Extracts music score info",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@coderline/alphatab": "^1.8.0"
+  }
+}

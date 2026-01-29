@@ -7,19 +7,23 @@ RUN \
   apt-get install --no-install-recommends -y \
     # build
     build-essential libssl-dev libyaml-dev curl gnupg git \
-    # nokogiri
+    # Nokogiri
     libxml2-dev libxslt1-dev \
+    # NodeJS
+    nodejs npm \
     # debug tools
     less nano \
-    yarnpkg && corepack enable && \
+
   # other setup and cleanup
   mkdir -p $HOME && \
   echo 'alias ll="ls -lh"' >> $HOME/.bashrc && \
   mkdir -p /app/log /app/tmp /app/tmp/pids && \
   echo 'gem: --no-document' >> /etc/gemrc && \
   chmod uog+r /etc/gemrc && \
+
   gem install -N bundler thin && \
   gem install -N nokogiri -- --use-system-libraries && \
+  cd /app/lib/alpha_tab && npm install && \
 
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/dpkg.log
 
