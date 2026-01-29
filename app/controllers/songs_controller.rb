@@ -2,7 +2,7 @@ class SongsController < ApplicationController
   before_action :find_song, only: %i[show edit update destroy player score audio]
 
   def index
-    @songs ||= Song.all
+    @songs ||= Song.all.order_by(:artist, :title)
   end
 
   def show

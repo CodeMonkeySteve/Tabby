@@ -1,10 +1,11 @@
 - content_for :title, "#{@song.title} (#{@song.artist})"
 
 - content_for :head do
-  %link{:href => 'https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700&display=swap', :rel => 'stylesheet'}/
-  %script{:crossorigin => 'anonymous', :integrity => 'sha256-GwjGuGudzIwyNtTEBZuBYYPDvNlSMSKEDwECr6x6H9c=', :src => 'https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js'}
+  %link{href: 'https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700&display=swap', rel: 'stylesheet'}/
+  %script{crossorigin: 'anonymous', integrity: 'sha256-GwjGuGudzIwyNtTEBZuBYYPDvNlSMSKEDwECr6x6H9c=', src: 'https://cdn.jsdelivr.net/npm/handlebars@4.5.3/dist/handlebars.min.js'}
 
   = stylesheet_link_tag 'player', integrity: true, data: { 'turbo-track': 'reload' }
+  %link{href: 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css', rel: 'stylesheet'}/
 
 .at-wrap.loading
   .at-overlay

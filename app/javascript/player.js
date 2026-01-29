@@ -187,15 +187,17 @@ function setupControl(selector, { id, syncPoints }) {
     switch (e.key) {
       case 'ArrowUp':
         at.masterVolume = Math.min(at.masterVolume + 0.05, 1.0)
+        e.preventDefault();
         break;
       case 'ArrowDown':
         at.masterVolume = Math.max(at.masterVolume - 0.05, 0.0)
+        e.preventDefault();
         break;
       case ' ':
         playPauseButton.click();
+        e.preventDefault();
         break;
     }
-    e.preventDefault();
   });
 
   control.querySelector(".at-stop").onclick = (e) => {

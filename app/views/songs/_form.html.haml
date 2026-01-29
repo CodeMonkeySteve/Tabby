@@ -26,5 +26,9 @@
     = f.input :sync_points, as: :json, input_html: { rows: 5, cols: 20, value: (@song.sync_points || []).to_json }
 
   .form-actions
-    = f.button :submit, class: 'btn btn-primary'
-    = link_to "Cancel", :back, class: 'btn'
+    = button_tag type: 'submit', class: 'btn btn-primary px-5' do
+      %i.bi.bi-save
+      Save
+
+    = link_to "Cancel", :back, class: 'btn btn-secondary mx-2'
+    = content_for :buttons

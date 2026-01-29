@@ -2,5 +2,10 @@
 
 %h1 #{@song.title}
 
+- content_for :buttons do
+  = button_to @song, method: :delete, class: 'btn btn-danger btn-sm ms-5 float-end' do
+    %i.bi.bi-x-circle
+    Delete
+
 = render 'form', song: @song
 
