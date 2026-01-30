@@ -2,9 +2,10 @@ require 'shrine'
 require 'shrine/storage/file_system'
 
 # should match static routes
+storage_dir = Rails.root.join('storage').to_s
 Shrine.storages = {
-  cache: Shrine::Storage::FileSystem.new('storage', prefix: 'files/cache'),
-  store: Shrine::Storage::FileSystem.new('storage', prefix: 'files'),
+  cache: Shrine::Storage::FileSystem.new(storage_dir, prefix: 'files/cache'),
+  store: Shrine::Storage::FileSystem.new(storage_dir, prefix: 'files'),
 }
 
 Shrine.plugin :nobrainer
