@@ -49,6 +49,7 @@ class SongsController < ApplicationController
   end
 
   def player
+    render layout: false
   end
 
   def score
