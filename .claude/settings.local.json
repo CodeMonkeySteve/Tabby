@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /home/steve/src/Tabby log --oneline -10)",
+      "Bash(bundle show:*)",
+      "Bash(bundle exec rails stimulus:install:importmap:*)"
+    ]
+  }
+}
