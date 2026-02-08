@@ -357,3 +357,42 @@ input[type='range']
 
   .at-viewport
     left: 0 !important
+
+// Dark theme overrides
+[data-bs-theme="dark"]
+  .at-wrap
+    background: #212529
+    border-color: rgba(255, 255, 255, 0.12)
+
+  .at-sidebar
+    background: #2b3035
+    border-right-color: rgba(255, 255, 255, 0.12)
+
+  .at-overlay-content
+    background: #2b3035
+
+  .at-player-left > a.disabled
+    color: rgba(255, 255, 255, 0.3)
+
+    &:hover, &:active
+      color: rgba(255, 255, 255, 0.3)
+
+  .at-time-slider
+    background: #495057
+
+  input[type='range']
+    background: #495057
+
+  .at-track
+    &:hover
+      background: rgba(255, 255, 255, 0.1)
+
+    &.active
+      background: rgba(255, 255, 255, 0.05)
+
+  .at-footer .dropdown-item
+    &:hover
+      background: rgba(255, 255, 255, 0.08)
+
+  .progress::after
+    border-color: #495057

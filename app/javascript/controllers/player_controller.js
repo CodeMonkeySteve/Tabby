@@ -32,6 +32,18 @@ export default class extends Controller {
       },
     })
 
+    this.applyThemeColors()
+
+    this.themeObserver = new MutationObserver(() => {
+      this.applyThemeColors()
+      this.api.updateSettings()
+      this.api.render()
+    })
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-bs-theme"],
+    })
+
     this.api.error.on((e) => console.error("alphaTab error", e))
     this.api.renderStarted.on((isResize) => this.handleRenderStarted(isResize))
     this.api.soundFontLoad.on((args) => this.handleSoundFontLoad(args))
@@ -45,6 +57,10 @@ export default class extends Controller {
 
   disconnect() {
     document.removeEventListener("keydown", this.keyHandler)
+    if (this.themeObserver) {
+      this.themeObserver.disconnect()
+      this.themeObserver = null
+    }
     if (this.api) {
       this.api.destroy()
       this.api = null
@@ -235,6 +251,29 @@ export default class extends Controller {
         this.playPauseTarget.click()
         e.preventDefault()
         break
+    }
+  }
+
+  // --- Theme ---
+
+  applyThemeColors() {
+    const dark = document.documentElement.getAttribute("data-bs-theme") === "dark"
+    const res = this.api.settings.display.resources
+
+    if (dark) {
+      res.mainGlyphColor = new alphaTab.model.Color(222, 226, 230)
+      res.secondaryGlyphColor = new alphaTab.model.Color(222, 226, 230, 102)
+      res.scoreInfoColor = new alphaTab.model.Color(222, 226, 230)
+      res.barSeparatorColor = new alphaTab.model.Color(173, 181, 189)
+      res.barNumberColor = new alphaTab.model.Color(234, 108, 108)
+      res.staffLineColor = new alphaTab.model.Color(108, 117, 125)
+    } else {
+      res.mainGlyphColor = new alphaTab.model.Color(0, 0, 0)
+      res.secondaryGlyphColor = new alphaTab.model.Color(0, 0, 0, 102)
+      res.scoreInfoColor = new alphaTab.model.Color(0, 0, 0)
+      res.barSeparatorColor = new alphaTab.model.Color(34, 34, 17)
+      res.barNumberColor = new alphaTab.model.Color(200, 0, 0)
+      res.staffLineColor = new alphaTab.model.Color(165, 165, 165)
     }
   }
 
