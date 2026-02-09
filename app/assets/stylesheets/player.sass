@@ -79,6 +79,7 @@ body
 
 .at-song-title
   font-weight: 500
+  font-size: larger
 
 .at-track
   display: grid
@@ -241,6 +242,11 @@ input[type='range']
       background: #5588c7
       text-decoration: none
 
+  .icon
+    width: 20px
+    height: 20px
+    filter: brightness(0) invert(1)
+
   .dropdown-menu
     box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12)
     border: 0
@@ -267,9 +273,6 @@ input[type='range']
   .at-master-volume
     width: 120px
 
-.at-time-position
-  font-weight: bold
-
 .at-time-slider
   height: 4px
   background: #d9d9d9
@@ -282,6 +285,9 @@ input[type='range']
 .at-speed-value
   font-size: 0.8rem
   margin: 0 0.5em
+
+.at-time-position
+  font-weight: bold
 
 /** Circular Progress Bar https://jsfiddle.net/bootstrapious/3xnomecr  *
 

@@ -19,7 +19,8 @@
     = javascript_importmap_tags
 
   %body
-    .at-wrap.loading{data: { controller: 'player', player: { 'song-id-value': @song.to_param, 'sync-points-value': (@song.sync_points || []).to_json } }}
+    - song_attributes = { id: @song.to_param, title: @song.title, artist: @song.artist, syncPoints: @song.sync_points || [] }
+    .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json } } }
       .at-overlay
         .at-overlay-content
           .spinner-border{role: 'status', style: 'width: 3rem; height: 3rem;'}
@@ -67,16 +68,18 @@
               .progress-value.w-100.h-100.rounded-circle.d-flex.align-items-center.justify-content-center.font-weight-bold
                 %span.progress-value-number 0
                 %sup.small %
+            .at-time-position{title: 'Time Position', data: { player: { target: 'timePosition' } }}
+
+          .at-player-center
             .at-song-details
               %span.at-song-title{data: { player: { target: 'songTitle' } }}
-              \-
               %span.at-song-artist{data: { player: { target: 'songArtist' } }}
-            .at-time-position{title: 'Time Position', data: { player: { target: 'timePosition' } }}
+
           .at-player-right
             %a.at-count-in.disabled{href: '#', title: 'Count-In', data: { action: 'player#toggleCountIn', player: { target: 'countIn' } }}
               %i.fas.fa-hourglass-half
             %a.at-metronome.disabled{href: '#', title: 'Metronome', data: { action: 'player#toggleMetronome', player: { target: 'metronome' } }}
-              %i.fas.fa-edit
+              = image_tag 'metronome-icon.svg', class: 'icon'
             %a.at-loop.disabled{href: '#', title: 'Loop', data: { action: 'player#toggleLoop', player: { target: 'loop' } }}
               %i.fas.fa-retweet
             %a.at-print{href: '#', title: 'Print', data: { action: 'player#printScore' }}
@@ -110,6 +113,10 @@
                 %a.dropdown-item{href: '#', data: { layout: 'page', action: 'player#changeLayout' }}
                   %i.fas.fa-caret-square-down
                   Vertical Layout
+            = link_to edit_song_path(@song) do
+              %i.fas.fa-edit
+            = link_to songs_path do
+              %i.fas.fa-indent
       %template#at-track-template{data: { player: { target: 'trackTemplate' } }}
         .at-track
           .at-track-icon

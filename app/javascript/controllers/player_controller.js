@@ -3,8 +3,7 @@ import * as alphaTab from "https://cdn.jsdelivr.net/npm/@coderline/alphatab@alph
 
 export default class extends Controller {
   static values = {
-    songId: String,
-    syncPoints: Array,
+    song: Object,
   }
 
   static targets = [
@@ -24,7 +23,7 @@ export default class extends Controller {
     document.addEventListener("keydown", this.keyHandler)
 
     this.api = new alphaTab.AlphaTabApi(this.canvasTarget, {
-      file: `/s/${this.songIdValue}/score`,
+      file: `/s/${this.songValue.id}/score`,
       player: {
         enablePlayer: true,
         soundFont: "/sonivox.sf2",
@@ -102,8 +101,11 @@ export default class extends Controller {
   }
 
   async handleScoreLoaded(score) {
-    this.songTitleTarget.innerText = score.title
-    this.songArtistTarget.innerText = score.artist
+    this.songTitleTarget.innerText = this.songValue.title ?? score.title
+
+    let artist = this.songValue.artist ?? score.artist
+    if ( artist ) artist = "&ndash; " + artist
+    this.songArtistTarget.innerHTML = artist
 
     this.trackListTarget.innerHTML = ""
     for (const track of score.tracks) {
@@ -114,10 +116,10 @@ export default class extends Controller {
 
     this.currentTempo = score.tempo
 
-    if (this.syncPointsValue !== null) {
-      score.applyFlatSyncPoints(this.syncPointsValue)
+    if (this.songValue.syncPoints !== null) {
+      score.applyFlatSyncPoints(this.songValue.syncPoints)
 
-      const response = await fetch(`/s/${this.songIdValue}/audio`)
+      const response = await fetch(`/s/${this.songValue.id}/audio`)
       const arrayBuffer = await response.arrayBuffer()
       score.backingTrack = new alphaTab.model.BackingTrack()
       score.backingTrack.rawAudioFile = new Uint8Array(arrayBuffer)
