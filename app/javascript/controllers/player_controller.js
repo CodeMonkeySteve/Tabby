@@ -45,6 +45,8 @@ export default class extends Controller {
       attributeFilter: ["data-bs-theme"],
     })
 
+    this.restoreVolume()
+
     this.api.error.on((e) => console.error("alphaTab error", e))
     this.api.renderStarted.on((isResize) => this.handleRenderStarted(isResize))
     this.api.soundFontLoad.on((args) => this.handleSoundFontLoad(args))
@@ -214,6 +216,7 @@ export default class extends Controller {
     const volume = Number.parseInt(e.target.value)
     this.api.masterVolume = volume / 100
     this.updateVolumeUI(volume)
+    localStorage.setItem('playerVolume', volume)
   }
 
   changeZoom(e) {
@@ -289,10 +292,19 @@ export default class extends Controller {
 
   // --- Volume helpers ---
 
+  restoreVolume() {
+    const stored = localStorage.getItem('playerVolume')
+    const volume = stored !== null ? Number.parseInt(stored) : 50
+    this.api.masterVolume = volume / 100
+    this.volumeSliderTarget.value = volume
+    this.updateVolumeUI(volume)
+  }
+
   syncVolumeUI() {
     const volume = Math.round(this.api.masterVolume * 100)
     this.volumeSliderTarget.value = volume
     this.updateVolumeUI(volume)
+    localStorage.setItem('playerVolume', volume)
   }
 
   updateVolumeUI(volume) {
