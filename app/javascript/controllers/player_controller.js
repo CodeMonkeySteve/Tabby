@@ -7,7 +7,7 @@ export default class extends Controller {
   }
 
   static targets = [
-    "canvas", "viewport", "trackList", "playerLoading",
+    "canvas", "viewport", "trackList", "trackPanel", "playerLoading",
     "songTitle", "songArtist", "timePosition", "timeSliderValue",
     "playPause", "stop", "countIn", "metronome", "loop",
     "speedLabel", "speedSlider", "zoomLabel", "zoomSlider", "trackTemplate",
@@ -80,11 +80,9 @@ export default class extends Controller {
       tracks.set(t.index, t)
     }
     for (const trackItem of this.trackItems) {
-      if (tracks.has(trackItem.track.index)) {
-        trackItem.classList.add("active")
-      } else {
-        trackItem.classList.remove("active")
-      }
+      const isActive = tracks.has(trackItem.track.index)
+      trackItem.classList.toggle("active", isActive)
+      trackItem.querySelector(".at-track-check").checked = isActive
     }
   }
 
@@ -190,6 +188,11 @@ export default class extends Controller {
     const link = e.target.closest("a")
     link.classList.toggle("active")
     this.api.isLooping = link.classList.contains("active")
+  }
+
+  toggleTracks(e) {
+    e.preventDefault()
+    this.trackPanelTarget.classList.toggle("open")
   }
 
   printScore() {
@@ -336,34 +339,34 @@ export default class extends Controller {
 
     trackItem.querySelector(".at-track-name").textContent = track.name
 
+    const checkbox = trackItem.querySelector(".at-track-check")
     const muteButton = trackItem.querySelector(".at-track-mute")
     const soloButton = trackItem.querySelector(".at-track-solo")
     const volumeSlider = trackItem.querySelector(".at-track-volume")
 
-    muteButton.onclick = (e) => {
-      e.stopPropagation()
+    checkbox.onchange = () => {
+      const selected = this.trackItems
+        .filter(item => item.querySelector(".at-track-check").checked)
+        .map(item => item.track)
+      if (selected.length > 0) {
+        this.api.renderTracks(selected)
+      } else {
+        checkbox.checked = true
+      }
+    }
+
+    muteButton.onclick = () => {
       muteButton.classList.toggle("active")
       this.api.changeTrackMute([track], muteButton.classList.contains("active"))
     }
 
-    soloButton.onclick = (e) => {
-      e.stopPropagation()
+    soloButton.onclick = () => {
       soloButton.classList.toggle("active")
       this.api.changeTrackSolo([track], soloButton.classList.contains("active"))
     }
 
-    volumeSlider.oninput = (e) => {
-      e.preventDefault()
+    volumeSlider.oninput = () => {
       this.api.changeTrackVolume([track], volumeSlider.value / track.playbackInfo.volume)
-    }
-
-    volumeSlider.onclick = (e) => {
-      e.stopPropagation()
-    }
-
-    trackItem.onclick = (e) => {
-      e.stopPropagation()
-      this.api.renderTracks([track])
     }
 
     muteButton.value = track.playbackInfo.isMute

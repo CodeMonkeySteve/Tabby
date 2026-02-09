@@ -49,88 +49,122 @@ body
   background: #1b8f40
   color: #fff
 
-.at-sidebar
-  max-width: 70px
-  width: auto
-  display: flex
-  align-content: stretch
-  z-index: 1001
-  position: absolute
-  top: 0
-  left: 0
-  bottom: 0
-  overflow: hidden
-  border-right: 1px solid rgba(0, 0, 0, 0.12)
-  background: #f7f7f7
-
-  &:hover
-    max-width: 400px
-    transition: max-width 0.2s
-    overflow-y: auto
-
 .at-viewport
   overflow-y: auto
   position: absolute
   top: 0
-  left: 70px
+  left: 0
   right: 0
   bottom: 0
   padding-right: 20px
+
+.at-track-panel
+  position: absolute
+  top: 0
+  right: 0
+  width: 280px
+  bottom: 0
+  background: #f7f7f7
+  border-left: 1px solid rgba(0, 0, 0, 0.12)
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15)
+  overflow-y: auto
+  overflow-x: hidden
+  opacity: 0
+  transform: translateX(50px)
+  transition: all 0.2s ease-in-out
+  z-index: -1
+  padding: 12px
+  font-size: 13px
+
+  &.open
+    z-index: 1001
+    opacity: 1
+    transform: translateX(0)
+
+  h4
+    margin: 0 0 12px 0
+    font-size: 15px
+
+.at-track-panel-close
+  position: absolute
+  top: 8px
+  right: 8px
+  background: none
+  border: none
+  cursor: pointer
+  padding: 4px
+  opacity: 0.6
+  font-size: 14px
+
+  &:hover
+    opacity: 1
 
 .at-song-title
   font-weight: 500
   font-size: larger
 
 .at-track
-  display: grid
-  grid-template-columns: auto 1fr
-  grid-template-rows: auto auto
-  grid-template-areas: 'icon title' 'icon controls'
-  padding: 5px
-  transition: background 0.2s
-  grid-gap: 5px
-  cursor: pointer
+  padding: 8px
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08)
 
-  &:hover
-    background: rgba(0, 0, 0, 0.1)
-
-    > .at-track-icon
-      opacity: 0.8
-
-  > .at-track-icon
-    grid-area: icon
-    font-size: 32px
-    display: flex
-    justify-content: center
-    align-items: center
-    opacity: 0.5
-    transition: opacity 0.2s
-    width: 64px
-    height: 64px
+  &:last-child
+    border-bottom: none
 
   &.active
     background: rgba(0, 0, 0, 0.03)
 
-    > .at-track-icon
-      color: #4972a1
-      opacity: 1
+  .at-track-info
+    display: flex
+    align-items: center
+    gap: 6px
+    margin-bottom: 4px
 
-  >
-    .at-track-name
-      grid-area: title
-      font-weight: 500
+  .at-track-check
+    margin: 0
 
-    .at-track-controls
-      grid-area: controls
-      display: flex
-      align-items: center
+  .at-track-name
+    font-weight: 500
+    flex: 1
 
-      >
-        *
-          margin: 0 2px
+  .at-track-buttons
+    display: flex
+    gap: 4px
 
-        button.active:hover
-          background: transparent
+    .at-track-solo, .at-track-mute
+      width: 24px
+      height: 24px
+      padding: 0
+      font-size: 11px
+      font-weight: bold
+      line-height: 1
+      border: 1px solid #999
+      background: none
+      color: #666
+      border-radius: 3px
+      cursor: pointer
+
+    .at-track-solo.active
+      background: #198754
+      border-color: #198754
+      color: #fff
+
+    .at-track-mute.active
+      background: #dc3545
+      border-color: #dc3545
+      color: #fff
+
+  .at-track-volume-row
+    display: flex
+    align-items: center
+    gap: 8px
+    padding-left: 22px
+
+    .at-track-volume-label
+      font-size: 11px
+      color: #888
+
+    .at-track-volume
+      flex: 1
 
 input[type='range']
   -webkit-appearance: none
@@ -368,21 +402,35 @@ input[type='range']
   .at-logo img
     height: 18px
 
-  .at-sidebar
-    display: none
-
-  .at-viewport
-    left: 0 !important
-
 // Dark theme overrides
 [data-bs-theme="dark"]
   .at-wrap
     background: #212529
     border-color: rgba(255, 255, 255, 0.12)
 
-  .at-sidebar
+  .at-track-panel
     background: #2b3035
-    border-right-color: rgba(255, 255, 255, 0.12)
+    border-left-color: rgba(255, 255, 255, 0.12)
+
+  .at-track-panel-close
+    color: #dee2e6
+
+  .at-track
+    border-bottom-color: rgba(255, 255, 255, 0.08)
+
+    &:hover
+      background: rgba(255, 255, 255, 0.1)
+
+    &.active
+      background: rgba(255, 255, 255, 0.05)
+
+    .at-track-buttons
+      .at-track-solo, .at-track-mute
+        border-color: #6c757d
+        color: #adb5bd
+
+    .at-track-volume-row .at-track-volume-label
+      color: #adb5bd
 
   .at-overlay-content
     background: #2b3035
@@ -398,13 +446,6 @@ input[type='range']
 
   input[type='range']
     background: #495057
-
-  .at-track
-    &:hover
-      background: rgba(255, 255, 255, 0.1)
-
-    &.active
-      background: rgba(255, 255, 255, 0.05)
 
   .at-footer .dropdown-item
     &:hover

@@ -25,11 +25,13 @@
         .at-overlay-content
           .spinner-border{role: 'status', style: 'width: 3rem; height: 3rem;'}
       .at-content
-        .at-sidebar
-          .at-sidebar-content
-            .at-track-list{data: { player: { target: 'trackList' } }}
         .at-viewport{data: { player: { target: 'viewport' } }}
           #alphaTab.at-canvas{data: { player: { target: 'canvas' } }}
+        .at-track-panel{data: { player: { target: 'trackPanel' } }}
+          %button.at-track-panel-close{type: 'button', data: { action: 'player#toggleTracks' }}
+            %i.fas.fa-close
+          %h4 Tracks
+          .at-track-list{data: { player: { target: 'trackList' } }}
       .at-footer
         .at-time-slider
           .at-time-slider-value{data: { player: { target: 'timeSliderValue' } }}
@@ -70,6 +72,8 @@
               %span.at-song-artist{data: { player: { target: 'songArtist' } }}
 
           .at-player-right
+            %a.at-tracks{href: '#', title: 'Tracks', data: { action: 'player#toggleTracks' }}
+              %i.fas.fa-list-check
             %a.at-count-in.disabled{href: '#', title: 'Count-In', data: { action: 'player#toggleCountIn', player: { target: 'countIn' } }}
               %i.fas.fa-hourglass-half
             %a.at-metronome.disabled{href: '#', title: 'Metronome', data: { action: 'player#toggleMetronome', player: { target: 'metronome' } }}
@@ -106,11 +110,12 @@
               %i.fas.fa-indent
       %template#at-track-template{data: { player: { target: 'trackTemplate' } }}
         .at-track
-          .at-track-icon
-            %i.fas.fa-guitar
-          %span.at-track-name
-          .at-track-controls
-            %button.btn.btn-sm.btn-outline-danger.at-track-mute{type: 'button'} Mute
-            %button.btn.btn-sm.btn-outline-success.at-track-solo{type: 'button'} Solo
-            %i.fas.fa-volume-up
-            %input.at-track-volume{max: '16', min: '0', type: 'range', value: '8'}/
+          .at-track-info
+            %input.at-track-check{type: 'checkbox', checked: true}/
+            %label.at-track-name
+            .at-track-buttons
+              %button.btn.btn-sm.at-track-solo{type: 'button', title: 'Solo'} S
+              %button.btn.btn-sm.at-track-mute{type: 'button', title: 'Mute'} M
+          .at-track-volume-row
+            %span.at-track-volume-label Volume
+            %input.at-track-volume{type: 'range', min: 0, max: 16, value: 8}/
