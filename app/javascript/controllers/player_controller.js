@@ -12,6 +12,7 @@ export default class extends Controller {
     "songTitle", "songArtist", "timePosition", "timeSliderValue",
     "playPause", "stop", "countIn", "metronome", "loop",
     "speedLabel", "zoomLabel", "trackTemplate",
+    "volumeLabel", "volumeSlider", "volumeIcon",
   ]
 
   connect() {
@@ -208,6 +209,13 @@ export default class extends Controller {
     this.speedLabelTarget.innerText = e.target.innerText
   }
 
+  changeVolume(e) {
+    e.preventDefault()
+    const volume = Number.parseInt(e.target.value)
+    this.api.masterVolume = volume / 100
+    this.updateVolumeUI(volume)
+  }
+
   changeZoom(e) {
     e.preventDefault()
     this.api.settings.display.scale = Number.parseInt(e.target.innerText) / 100.0
@@ -241,10 +249,12 @@ export default class extends Controller {
     switch (e.key) {
       case "ArrowUp":
         this.api.masterVolume = Math.min(this.api.masterVolume + 0.05, 1.0)
+        this.syncVolumeUI()
         e.preventDefault()
         break
       case "ArrowDown":
         this.api.masterVolume = Math.max(this.api.masterVolume - 0.05, 0.0)
+        this.syncVolumeUI()
         e.preventDefault()
         break
       case " ":
@@ -274,6 +284,27 @@ export default class extends Controller {
       res.barSeparatorColor = new alphaTab.model.Color(34, 34, 17)
       res.barNumberColor = new alphaTab.model.Color(200, 0, 0)
       res.staffLineColor = new alphaTab.model.Color(165, 165, 165)
+    }
+  }
+
+  // --- Volume helpers ---
+
+  syncVolumeUI() {
+    const volume = Math.round(this.api.masterVolume * 100)
+    this.volumeSliderTarget.value = volume
+    this.updateVolumeUI(volume)
+  }
+
+  updateVolumeUI(volume) {
+    this.volumeLabelTarget.innerText = `${volume}%`
+    const icon = this.volumeIconTarget
+    icon.classList.remove('fa-volume-high', 'fa-volume-low', 'fa-volume-off')
+    if (volume > 50) {
+      icon.classList.add('fa-volume-high')
+    } else if (volume > 0) {
+      icon.classList.add('fa-volume-low')
+    } else {
+      icon.classList.add('fa-volume-off')
     }
   }
 

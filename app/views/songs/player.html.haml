@@ -52,6 +52,13 @@
                 %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 1.25x
                 %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 1.50x
                 %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 2x
+            .btn-group.dropup
+              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown' } }, type: 'button'}
+                %i.fas.fa-volume-low{data: { player: { target: 'volumeIcon' } }}
+                %span.at-volume-label{data: { player: { target: 'volumeLabel' } }} 50%
+              .dropdown-menu.at-volume-options
+                .at-volume-slider-container
+                  %input.at-master-volume{type: 'range', min: '0', max: '100', value: '50', data: { action: 'input->player#changeVolume', player: { target: 'volumeSlider' } }}/
             .at-player-loading.progress{data: { player: { target: 'playerLoading' } }}
               %span.progress-left
                 %span.progress-bar
