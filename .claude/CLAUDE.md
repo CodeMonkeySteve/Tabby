@@ -68,6 +68,6 @@ The player page is implemented in `player.html.haml`, `player.js`, and `player.s
 
 ## Style
 
-* HAML element attributes should use `true` and `false` Ruby constants instead of "true" and "false" strings
+* HAML element attributes should use Ruby numeric and boolean literals instead of strings
 * HAML attributes prefixed with "aria-" and "data-" should be in nested hashes without the prefix
-* Ruby hash styles should apply to HAML attributes too  
+* Ruby hash styles should apply to HAML attributes too

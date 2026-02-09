@@ -40,26 +40,20 @@
             %a.at-play-pause.disabled{href: '#', title: 'Play/Pause', data: { action: 'player#playPause', player: { target: 'playPause' } }}
               %i.fas.fa-play
             .btn-group.dropup
-              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown' } }, type: 'button'}
+              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
                 %i.fas.fa-gauge
-                %span.at-speed-label{data: { player: { target: 'speedLabel' } }} 1x
-              .dropdown-menu.dropdown-menu.at-speed-options
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 0.25x
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 0.5x
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 0.75x
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 0.9x
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 1x
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 1.1x
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 1.25x
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 1.50x
-                %a.dropdown-item{href: '#', data: { action: 'player#changeSpeed' }} 2x
+              .dropdown-menu.at-speed-options
+                .at-slider-container
+                  %span.at-slider-value{data: { player: { target: 'speedLabel' } }} 1x
+                  %input{type: 'range', min: 50, max: 200, value: 100, step: 10, data: { action: 'input->player#changeSpeed', player: { target: 'speedSlider' } }}/
             .btn-group.dropup
-              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown' } }, type: 'button'}
+              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
                 %i.fas.fa-volume-low{data: { player: { target: 'volumeIcon' } }}
-                %span.at-volume-label{data: { player: { target: 'volumeLabel' } }} 50%
               .dropdown-menu.at-volume-options
-                .at-volume-slider-container
-                  %input.at-master-volume{type: 'range', min: '0', max: '100', value: '50', data: { action: 'input->player#changeVolume', player: { target: 'volumeSlider' } }}/
+                .at-slider-container
+                  %span.at-slider-value{data: { player: { target: 'volumeLabel' } }} 50%
+                  %input.at-master-volume{type: 'range', min: 0, max: 100, value: 50, data: { action: 'input->player#changeVolume', player: { target: 'volumeSlider' } }}/
+
             .at-player-loading.progress{data: { player: { target: 'playerLoading' } }}
               %span.progress-left
                 %span.progress-bar
@@ -87,19 +81,12 @@
             %a.at-download{href: '#', title: 'Download', data: { action: 'player#downloadScore' }}
               %i.fas.fa-download
             .btn-group.dropup
-              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown' } }, type: 'button'}
+              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
                 %i.fas.fa-search
-                %span.at-zoom-label{data: { player: { target: 'zoomLabel' } }} 100%
               .dropdown-menu.dropdown-menu-right.at-zoom-options
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 25%
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 50%
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 75%
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 90%
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 100%
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 110%
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 125%
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 150%
-                %a.dropdown-item{href: '#', data: { action: 'player#changeZoom' }} 200%
+                .at-slider-container
+                  %span.at-slider-value{data: { player: { target: 'zoomLabel' } }} 100%
+                  %input{type: 'range', min: 25, max: 200, value: 100, step: 5, data: { action: 'input->player#changeZoom', player: { target: 'zoomSlider' } }}/
             .btn-group.dropup
               %button.btn.dropdown-toggle.at-layout-button{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown' } }, type: 'button'}
                 Layout

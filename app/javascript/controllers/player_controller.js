@@ -10,7 +10,7 @@ export default class extends Controller {
     "canvas", "viewport", "trackList", "playerLoading",
     "songTitle", "songArtist", "timePosition", "timeSliderValue",
     "playPause", "stop", "countIn", "metronome", "loop",
-    "speedLabel", "zoomLabel", "trackTemplate",
+    "speedLabel", "speedSlider", "zoomLabel", "zoomSlider", "trackTemplate",
     "volumeLabel", "volumeSlider", "volumeIcon",
   ]
 
@@ -209,8 +209,9 @@ export default class extends Controller {
 
   changeSpeed(e) {
     e.preventDefault()
-    this.api.playbackSpeed = Number.parseFloat(e.target.innerText)
-    this.speedLabelTarget.innerText = e.target.innerText
+    const value = Number.parseInt(e.target.value)
+    this.api.playbackSpeed = value / 100
+    this.speedLabelTarget.innerText = `${value / 100}x`
   }
 
   changeVolume(e) {
@@ -223,10 +224,14 @@ export default class extends Controller {
 
   changeZoom(e) {
     e.preventDefault()
-    this.api.settings.display.scale = Number.parseInt(e.target.innerText) / 100.0
-    this.zoomLabelTarget.innerText = e.target.innerText
-    this.api.updateSettings()
-    this.api.render()
+    const value = Number.parseInt(e.target.value)
+    this.zoomLabelTarget.innerText = `${value}%`
+    clearTimeout(this.zoomDebounce)
+    this.zoomDebounce = setTimeout(() => {
+      this.api.settings.display.scale = value / 100.0
+      this.api.updateSettings()
+      this.api.render()
+    }, 150)
   }
 
   changeLayout(e) {
