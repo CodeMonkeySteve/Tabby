@@ -1,11 +1,8 @@
 class SongsController < ApplicationController
-  before_action :find_song, only: %i[show edit update destroy player score audio]
+  before_action :find_song, only: %i[edit update destroy player score audio sync_points]
 
   def index
     @songs ||= Song.all.order_by(:artist, :title)
-  end
-
-  def show
   end
 
   def new
@@ -20,7 +17,7 @@ class SongsController < ApplicationController
     respond_to do |format|
       if @song.save
         format.html { redirect_to @song, notice: "Song was successfully created." }
-        format.json { render :show, status: :created, location: @song }
+        format.json { render :player, status: :created, location: @song }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @song.errors, status: :unprocessable_entity }
@@ -32,7 +29,7 @@ class SongsController < ApplicationController
     respond_to do |format|
       if @song.update(song_params)
         format.html { redirect_to @song, notice: "Song was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @song }
+        format.json { render :player, status: :ok, location: @song }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @song.errors, status: :unprocessable_entity }
@@ -59,6 +56,18 @@ class SongsController < ApplicationController
   def audio
     @song.audio or return head :not_found
     send_data(@song.audio.read, filename: @song.audio.original_filename, content_type: @song.audio.mime_type, disposition: 'inline')
+  end
+
+  def sync_points
+    points = (params[:sync_points] || []).map do |sp|
+      sp.permit(:barIndex, :barOccurence, :barPosition, :millisecondOffset).to_h
+    end
+
+    if @song.update(sync_points: points)
+      head :ok
+    else
+      render json: @song.errors, status: :unprocessable_entity
+    end
   end
 
 private

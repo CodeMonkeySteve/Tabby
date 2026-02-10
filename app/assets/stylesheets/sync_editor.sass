@@ -1,0 +1,164 @@
+.sync-editor
+  display: none
+  flex-direction: column
+  height: 20vh
+  background: #fff
+  border-top: 1px solid rgba(0, 0, 0, 0.12)
+
+  &.open
+    display: flex
+
+.sync-toolbar
+  zoom: 0.8
+  padding: 0.2rem
+  display: flex
+  align-items: center
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12)
+  justify-content: space-between
+
+  > div
+    display: flex
+    align-items: center
+    gap: 0.2rem
+
+  .btn
+    padding: 2px 8px
+    font-size: 13px
+    line-height: 1.5
+
+  .btn-outline-secondary
+    border-color: #ccc
+
+.sync-area
+  overflow-y: hidden
+  overflow-x: scroll
+  flex-grow: 1
+  align-items: start
+  position: relative
+
+.sync-area-canvas-wrap
+  position: sticky
+  top: 0
+  left: 0
+
+  > canvas
+    font: 12px 'Roboto', sans-serif
+
+.sync-area-playback-cursor
+  position: absolute
+  top: 0
+  left: 0
+  width: 1px
+  height: 100%
+  background: rgb(200, 0, 0)
+  pointer-events: none
+  will-change: transform
+  transition: transform linear 0.1s
+  white-space: nowrap
+  padding-top: 50px
+  font-size: 12px
+
+.sync-area-marker-wrap
+  position: absolute
+  top: 0
+
+  > .masterbar-marker
+    position: absolute
+    width: 20px
+    top: 0
+    bottom: 20px
+    transform: translateX(-50%)
+    user-select: none
+    display: flex
+    flex-direction: column
+    align-items: center
+    font-size: 12px
+    cursor: col-resize
+
+    > .marker-label
+      height: 20px
+      white-space: nowrap
+      display: flex
+      align-items: center
+
+    > .marker-head
+      height: 20px
+      width: 20px
+      display: grid
+      align-items: center
+      grid-template-columns: 1fr
+      grid-template-rows: 1fr
+
+      > *
+        grid-area: 1 / 1 / 2 / 2
+
+      > .marker-arrow
+        width: 20px
+        height: 20px
+        background: #fff
+
+        &::after
+          content: ' '
+          display: block
+          width: 20px
+          height: 20px
+          clip-path: polygon(0 0, 100% 0, 50% 100%)
+          background: #a3b9d0
+
+      > .marker-tempo
+        white-space: nowrap
+        text-align: left
+        transform: translateX(20px)
+        pointer-events: none
+        font-size: 80%
+        background: #fff
+
+    > .marker-line
+      flex-grow: 1
+      width: 0
+      border-right: 1px solid #a1a4a7
+
+    &.masterbar-marker-startmarker,
+    &.masterbar-marker-endmarker
+      > .marker-line
+        border-right-style: solid
+        border-right-width: 2px
+
+    &.masterbar-marker-masterbar
+      > .marker-line
+        border-right-style: solid
+
+    &.masterbar-marker-intermediate
+      .marker-arrow
+        display: none
+
+      &.has-sync-point .marker-arrow
+        display: block
+
+      .marker-line
+        border-right-style: dashed
+
+    &.has-sync-point,
+    &:hover
+      .marker-arrow::after
+        background: #4972a1
+
+      .marker-line
+        border-right-color: #444950
+
+// Dark theme
+[data-bs-theme="dark"]
+  .sync-editor
+    background: #212529
+    border-top-color: rgba(255, 255, 255, 0.12)
+
+  .sync-toolbar
+    border-bottom-color: rgba(255, 255, 255, 0.12)
+
+  .sync-area-marker-wrap > .masterbar-marker
+    > .marker-head
+      > .marker-arrow
+        background: #212529
+
+      > .marker-tempo
+        background: #212529

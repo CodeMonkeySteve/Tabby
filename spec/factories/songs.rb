@@ -4,7 +4,10 @@ FactoryBot.define do
     artist { "Tears for Fears" }
     instruments { %w[bass] }
     score { upload_fixture('Tears for Fears - Head Over Heels.gpx', 'audio/x-gtp') }
-    audio { upload_fixture('Tears for Fears - Head Over Heels.mp3', 'audio/mpeg') }
     sync_points { [] }
+  end
+
+  trait :with_audio do
+    audio { upload_fixture('Tears for Fears - Head Over Heels.mp3', 'audio/mpeg') }
   end
 end

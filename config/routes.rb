@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     member do
       get 'score' => 'songs#score'
       get 'audio' => 'songs#audio'
+      patch 'sync_points' => 'songs#sync_points'
     end
   end
   get '/p/:id' => 'songs#player', as: 'player'

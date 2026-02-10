@@ -8,6 +8,7 @@
     %meta{name: 'apple-mobile-web-app-capable', content: 'yes'}/
     %meta{name: 'application-name', content: 'Tabby'}/
     %meta{name: 'mobile-web-app-capable', content: 'yes'}/
+    = csrf_meta_tags
 
     %link{href: 'https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700&display=swap', rel: 'stylesheet'}/
 
@@ -20,7 +21,7 @@
 
   %body
     - song_attributes = { id: @song.to_param, title: @song.title, artist: @song.artist, syncPoints: @song.sync_points || [] }
-    .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json } } }
+    .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json, sync_editor_outlet: '.sync-editor' } } }
       .at-overlay
         .at-overlay-content
           .spinner-border{role: 'status', style: 'width: 3rem; height: 3rem;'}
@@ -32,6 +33,37 @@
             %i.fas.fa-close
           %h4 Tracks
           .at-track-list{data: { player: { target: 'trackList' } }}
+      - if @song.audio.present?
+        .sync-editor{data: { controller: 'sync-editor', sync_editor: { song_id_value: @song.to_param } }}
+          .sync-toolbar
+            %div
+              .btn-group
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Auto Sync', data: { action: 'sync-editor#performAutoSync' }}
+                  %i.fas.fa-magic
+                  Auto Sync
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Reset Sync Points', data: { action: 'sync-editor#performResetSyncPoints' }}
+                  %i.fas.fa-map-pin
+                  Reset
+              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Zoom Out', data: { action: 'sync-editor#zoomOut' }}
+                %i.fas.fa-magnifying-glass-minus
+              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Reset Zoom', data: { action: 'sync-editor#resetZoom', sync_editor: { target: 'zoomLabel' } }}
+                100%
+              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Zoom In', data: { action: 'sync-editor#zoomIn' }}
+                %i.fas.fa-magnifying-glass-plus
+              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Undo', data: { action: 'sync-editor#performUndo', sync_editor: { target: 'undoBtn' } }, disabled: true}
+                %i.fas.fa-undo
+              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Redo', data: { action: 'sync-editor#performRedo', sync_editor: { target: 'redoBtn' } }, disabled: true}
+                %i.fas.fa-redo
+            %div
+              %span.text-muted.me-2{data: { sync_editor: { target: 'statusMsg' } }}
+              %button.btn.btn-sm.btn-primary{type: 'button', title: 'Save', data: { action: 'sync-editor#save', sync_editor: { target: 'saveBtn' } }}
+                %i.fas.fa-save
+                Save
+          .sync-area{data: { action: 'scroll->sync-editor#onScroll', sync_editor: { target: 'syncArea' } }}
+            .sync-area-canvas-wrap
+              %canvas{data: { sync_editor: { target: 'canvas' } }}
+            .sync-area-marker-wrap{data: { action: 'click->sync-editor#onSyncAreaClick', sync_editor: { target: 'markerWrap' } }}
+            .sync-area-playback-cursor{data: { sync_editor: { target: 'cursor' } }}
       .at-footer
         .at-time-slider
           .at-time-slider-value{data: { player: { target: 'timeSliderValue' } }}
@@ -104,6 +136,9 @@
                 %a.dropdown-item{href: '#', data: { layout: 'page', action: 'player#changeLayout' }}
                   %i.fas.fa-caret-square-down
                   Vertical Layout
+            - if @song.audio.present?
+              %a.at-sync{href: '#', title: 'Sync Editor', data: { action: 'player#toggleSyncEditor' }}
+                %i.fas.fa-wave-square
             = link_to edit_song_path(@song) do
               %i.fas.fa-edit
             = link_to songs_path do

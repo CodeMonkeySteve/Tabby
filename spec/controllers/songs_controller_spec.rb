@@ -10,11 +10,7 @@ RSpec.describe SongsController do
   it "#index" do
     get :index
     expect(response).to be_successful
-  end
 
-  it "#show" do
-    get :show, params: { id: song }
-    expect(response).to be_successful
   end
 
   it "#new" do

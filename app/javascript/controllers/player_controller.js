@@ -6,6 +6,8 @@ export default class extends Controller {
     song: Object,
   }
 
+  static outlets = ["sync-editor"]
+
   static targets = [
     "canvas", "viewport", "trackList", "trackPanel", "playerLoading",
     "songTitle", "songArtist", "timePosition", "timeSliderValue",
@@ -124,6 +126,16 @@ export default class extends Controller {
 
       this.api.settings.player.playerMode = alphaTab.PlayerMode.EnabledBackingTrack
       this.api.updateSettings()
+
+      if (this.hasSyncEditorOutlet) {
+        this.syncEditorOutlet.initWithApi(this.api, score)
+      }
+    }
+  }
+
+  toggleSyncEditor() {
+    if (this.hasSyncEditorOutlet) {
+      this.syncEditorOutlet.toggle()
     }
   }
 

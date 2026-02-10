@@ -48,4 +48,9 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  config.logger = ActiveSupport::Logger.new(STDOUT)
+  config.logger.formatter = ->(severity, time, progname, msg, *args) { "#{severity[0, 1] * 2} #{msg}\n" }
+  config.log_level = ENV.fetch("LOG_LEVEL", "info")
+  config.colorize_logging = true
 end
