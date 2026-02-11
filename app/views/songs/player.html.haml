@@ -112,10 +112,6 @@
               = image_tag 'metronome-icon.svg', class: 'icon'
             %a.at-loop.disabled{href: '#', title: 'Loop', data: { action: 'player#toggleLoop', player: { target: 'loop' } }}
               %i.fas.fa-retweet
-            %a.at-print{href: '#', title: 'Print', data: { action: 'player#printScore' }}
-              %i.fas.fa-print
-            %a.at-download{href: '#', title: 'Download', data: { action: 'player#downloadScore' }}
-              %i.fas.fa-download
             .btn-group.dropup
               %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
                 %i.fas.fa-search

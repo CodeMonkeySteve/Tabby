@@ -207,21 +207,6 @@ export default class extends Controller {
     this.trackPanelTarget.classList.toggle("open")
   }
 
-  printScore() {
-    this.api.print()
-  }
-
-  downloadScore() {
-    const exporter = new alphaTab.exporter.Gp7Exporter()
-    const data = exporter.export(this.api.score, this.api.settings)
-    const a = document.createElement("a")
-    a.download = this.api.score.title.length > 0 ? `${this.api.score.title}.gp` : "song.gp"
-    a.href = URL.createObjectURL(new Blob([data]))
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-  }
-
   changeSpeed(e) {
     e.preventDefault()
     const value = Number.parseInt(e.target.value)
