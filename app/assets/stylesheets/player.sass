@@ -61,7 +61,7 @@ body
 .at-track-panel
   position: absolute
   top: 0
-  right: 0
+  left: 0
   width: 280px
   bottom: 0
   background: #f7f7f7
@@ -70,7 +70,7 @@ body
   overflow-y: auto
   overflow-x: hidden
   opacity: 0
-  transform: translateX(50px)
+  transform: translateX(-50px)
   transition: all 0.2s ease-in-out
   z-index: -1
   padding: 12px
@@ -302,17 +302,20 @@ input[type='range']
 
 .at-slider-container
   display: flex
-  flex-direction: column
+  flex-direction: row
   align-items: center
   padding: 12px 16px
+
+  .at-slider-label
+    margin-right: 8px
 
   .at-slider-value
     font-size: 0.85rem
     font-weight: 500
-    margin-bottom: 8px
+    margin-left: 8px
 
   input[type='range']
-    width: 120px
+    flex: 1
 
 .at-time-slider
   height: 4px

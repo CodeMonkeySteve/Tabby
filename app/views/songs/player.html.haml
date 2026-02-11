@@ -73,20 +73,24 @@
               %i.fas.fa-stop
             %a.at-play-pause.disabled{href: '#', title: 'Play/Pause', data: { action: 'player#playPause', player: { target: 'playPause' } }}
               %i.fas.fa-play
+            %a.at-tracks{href: '#', title: 'Tracks', data: { action: 'player#toggleTracks' }}
+              %i.fas.fa-list-check
             .btn-group.dropup
               %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
                 %i.fas.fa-gauge
               .dropdown-menu.at-speed-options
                 .at-slider-container
-                  %span.at-slider-value{data: { player: { target: 'speedLabel' } }} 1x
+                  %span.at-slider-label Speed
                   %input{type: 'range', min: 50, max: 200, value: 100, step: 10, data: { action: 'input->player#changeSpeed', player: { target: 'speedSlider' } }}/
+                  %span.at-slider-value{data: { player: { target: 'speedLabel' } }} 1x
             .btn-group.dropup
               %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
                 %i.fas.fa-volume-low{data: { player: { target: 'volumeIcon' } }}
               .dropdown-menu.at-volume-options
                 .at-slider-container
-                  %span.at-slider-value{data: { player: { target: 'volumeLabel' } }} 50%
+                  %span.at-slider-label Volume
                   %input.at-master-volume{type: 'range', min: 0, max: 100, value: 50, data: { action: 'input->player#changeVolume', player: { target: 'volumeSlider' } }}/
+                  %span.at-slider-value{data: { player: { target: 'volumeLabel' } }} 50%
 
             .at-player-loading.progress{data: { player: { target: 'playerLoading' } }}
               %span.progress-left
@@ -104,8 +108,6 @@
               %span.at-song-artist{data: { player: { target: 'songArtist' } }}
 
           .at-player-right
-            %a.at-tracks{href: '#', title: 'Tracks', data: { action: 'player#toggleTracks' }}
-              %i.fas.fa-list-check
             %a.at-count-in.disabled{href: '#', title: 'Count-In', data: { action: 'player#toggleCountIn', player: { target: 'countIn' } }}
               %i.fas.fa-hourglass-half
             %a.at-metronome.disabled{href: '#', title: 'Metronome', data: { action: 'player#toggleMetronome', player: { target: 'metronome' } }}
@@ -113,16 +115,14 @@
             %a.at-loop.disabled{href: '#', title: 'Loop', data: { action: 'player#toggleLoop', player: { target: 'loop' } }}
               %i.fas.fa-retweet
             .btn-group.dropup
-              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
-                %i.fas.fa-search
-              .dropdown-menu.dropdown-menu-right.at-zoom-options
-                .at-slider-container
-                  %span.at-slider-value{data: { player: { target: 'zoomLabel' } }} 100%
-                  %input{type: 'range', min: 25, max: 200, value: 100, step: 5, data: { action: 'input->player#changeZoom', player: { target: 'zoomSlider' } }}/
-            .btn-group.dropup
-              %button.btn.dropdown-toggle.at-layout-button{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown' } }, type: 'button'}
-                Layout
+              %button.btn.dropdown-toggle.at-layout-button{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                %i.fas.fa-table-columns
               .dropdown-menu.dropdown-menu-right.at-layout-options
+                .at-slider-container
+                  %span.at-slider-label Scale
+                  %input{type: 'range', min: 25, max: 200, value: 100, step: 5, data: { action: 'input->player#changeZoom', player: { target: 'zoomSlider' } }}/
+                  %span.at-slider-value{data: { player: { target: 'zoomLabel' } }} 100%
+                .dropdown-divider
                 %a.dropdown-item{href: '#', data: { layout: 'horizontal-screen', action: 'player#changeLayout' }}
                   %i.far.fa-caret-square-right
                   Horizontal Layout (Off-Screen)
