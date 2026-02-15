@@ -29,7 +29,6 @@ gem 'sassc-rails'
 gem 'bootstrap'
 gem 'turbo-rails'
 gem 'turbo_power'
-gem 'simple_form'
 
 # import
 gem 'nodo'

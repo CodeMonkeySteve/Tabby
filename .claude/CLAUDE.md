@@ -12,7 +12,7 @@ Tabby is a Rails 8.1 music score library and player application. It manages song
 - **Falcon** — async HTTP server (not Puma)
 - **Shrine** — file uploads for scores, audio, and cover images
 - **Hotwire** (Turbo + Stimulus) with **Importmap** (no JS bundler)
-- **HAML** templates, **Bootstrap** CSS, **Simple Form**
+- **HAML** templates, **Bootstrap** CSS
 - **OmniAuth** (Google OAuth2) for authentication, **CanCanCan** for authorization
 - **AlphaTab** via **Nodo** — Node.js bridge for parsing music score files in `lib/alpha_tab/`
 

@@ -1,29 +1,51 @@
-= simple_form_for(@song) do |f|
-  = f.error_notification
-  = f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present?
+= form_with(model: @song) do |f|
+  - if @song.errors.any?
+    .alert.alert-danger
+      %h4= "#{pluralize(@song.errors.count, 'error')} prohibited this song from being saved:"
+      %ul
+        - @song.errors.full_messages.each do |message|
+          %li= message
 
   .form-inputs
-    = f.input :title, required: true
-    = f.input :artist
+    .mb-3
+      = f.label :title, class: 'form-label'
+      = f.text_field :title, required: true, class: 'form-control'
+
+    .mb-3
+      = f.label :artist, class: 'form-label'
+      = f.text_field :artist, class: 'form-control'
 
     %div{data: { controller: 'array-input' }}
-      %div{data: { 'array-input-target': 'list' }}
-        = f.input :instruments, as: :array
-        %template{data: { 'array-input-target': 'template' }}
-          .array-input-field
-            f.input :instruments, label: false, input_html: { value: "", name: "#{f.object_name}[instruments][]" } %>
-            %button.btn{type: 'button', data: { action: 'click->array-input#removeField' }} Remove
+      .mb-3
+        = f.label :instruments, class: 'form-label'
+        %div{data: { 'array-input-target': 'list' }}
+          - Array(@song.instruments).each do |instrument|
+            .array-input-field
+              = f.text_field :instruments, value: instrument, name: 'song[instruments][]', class: 'form-control'
+              %button.btn{type: 'button', data: { action: 'click->array-input#removeField' }} Remove
+          %template{data: { 'array-input-target': 'template' }}
+            .array-input-field
+              = f.text_field :instruments, value: '', name: 'song[instruments][]', class: 'form-control'
+              %button.btn{type: 'button', data: { action: 'click->array-input#removeField' }} Remove
 
-    = f.input :cover, as: :hidden, input_html: { value: @song.cached_cover_data }
-    = f.input :cover, as: :file
+    .mb-3
+      = f.label :cover, class: 'form-label'
+      = f.hidden_field :cover, value: @song.cached_cover_data
+      = f.file_field :cover, class: 'form-control'
 
-    = f.input :score, as: :hidden, input_html: { value: @song.cached_score_data }
-    = f.input :score, as: :file
+    .mb-3
+      = f.label :score, class: 'form-label'
+      = f.hidden_field :score, value: @song.cached_score_data
+      = f.file_field :score, class: 'form-control'
 
-    = f.input :audio, as: :hidden, input_html: { value: @song.cached_audio_data }
-    = f.input :audio, as: :file
+    .mb-3
+      = f.label :audio, class: 'form-label'
+      = f.hidden_field :audio, value: @song.cached_audio_data
+      = f.file_field :audio, class: 'form-control'
 
-    = f.input :sync_points, as: :json, input_html: { rows: 5, cols: 20, value: (@song.sync_points || []).to_json }
+    .mb-3
+      = f.label :sync_points, class: 'form-label'
+      = f.text_area :sync_points, rows: 5, cols: 20, value: (@song.sync_points || []).to_json, class: 'form-control'
 
   .form-actions
     = button_tag type: 'submit', class: 'btn btn-primary px-5' do
