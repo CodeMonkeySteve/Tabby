@@ -12,8 +12,10 @@ module Jellyfin
       @attributes = attributes
     end
 
-    def get(path, params = {})
-      Jellyfin.api.get("Items/#{id}/#{path}", params)
+    def get(sub_path, params = {})
+      path = "Items/#{id}"
+      path += "/#{sub_path}"  if sub_path
+      Jellyfin.api.get(path, params)
     end
   end
 

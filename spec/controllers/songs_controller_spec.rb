@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe SongsController do
+RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
   let(:user) { create(:user) }
   let(:song) { create(:song) }
   before { sign_in user }
@@ -10,7 +10,6 @@ RSpec.describe SongsController do
   it "#index" do
     get :index
     expect(response).to be_successful
-
   end
 
   it "#new" do
@@ -28,7 +27,7 @@ RSpec.describe SongsController do
       attrs = attributes_for(:song).as_json
       post :create, params: { song: attrs }
     }.to change(Song, :count).by(1)
-    expect(response).to be_redirect(to: song_path(song))
+    expect(response).to redirect_to song_path(assigns(:song))
   end
 
   it "#update" do
@@ -58,6 +57,7 @@ RSpec.describe SongsController do
   end
 
   it "#audio" do
+    song = create(:song, :with_audio)
     get :audio, params: { id: song }
     expect(response).to be_successful
   end

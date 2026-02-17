@@ -52,6 +52,6 @@ group :test do
   gem 'rspec-collection_matchers'
 
   # gem 'timecop'
-  # gem 'webmock', require: nil
-  # gem 'vcr'
+  gem 'webmock', require: nil
+  gem 'vcr'
 end
