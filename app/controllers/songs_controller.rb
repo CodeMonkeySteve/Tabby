@@ -1,8 +1,11 @@
 class SongsController < ApplicationController
-  before_action :find_song, only: %i[edit update destroy player score audio sync_points]
+  before_action :find_song, except: %i[index new create]
 
   def index
     @songs ||= Song.all.order_by(:artist, :title)
+  end
+
+  def show
   end
 
   def new
@@ -46,6 +49,7 @@ class SongsController < ApplicationController
   end
 
   def player
+    @playlists = Current.user.playlists.order_by(:name)
     render layout: false
   end
 
@@ -70,10 +74,30 @@ class SongsController < ApplicationController
     end
   end
 
+  def playlist
+    if params[:new_playlist_name].present?
+      Playlist.create!(name: params[:new_playlist_name], user: Current.user, songs: [@song])
+    else
+      song_id = @song.id
+      playlist = Playlist.find(params[:playlist])
+      playlist.queue_atomic do
+        if params[:checked]
+          playlist.songs << song_id
+        else
+          playlist.songs -= [song_id]
+        end
+      end
+      playlist.save!
+    end
+
+    playlists = Current.user.playlists.order_by(:name)
+    render partial: 'songs/playlist_menu', locals: { song: @song, playlists: }
+  end
+
 private
 
   def find_song
-    @song = Song.find_by_slug_or_id(params[:id])
+    @song = Song.find_by_slug_or_id!(params[:id])
   end
 
   def song_params

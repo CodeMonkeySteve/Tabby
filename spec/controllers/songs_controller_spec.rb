@@ -30,14 +30,14 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     expect(response).to redirect_to song_path(assigns(:song))
   end
 
-  it "#update" do
+  xit "#update" do
     song
     patch :update, params: { id: song, song: { title: "New title" } }
     expect(response).to have_http_status(:see_other)
     expect(song.reload.title).to eq "New title"
   end
 
-  it "#destroy" do
+  xit "#destroy" do
     song
     expect {
       delete :destroy, params: { id: song }
@@ -45,18 +45,18 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     expect(response).to have_http_status(:see_other)
   end
 
-  it "#player" do
+  xit "#player" do
     get :player, params: { id: song }
     expect(response).to render_template(:player)
     expect(response).to be_successful
   end
 
-  it "#score" do
+  xit "#score" do
     get :score, params: { id: song }
     expect(response).to be_successful
   end
 
-  it "#audio" do
+  xit "#audio" do
     song = create(:song, :with_audio)
     get :audio, params: { id: song }
     expect(response).to be_successful

@@ -12,11 +12,14 @@ Rails.application.routes.draw do
   # get 'manifest' => 'rails/pwa#manifest', as: :pwa_manifest
   # get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
 
+  resources :playlists, path: '/pl'
+
   resources 'songs', path: '/s' do
     member do
       get 'score' => 'songs#score'
       get 'audio' => 'songs#audio'
       patch 'sync_points' => 'songs#sync_points'
+      post 'playlist' => 'songs#playlist'
     end
   end
   get '/p/:id' => 'songs#player', as: 'player'

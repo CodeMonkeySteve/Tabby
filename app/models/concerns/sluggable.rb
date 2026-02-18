@@ -16,7 +16,12 @@ module Sluggable
     end
 
     def find_by_slug_or_id(id_or_slug)
-      where(slug: id_or_slug).first || where(id: id_or_slug).first!
+      where(slug: id_or_slug).first || where(id: id_or_slug).first
+    end
+
+    def find_by_slug_or_id!(...)
+      find_by_slug_or_id(...) or
+        raise NoBrainer::Error::DocumentNotFound
     end
   end
 

@@ -115,6 +115,11 @@
             %a.at-loop.disabled{href: '#', title: 'Loop', data: { action: 'player#toggleLoop', player: { target: 'loop' } }}
               %i.fas.fa-retweet
             .btn-group.dropup
+              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                %i.fas.fa-folder-plus
+              .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
+                = render 'songs/playlist_menu', song: @song, playlists: @playlists
+            .btn-group.dropup
               %button.btn.dropdown-toggle.at-layout-button{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
                 %i.fas.fa-table-columns
               .dropdown-menu.dropdown-menu-right.at-layout-options

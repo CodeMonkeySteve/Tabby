@@ -1,0 +1,20 @@
+= form_with(model: playlist) do |f|
+  - if playlist.errors.any?
+    .alert.alert-danger
+      %h4= "#{pluralize(playlist.errors.count, 'error')} prohibited this playlist from being saved:"
+      %ul
+        - playlist.errors.full_messages.each do |message|
+          %li= message
+
+  .form-inputs
+    .mb-3
+      = f.label :name, class: 'form-label'
+      = f.text_field :name, required: true, class: 'form-control'
+
+  .form-actions
+    = button_tag type: 'submit', class: 'btn btn-primary px-5' do
+      %i.bi.bi-save
+      Save
+
+    = link_to 'Cancel', :back, class: 'btn btn-secondary mx-2'
+    = content_for :buttons

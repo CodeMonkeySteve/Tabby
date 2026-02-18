@@ -1,0 +1,27 @@
+- content_for :title, @playlist.name
+
+%h1= @playlist.name
+
+- content_for :buttons do
+  = button_to @playlist, method: :delete, class: 'btn btn-danger btn-sm ms-5 float-end' do
+    %i.bi.bi-x-circle
+    Delete
+
+- songs = @playlist.songs
+- if songs.any?
+  .list-group.mb-3
+    - songs.each do |song|
+      .list-group-item.d-flex.justify-content-between.align-items-center
+        %div
+          = link_to player_path(song) do
+            %strong= song.title
+          %small.text-muted= song.artist
+        - song.instruments.each do |instrument|
+          %span.badge.text-bg-secondary= instrument
+
+- else
+  %p.text-muted No songs in this playlist yet.
+
+.mt-3
+  = link_to 'Edit', edit_playlist_path(@playlist), class: 'btn btn-secondary me-2'
+  = link_to 'Back to Playlists', playlists_path, class: 'btn btn-outline-secondary'

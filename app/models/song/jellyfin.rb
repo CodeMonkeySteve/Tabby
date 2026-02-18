@@ -8,7 +8,7 @@ module Song::Jellyfin
   included do
     field :jellyfin_id, type: String, index: true
 
-    before_save :set_jellyfin_id, unless: ->{ jellyfin_id }
+    before_save :set_jellyfin_id, if: ->{ !jellyfin_id || (%w[title artist] & changed).any? }
     before_save :set_cover, if: ->{ !cover_data && jellyfin_id_changed? && jellyfin_id.present? }
     before_save :set_audio, if: ->{ !audio_data && jellyfin_id_changed? && jellyfin_id.present? }
   end

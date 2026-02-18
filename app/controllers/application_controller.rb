@@ -6,6 +6,10 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   protect_from_forgery with: :exception
-  # rescue_from(NoBrainer::Error::DocumentNotFound) { render_not_found }
+
+  rescue_from(NoBrainer::Error::DocumentNotFound) do
+    raise ActionController::RoutingError.new('Not Found')
+  end
+
   # rescue_from(CanCan::AccessDenied) { render_access_denied, status: 401 }
 end
