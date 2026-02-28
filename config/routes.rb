@@ -20,9 +20,10 @@ Rails.application.routes.draw do
       get 'audio' => 'songs#audio'
       patch 'sync_points' => 'songs#sync_points'
       post 'playlist' => 'songs#playlist'
+      post 'track' => 'songs#track_history'
     end
   end
-  get '/p/:id' => 'songs#player', as: 'player'
+  get 'p/:id' => 'songs#player', as: 'player'
 
   root to: redirect('/s')
   mount ActionDispatch::Static.new(Rails.application, Rails.root.join('storage/files').to_s), at: '/files'

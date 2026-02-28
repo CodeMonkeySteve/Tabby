@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Song < ApplicationRecord
   include NoBrainer::Document::Timestamps
   include Sluggable

@@ -8,7 +8,7 @@ Tabby is a Rails 8.1 music score library and player application. It manages song
 
 ## Tech Stack
 
-- **Ruby 3.4.8 / Rails 8.1** — no ActiveRecord; uses **NoBrainer** ORM with **RethinkDB**
+- **Ruby 4.0.1 / Rails 8.1** — no ActiveRecord; uses **NoBrainer** ORM with **RethinkDB**
 - **Falcon** — async HTTP server (not Puma)
 - **Shrine** — file uploads for scores, audio, and cover images
 - **Hotwire** (Turbo + Stimulus) with **Importmap** (no JS bundler)

@@ -1,4 +1,4 @@
-FROM docker.finagle.org/ruby:3.4.8-slim-trixie
+FROM docker.finagle.org/ruby:4.0.1-slim-trixie
 MAINTAINER Steve Sloan <steve@finagle.org>
 
 ENV HOME=/app RAILS_ENV=production PORT=80

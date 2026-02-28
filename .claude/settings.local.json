@@ -9,7 +9,6 @@
       "Bash(bundle exec rails assets:precompile:*)",
       "Bash(bundle exec rails assets:clobber:*)",
       "Bash(bundle install:*)",
-      "Bash(bundle exec rspec:*)"
     ]
   }
 }
