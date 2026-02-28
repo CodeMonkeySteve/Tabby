@@ -94,6 +94,16 @@ class SongsController < ApplicationController
     render partial: 'songs/playlist_menu', locals: { song: @song, playlists: }
   end
 
+  def track_history
+    date = params[:date].present? ? Date.parse(params[:date]) : Date.current
+    duration = params[:duration].to_f
+
+    history = PlayHistory.where(user: Current.user, song: @song, date:).first_or_initialize
+    history.queue_atomic { history.duration += duration }
+    history.save!
+    head :ok
+  end
+
 private
 
   def find_song

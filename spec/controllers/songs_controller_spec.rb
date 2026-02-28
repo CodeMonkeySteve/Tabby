@@ -61,4 +61,23 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     get :audio, params: { id: song }
     expect(response).to be_successful
   end
+
+  describe "#track_history" do
+    let(:play_date) { '2026-01-15' }
+
+    it "creates a new play history record" do
+      expect {
+        post :track_history, params: { id: song, date: play_date, duration: '120.5' }
+        expect(response).to be_successful
+      }.to change(PlayHistory, :count).by(1)
+    end
+
+    it "accumulates duration for existing record on same day" do
+      create(:play_history, user:, song:, date: Date.parse(play_date), duration: 60.0)
+      post :track_history, params: { id: song, date: play_date, duration: '30.0' }
+
+      expect(response).to be_successful
+      expect(PlayHistory.where(user:, song:, date: Date.parse(play_date)).first.duration).to be_within(0.01).of(90.0)
+    end
+  end
 end

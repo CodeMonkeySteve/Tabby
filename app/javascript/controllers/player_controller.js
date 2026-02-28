@@ -20,6 +20,12 @@ export default class extends Controller {
     this.trackItems = []
     this.currentTempo = 0
     this.previousTime = -1
+    this.playStartedAt = null      // Date.now() when playback begins, null otherwise
+    this.accumulatedSeconds = 0    // running total of wall-clock seconds played
+    this.playDate = null           // ISO date (YYYY-MM-DD) of first play start this session
+    this.historyTimer = null       // debounce timer handle
+    this.unloadHandler = () => this.flushHistory()
+    window.addEventListener('beforeunload', this.unloadHandler)
 
     this.keyHandler = this.handleKeydown.bind(this)
     document.addEventListener("keydown", this.keyHandler)
@@ -61,6 +67,9 @@ export default class extends Controller {
 
   disconnect() {
     document.removeEventListener("keydown", this.keyHandler)
+    window.removeEventListener('beforeunload', this.unloadHandler)
+    clearTimeout(this.historyTimer)
+    this.flushHistory()
     if (this.themeObserver) {
       this.themeObserver.disconnect()
       this.themeObserver = null
@@ -157,11 +166,25 @@ export default class extends Controller {
   handlePlayerStateChanged(args) {
     const icon = this.playPauseTarget.querySelector("i")
     if (args.state === 0) {
+      // Paused or stopped
       icon.classList.remove("fa-pause")
       icon.classList.add("fa-play")
+      if (this.playStartedAt !== null) {
+        this.accumulatedSeconds += (Date.now() - this.playStartedAt) / 1000
+        this.playStartedAt = null
+      }
+      this.scheduleHistoryPost()
     } else {
+      // Playing
       icon.classList.remove("fa-play")
       icon.classList.add("fa-pause")
+      if (this.playStartedAt === null) {
+        this.playStartedAt = Date.now()
+        if (!this.playDate) {
+          this.playDate = new Date().toISOString().slice(0, 10)
+        }
+      }
+      clearTimeout(this.historyTimer)
     }
   }
 
@@ -328,6 +351,54 @@ export default class extends Controller {
   }
 
   // --- Helpers ---
+
+  scheduleHistoryPost() {
+    clearTimeout(this.historyTimer)
+    this.historyTimer = setTimeout(() => this.postHistory(), 2000)
+  }
+
+  async postHistory() {
+    if (this.accumulatedSeconds <= 0 || !this.playDate) return
+    const duration = this.accumulatedSeconds
+    this.accumulatedSeconds = 0
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+      const response = await fetch(`/s/${this.songValue.id}/track`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: new URLSearchParams({
+          date: this.playDate,
+          duration: duration.toString(),
+        }),
+      })
+      if (!response.ok) throw new Error(`Track POST failed: ${response.status}`)
+      this.playDate = null
+    } catch (e) {
+      this.accumulatedSeconds += duration  // restore on failure
+      console.error('Failed to post play history', e)
+    }
+  }
+
+  flushHistory() {
+    clearTimeout(this.historyTimer)
+    if (this.playStartedAt !== null) {
+      this.accumulatedSeconds += (Date.now() - this.playStartedAt) / 1000
+      this.playStartedAt = null
+    }
+    if (this.accumulatedSeconds <= 0 || !this.playDate) return
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+    const data = new URLSearchParams({
+      authenticity_token: csrfToken ?? '',
+      date: this.playDate,
+      duration: this.accumulatedSeconds.toString(),
+    })
+    navigator.sendBeacon(`/s/${this.songValue.id}/track`, data)
+    this.accumulatedSeconds = 0
+    this.playDate = null
+  }
 
   createTrackItem(track) {
     const template = this.trackTemplateTarget
