@@ -8,7 +8,7 @@
       "Bash(bundle exec rails routes:*)",
       "Bash(bundle exec rails assets:precompile:*)",
       "Bash(bundle exec rails assets:clobber:*)",
-      "Bash(bundle install:*)",
+      "Bash(bundle install:*)"
     ]
   }
 }

@@ -1,9 +1,3 @@
-require 'shrine/storage/memory'
-Shrine.storages = {
-  cache: Shrine::Storage::Memory.new,
-  store: Shrine::Storage::Memory.new,
-}
-
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -51,6 +45,6 @@ Rails.application.configure do
 
   config.logger = ActiveSupport::Logger.new(STDOUT)
   config.logger.formatter = ->(severity, time, progname, msg, *args) { "#{severity[0, 1] * 2} #{msg}\n" }
-  config.log_level = ENV.fetch("LOG_LEVEL", "info")
+  config.log_level = ENV.fetch("LOG_LEVEL", "DEBUG")
   config.colorize_logging = true
 end

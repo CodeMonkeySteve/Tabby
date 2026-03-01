@@ -23,21 +23,22 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
   end
 
   it "#create" do
+    expect_any_instance_of(Song).to receive(:find_jellyfin) { [] }
     expect {
-      attrs = attributes_for(:song).as_json
+      attrs = attributes_for(:song).except(:jellyfin_id).as_json
       post :create, params: { song: attrs }
     }.to change(Song, :count).by(1)
     expect(response).to redirect_to song_path(assigns(:song))
   end
 
-  xit "#update" do
-    song
+  it "#update" do
+    expect_any_instance_of(Song).to receive(:find_jellyfin) { [] }
     patch :update, params: { id: song, song: { title: "New title" } }
     expect(response).to have_http_status(:see_other)
     expect(song.reload.title).to eq "New title"
   end
 
-  xit "#destroy" do
+  it "#destroy" do
     song
     expect {
       delete :destroy, params: { id: song }
@@ -45,18 +46,18 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     expect(response).to have_http_status(:see_other)
   end
 
-  xit "#player" do
+  it "#player" do
     get :player, params: { id: song }
     expect(response).to render_template(:player)
     expect(response).to be_successful
   end
 
-  xit "#score" do
+  it "#score" do
     get :score, params: { id: song }
     expect(response).to be_successful
   end
 
-  xit "#audio" do
+  it "#audio" do
     song = create(:song, :with_audio)
     get :audio, params: { id: song }
     expect(response).to be_successful

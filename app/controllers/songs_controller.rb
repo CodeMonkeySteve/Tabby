@@ -17,6 +17,8 @@ class SongsController < ApplicationController
 
   def create
     @song = Song.new(song_params)
+    @song.jellyfin_id ||= @song.find_jellyfin.first&.id
+
     respond_to do |format|
       if @song.save
         format.html { redirect_to @song, notice: "Song was successfully created." }
@@ -30,7 +32,12 @@ class SongsController < ApplicationController
 
   def update
     respond_to do |format|
-      if @song.update(song_params)
+      @song.assign_attributes(song_params)
+      if @song.title_changed? || @song.artist_changed?
+        @song.jellyfin_id = @song.find_jellyfin.first&.id
+      end
+
+      if @song.save
         format.html { redirect_to @song, notice: "Song was successfully updated.", status: :see_other }
         format.json { render :player, status: :ok, location: @song }
       else
@@ -98,7 +105,7 @@ class SongsController < ApplicationController
     date = params[:date].present? ? Date.parse(params[:date]) : Date.current
     duration = params[:duration].to_f
 
-    history = PlayHistory.where(user: Current.user, song: @song, date:).first_or_initialize
+    history = PlayHistory.where(user: Current.user, song: @song, date:).first || PlayHistory.new(user: Current.user, song: @song, date:)
     history.queue_atomic { history.duration += duration }
     history.save!
     head :ok

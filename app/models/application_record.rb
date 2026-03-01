@@ -1,4 +1,6 @@
 class ApplicationRecord
-  include NoBrainer::Document
-  include NoBrainer::Document::References
+  def self.inherited(subclass)
+    subclass.include NoBrainer::Document
+    subclass.include NoBrainer::Document::References
+  end
 end

@@ -8,13 +8,14 @@ module Song::Jellyfin
   included do
     field :jellyfin_id, type: String, index: true
 
-    before_save :set_jellyfin_id, if: ->{ !jellyfin_id || (%w[title artist] & changed).any? }
-    before_save :set_cover, if: ->{ !cover_data && jellyfin_id_changed? && jellyfin_id.present? }
-    before_save :set_audio, if: ->{ !audio_data && jellyfin_id_changed? && jellyfin_id.present? }
+    before_save :set_cover, if: ->{ !cover_data && jellyfin_id_changed? }
+    before_save :set_audio, if: ->{ !audio_data && jellyfin_id_changed? }
   end
 
   def jellyfin
-    ::Jellyfin::Item.new('Id' => self.jellyfin_id)
+    if jellyfin_id
+      @jellyfin ||= ::Jellyfin::Item.new('Id' => jellyfin_id) #.ensure!
+    end
   end
 
   def find_jellyfin
@@ -40,29 +41,34 @@ module Song::Jellyfin
     songs
   end
 
-  def set_jellyfin_id
-    self.jellyfin_id = find_jellyfin.first&.id
-  end
-
   def set_cover
-    if (image_tag = jellyfin.dig('ImageTags', 'Primary'))
-      res = jellyfin.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
-    elsif (image_tag = jellyfin.dig('AlbumPrimaryImageTag'))
-      album = Jellyfin::Item.new('Id' => jellyfin['AlbumId'])
-      res = album.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
-    end
+    jellyfin or return
 
-    self.cover = StringIO.new(res.body, 'rb')  if image_tag
+    # if (image_tag = jellyfin.dig('ImageTags', 'Primary'))
+    #   res = jellyfin.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
+    # elsif (image_tag = jellyfin.dig('AlbumPrimaryImageTag'))
+    #   album = Jellyfin::Item.new('Id' => jellyfin['AlbumId'])
+    #   res = album.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
+    # end
+    #
+    # self.cover = StringIO.new(res.body, 'rb')  if image_tag
   end
 
   def set_audio
+    jellyfin or return
+
     res = jellyfin.get('Download')
     self.audio = StringIO.new(res.body, 'rb')
   end
 
   module ClassMethods
     def from_score(path)
-      info = AlphaTab.new.score_info(path)
+      begin
+        info = AlphaTab.new.score_info(path)
+      rescue Nodo::JavaScriptError => ex
+        puts ex.message
+        return nil
+      end
 
       title = info['title'].presence
       title or return
@@ -75,10 +81,25 @@ module Song::Jellyfin
         artist, title = filename.split('-', 2).map(&:strip)
       end
 
-      self.title ||= title
-      self.artist ||= artist
-      self.tempo ||= info['tempo']
-      self.instruments ||= Song.normalize_instruments(info['tracks']&.pluck('name')).presence
+      song = Song.where(title:, artist:).first || Song.new(title:, artist:)
+      song.score ||= File.open(path, 'rb')
+      song.tempo ||= info['tempo']
+      song.instruments ||= Song.normalize_instruments(info['tracks']&.pluck('name')).presence
+
+      if !song.jellyfin_id && (jellyfin = song.find_jellyfin&.first)
+        song.jellyfin_id = jellyfin.id
+
+        if (image_tag = jellyfin.dig('ImageTags', 'Primary'))
+          res = jellyfin.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
+        elsif (image_tag = jellyfin.dig('AlbumPrimaryImageTag'))
+          album = Jellyfin::Item.new('Id' => jellyfin['AlbumId'])
+          res = album.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
+        end
+
+        song.cover = StringIO.new(res.body, 'rb')  if image_tag
+      end
+
+      song
     end
   end
 end

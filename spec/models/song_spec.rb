@@ -9,7 +9,7 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
       artist: "Artist",
       instruments: %w[Instrument],
       score: File.open(file_fixture_path + '/Tears for Fears - Head Over Heels.gpx'),
-      audio: File.open(file_fixture_path + '/Tears for Fears - Head Over Heels.mp3'),
+      audio: File.open(file_fixture_path + '/empty.mp3'),
       sync_points: [
         {"barIndex":0,"barOccurence":0,"barPosition":0,"millisecondOffset":356},
         {"barIndex":90,"barOccurence":0,"barPosition":1,"millisecondOffset":308297}

@@ -41,6 +41,7 @@ module Sluggable
           loop do
             slug = "#{base}-#{idx}"
             break if self.class.where(slug:).empty?
+            idx += 1
           end
         end
 

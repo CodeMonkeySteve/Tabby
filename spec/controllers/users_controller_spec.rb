@@ -23,7 +23,7 @@ RSpec.describe UsersController do
     end
 
     xit "#logout" do
-      get :logout
+      delete :logout
       expect(controller.current_user).to be_nil
       expect(session['user_id']).to be_nil
       expect(response).to redirect_to root_url
