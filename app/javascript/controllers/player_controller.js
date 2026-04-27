@@ -279,6 +279,8 @@ export default class extends Controller {
   }
 
   handleKeydown(e) {
+    if (e.defaultPrevented || e.target.matches('input, textarea, select')) return
+
     switch (e.key) {
       case "ArrowUp":
         this.api.masterVolume = Math.min(this.api.masterVolume + 0.05, 1.0)

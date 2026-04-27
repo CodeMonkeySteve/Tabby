@@ -16,8 +16,6 @@
           = link_to player_path(song) do
             %strong= song.title
           %small.text-muted= song.artist
-        - song.instruments.each do |instrument|
-          %span.badge.text-bg-secondary= instrument
 
 - else
   %p.text-muted No songs in this playlist yet.
