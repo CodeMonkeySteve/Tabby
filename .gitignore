@@ -30,9 +30,6 @@
 
 /public/assets
 
-# Ignore key files for decrypting credentials and more.
-/config/*.key
-
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
@@ -42,4 +39,12 @@ lib/alpha_tab/node_modules/
 # Ignore key files for decrypting credentials and more.
 /config/credentials/*.key
 
-CLAUDE.local.md
+/sandbox
+/.idea
+
+# Claude Code — keep shared settings (.claude/settings.json) and CLAUDE.md,
+# ignore personal/local files.
+/.claude/settings.local.json
+/.claude/plans/
+.claude/*.local.json
+.superpowers/
