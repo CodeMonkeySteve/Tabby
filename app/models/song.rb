@@ -12,7 +12,7 @@ class Song < ApplicationRecord
   field :instruments, type: Array.of(String) #, required: true
   field :tempo,       type: Numeric
 
-  include ApplicationUploader::Attachment(:score)
+  include ScoreUploader::Attachment(:score)
   field :score_data, type: Hash, required: true
 
   include ApplicationUploader::Attachment(:audio)
