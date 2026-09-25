@@ -1,6 +1,7 @@
 pin 'application', preload: true
 
-# pin '@coderline/alphatab', to: '@coderline--alphatab.js' # @1.8.0
+# Served from lib/alpha_tab/node_modules (see public/alphatab symlink) so its worker, worklet, and fonts load same-origin
+pin '@coderline/alphatab', to: '/alphatab/alphaTab.min.mjs'
 
 # pin 'lodash', to: 'https://ga.jspm.io/npm:lodash@4.17.21/lodash.js'
 # pin 'jquery', preload: true, to: 'https://ga.jspm.io/npm:jquery@3.6.0/dist/jquery.min.js'

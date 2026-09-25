@@ -1,4 +1,4 @@
-import * as alphaTab from 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@alpha/dist/alphaTab.min.mjs'
+import * as alphaTab from '@coderline/alphatab'
 
 // Marker types
 export const MarkerType = {

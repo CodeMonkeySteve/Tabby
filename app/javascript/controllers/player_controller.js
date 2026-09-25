@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import * as alphaTab from "https://cdn.jsdelivr.net/npm/@coderline/alphatab@alpha/dist/alphaTab.min.mjs"
+import * as alphaTab from "@coderline/alphatab"
 
 export default class extends Controller {
   static values = {
