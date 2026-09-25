@@ -35,4 +35,7 @@ class AlphaTab < Nodo::Core
       return scoreInfo;
     }
   JS
+
+  # Converts Songsterr page metadata and track JSON into a Guitar Pro 7 file; see lib/alpha_tab/songsterr_to_gp.js
+  function :songsterr_to_gp, File.read("#{__dir__}/alpha_tab/songsterr_to_gp.js"), timeout: 120
 end

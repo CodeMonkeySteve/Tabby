@@ -4,6 +4,7 @@ class Song < ApplicationRecord
   include NoBrainer::Document::Timestamps
   include Sluggable
   include Song::Jellyfin
+  include Song::Songsterr
 
   slug_from :title, :artist
 

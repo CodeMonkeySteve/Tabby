@@ -41,6 +41,17 @@ module Song::Jellyfin
     songs
   end
 
+  def jellyfin_cover(item)
+    if (image_tag = item.dig('ImageTags', 'Primary'))
+      res = item.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
+    elsif (image_tag = item['AlbumPrimaryImageTag'])
+      album = ::Jellyfin::Item.new('Id' => item['AlbumId'])
+      res = album.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
+    end
+
+    StringIO.new(res.body, 'rb') if image_tag
+  end
+
   def set_cover
     jellyfin or return
 
@@ -89,14 +100,8 @@ module Song::Jellyfin
       if !song.jellyfin_id && (jellyfin = song.find_jellyfin&.first)
         song.jellyfin_id = jellyfin.id
 
-        if (image_tag = jellyfin.dig('ImageTags', 'Primary'))
-          res = jellyfin.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
-        elsif (image_tag = jellyfin.dig('AlbumPrimaryImageTag'))
-          album = Jellyfin::Item.new('Id' => jellyfin['AlbumId'])
-          res = album.get('Images/Primary', fillHeight: 480, fillWidth: 480, quality: 96, tag: image_tag)
-        end
-
-        song.cover = StringIO.new(res.body, 'rb')  if image_tag
+        cover = song.jellyfin_cover(jellyfin)
+        song.cover = cover if cover
       end
 
       song

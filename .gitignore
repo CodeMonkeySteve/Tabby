@@ -48,4 +48,6 @@ lib/alpha_tab/node_modules/
 /.claude/plans/
 /.claude/*.local.json
 /CLAUDE.local.md
+
 /.superpowers/
+/docs/superpowers/
