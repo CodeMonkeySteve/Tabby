@@ -22,7 +22,33 @@ RSpec.describe AlphaTab do
           noteVibrato: note(2).vibrato,
           beatVibrato: [beats[2].vibrato, beats[3].vibrato],
           chord: staff.chords?.get(beats[0].chordId)?.name ?? null,
+          ...(() => {
+            const bar = staff.bars[2];
+            const [grace, accented, whammy, slide] = bar?.voices[0].beats ?? [];
+            if (!bar) return {};
+            return {
+              grace: grace.graceType,
+              accent: accented.notes[0].accentuated,
+              leftHandVibrato: accented.notes[0].vibrato,
+              text: accented.text,
+              crescendo: accented.crescendo,
+              whammy: [whammy.hasWhammyBar, whammy.minWhammyPoint?.value],
+              slideIn: slide.notes[0].slideInType,
+              barLineRight: bar.barLineRight,
+            };
+          })(),
+          logLevel: alphaTab.Logger.logLevel,
         };
+      }
+    JS
+
+    function :techniques, <<~JS
+      async (base64) => {
+        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+        return score.tracks[0].staves[0].bars[0].voices[0].beats.map((beat) => ({
+          slap: beat.slap, tap: beat.tap, brush: [beat.brushType, beat.brushDuration], pickStroke: beat.pickStroke,
+          tremoloMarks: beat.tremoloPicking?.marks ?? null,
+        }));
       }
     JS
   end
@@ -64,18 +90,67 @@ RSpec.describe AlphaTab do
             beat.([{ 'fret' => 5, 'string' => 2 }], 'vibrato' => true),
             beat.([{ 'fret' => 5, 'string' => 2 }], 'vibratoWithTremoloBar' => 'wide')
           ] }] },
-          { 'repeat' => 3, 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }] }] }
+          { 'repeat' => 3, 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }] }] },
+          { 'doubleBarline' => true, 'voices' => [{ 'beats' => [
+            { 'type' => 64, 'duration' => [1, 64], 'graceNote' => 'onBeat', 'notes' => [{ 'fret' => 3, 'string' => 2 }] },
+            beat.([{ 'fret' => 5, 'string' => 2, 'accentuated' => 2, 'leftHandVibrato' => 'wide' }],
+                  'text' => { 'text' => "w/ flanger", 'width' => 60 }, 'gradualVelocity' => 'crescendo'),
+            beat.([{ 'fret' => 5, 'string' => 2 }],
+                  'tremoloBar' => { 'tone' => 0, 'points' => [{ 'position' => 0, 'tone' => 0 }, { 'position' => 60, 'tone' => -50 }] }),
+            beat.([{ 'fret' => 5, 'string' => 2, 'slide' => 'below' }]),
+            beat.([{ 'fret' => 5, 'string' => 2 }])
+          ] }] },
+          { 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }] }] }
         ]
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Effects", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
-      model = { triplet16th: 1, artificial: 2, slight: 1, wide: 2 } # AlphaTab enum values
+      # AlphaTab enum values
+      model = { triplet16th: 1, artificial: 2, slight: 1, wide: 2, on_beat: 1, heavy: 2, crescendo: 1, from_below: 1, light_light: 7,
+                error: 4 }
 
       expect(result['warnings']).to eq []
       expect(AlphaTabInspector.new.effects(result['gp'])).to eq(
-        'tripletFeels' => [model[:triplet16th], model[:triplet16th]], 'repeatCounts' => [0, 3],
+        'tripletFeels' => [model[:triplet16th]] * 4, 'repeatCounts' => [0, 3, 0, 0],
         'ghost' => true, 'letRing' => true, 'harmonic' => [model[:artificial], 12],
         'noteVibrato' => model[:slight], 'beatVibrato' => [0, model[:wide]], 'chord' => "Asus2",
+        'grace' => model[:on_beat], 'accent' => model[:heavy], 'leftHandVibrato' => model[:wide], 'text' => "w/ flanger",
+        'crescendo' => model[:crescendo], 'whammy' => [true, -2], 'slideIn' => model[:from_below], 'barLineRight' => model[:light_light],
+        'logLevel' => model[:error],
       )
+    end
+
+    it "converts dead notes that have no fret" do
+      dead_notes = [0, 1, 2].map { { 'string' => it, 'dead' => true } }
+      part = {
+        'instrumentId' => 30, 'strings' => 6, 'tuning' => [64, 59, 55, 50, 45, 40],
+        'measures' => [{ 'signature' => [4, 4], 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'notes' => dead_notes }] }] }]
+      }
+      result = alpha_tab.songsterr_to_gp({ 'title' => "Dead notes", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
+      expect(result['gp']).to be_present
+      expect(result['warnings']).to eq []
+    end
+
+    it "maps Songsterr picking techniques" do
+      beat = ->(**options) { { 'type' => 4, 'duration' => [1, 4], 'notes' => [{ 'fret' => 5, 'string' => 2 }], **options } }
+      part = {
+        'instrumentId' => 36, 'strings' => 4, 'tuning' => [43, 38, 33, 28],
+        'measures' => [{ 'signature' => [4, 4], 'voices' => [{ 'beats' => [
+          beat.('slapping' => true),
+          beat.('brushStroke' => { 'direction' => 'down', 'duration' => 30, 'shift' => 100 }, 'upStroke' => 1),
+          beat.('brushStroke' => { 'direction' => 'up', 'duration' => 60, 'shift' => 100 }, 'downStroke' => 1),
+          beat.('tremolo' => [1, 32], 'tapping' => true)
+        ] }] }]
+      }
+      result = alpha_tab.songsterr_to_gp({ 'title' => "Techniques", 'tracks' => [{ 'title' => "Bass" }] }, [part])
+      none = { 'slap' => false, 'tap' => false, 'brush' => [0, 0], 'pickStroke' => 0, 'tremoloMarks' => nil }
+
+      expect(result['warnings']).to eq []
+      expect(AlphaTabInspector.new.techniques(result['gp'])).to eq [
+        none.merge('slap' => true),
+        none.merge('brush' => [2, 30], 'pickStroke' => 1), # BrushDown, PickStroke.Up
+        none.merge('brush' => [1, 60], 'pickStroke' => 2), # BrushUp, PickStroke.Down
+        none.merge('tremoloMarks' => 3, 'tap' => true)
+      ]
     end
 
     it "reports Songsterr keys it doesn't map" do

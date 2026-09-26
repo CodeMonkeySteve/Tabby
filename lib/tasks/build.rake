@@ -44,7 +44,8 @@ end
 
 desc "Build and push the Docker image for a git commit, branch, or tag (default: main) to the registry"
 task :push, [:commit] => :build do |_task, args|
-  local = "#{Build::IMAGE}:#{Build.version_tag(args[:commit] || 'main')}"
+  commit = args[:commit] || 'main'
+  local = "#{Build::IMAGE}:#{Build.version_tag(commit)}"
   remote = "#{Build::REGISTRY}/#{local}"
 
   if Build.podman?
