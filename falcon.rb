@@ -1,9 +1,10 @@
 #!/usr/bin/env -S falcon host
 # frozen_string_literal: true
-load :rack
+
+require 'falcon/environment/rack'
 
 hostname = File.basename(__dir__)
-port = ENV["PORT"] || 3000
+port = ENV.fetch('PORT', 3000).to_i
 
 service hostname do
   include Falcon::Environment::Rack
