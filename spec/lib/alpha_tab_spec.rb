@@ -16,6 +16,7 @@ RSpec.describe AlphaTab do
         return {
           tripletFeels: score.masterBars.map((bar) => bar.tripletFeel),
           repeatCounts: score.masterBars.map((bar) => bar.repeatCount),
+          keySignatures: staff.bars.map((bar) => [bar.keySignature, bar.keySignatureType]),
           ghost: note(0).isGhost,
           letRing: note(0).isLetRing,
           harmonic: [note(1).harmonicType, note(1).harmonicValue],
@@ -69,8 +70,9 @@ RSpec.describe AlphaTab do
       async (base64) => {
         const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
         return score.tracks[0].staves[0].bars[0].voices[0].beats.map((beat) => ({
-          slap: beat.slap, tap: beat.tap, brush: [beat.brushType, beat.brushDuration], pickStroke: beat.pickStroke,
+          slap: beat.slap, pop: beat.pop, tap: beat.tap, brush: [beat.brushType, beat.brushDuration], pickStroke: beat.pickStroke,
           tremoloMarks: beat.tremoloPicking?.marks ?? null, vibrato: beat.notes[0].vibrato,
+          trillFret: beat.notes[0].isTrill ? beat.notes[0].trillFret : null,
           slide: [beat.notes[0].slideInType, beat.notes[0].slideOutType],
         }));
       }
@@ -78,6 +80,11 @@ RSpec.describe AlphaTab do
   end
 
   let(:alpha_tab) { described_class.new }
+
+  def rest_measure(**options)
+    whole_rest = { 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }
+    { 'voices' => [{ 'beats' => [whole_rest] }], **options }
+  end
   let(:page) { Songsterr::Page.new(file_fixture('songsterr/page.html').read) }
   let(:parts) { (0..2).map { JSON.parse(Zlib.gunzip(file_fixture("songsterr/#{it}.json.gz").binread)) } }
 
@@ -108,37 +115,44 @@ RSpec.describe AlphaTab do
       part = {
         'instrumentId' => 27, 'strings' => 6, 'tuning' => [64, 59, 55, 50, 45, 40],
         'measures' => [
-          { 'signature' => [4, 4], 'tripletFeel' => '16th', 'voices' => [{ 'beats' => [
-            beat.([{ 'fret' => 5, 'string' => 2, 'ghost' => true }], 'letRing' => true, 'chord' => { 'text' => "Asus2", 'width' => 39 }),
+          { 'signature' => [4, 4], 'tripletFeel' => '16th',
+            'keySignature' => { 'accidentalCount' => -3, 'mode' => 'major', 'transposeAs' => 'b' },
+            'voices' => [{ 'beats' => [
+            beat.([{ 'fret' => 5, 'string' => 2, 'ghost' => true }],
+                  'letRing' => true, 'chord' => { 'text' => "Asus2", 'width' => 39 }),
             beat.([{ 'fret' => 5, 'string' => 2, 'harmonic' => 'artificial', 'harmonicFret' => 12 }]),
             beat.([{ 'fret' => 5, 'string' => 2 }], 'vibrato' => true),
             beat.([{ 'fret' => 5, 'string' => 2 }], 'vibratoWithTremoloBar' => 'wide')
           ] }] },
-          { 'repeat' => 3, 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }] }] },
-          { 'doubleBarline' => true, 'voices' => [{ 'beats' => [
+          rest_measure('repeat' => 3),
+          { 'doubleBarline' => true, 'keySignature' => { 'accidentalCount' => 1, 'mode' => 'minor', 'transposeAs' => '#' },
+            'voices' => [{ 'beats' => [
             { 'type' => 64, 'duration' => [1, 64], 'graceNote' => 'onBeat', 'notes' => [{ 'fret' => 3, 'string' => 2 }] },
             beat.([{ 'fret' => 5, 'string' => 2, 'accentuated' => 2, 'leftHandVibrato' => 'wide' }],
                   'text' => { 'text' => "w/ flanger", 'width' => 60 }, 'gradualVelocity' => 'crescendo'),
             beat.([{ 'fret' => 5, 'string' => 2 }],
-                  'tremoloBar' => { 'tone' => 0, 'points' => [{ 'position' => 0, 'tone' => 0 }, { 'position' => 60, 'tone' => -50 }] }),
+                  'tremoloBar' => { 'tone' => 0,
+                                    'points' => [{ 'position' => 0, 'tone' => 0 }, { 'position' => 60, 'tone' => -50 }] }),
             beat.([{ 'fret' => 5, 'string' => 2, 'slide' => 'below' }]),
             beat.([{ 'fret' => 5, 'string' => 2 }])
           ] }] },
-          { 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }] }] }
+          rest_measure
         ]
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Effects", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
       # AlphaTab enum values
-      model = { triplet16th: 1, artificial: 2, slight: 1, wide: 2, on_beat: 1, heavy: 2, crescendo: 1, from_below: 1, light_light: 7,
-                error: 4 }
+      model = { triplet16th: 1, artificial: 2, slight: 1, wide: 2, on_beat: 1, heavy: 2, crescendo: 1, from_below: 1,
+                light_light: 7, error: 4 }
 
       expect(result['warnings']).to eq []
       expect(AlphaTabInspector.new.effects(result['gp'])).to eq(
         'tripletFeels' => [model[:triplet16th]] * 4, 'repeatCounts' => [0, 3, 0, 0],
+        'keySignatures' => [[-3, 0], [-3, 0], [1, 1], [1, 1]], # E♭ major, then E minor
         'ghost' => true, 'letRing' => true, 'harmonic' => [model[:artificial], 12],
         'noteVibrato' => model[:slight], 'beatVibrato' => [0, model[:wide]], 'chord' => "Asus2",
         'grace' => model[:on_beat], 'accent' => model[:heavy], 'leftHandVibrato' => model[:wide], 'text' => "w/ flanger",
-        'crescendo' => model[:crescendo], 'whammy' => [true, -2], 'slideIn' => model[:from_below], 'barLineRight' => model[:light_light],
+        'crescendo' => model[:crescendo], 'whammy' => [true, -2], 'slideIn' => model[:from_below],
+        'barLineRight' => model[:light_light],
         'logLevel' => model[:error],
       )
     end
@@ -147,7 +161,9 @@ RSpec.describe AlphaTab do
       dead_notes = [0, 1, 2].map { { 'string' => it, 'dead' => true } }
       part = {
         'instrumentId' => 30, 'strings' => 6, 'tuning' => [64, 59, 55, 50, 45, 40],
-        'measures' => [{ 'signature' => [4, 4], 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'notes' => dead_notes }] }] }]
+        'measures' => [
+          { 'signature' => [4, 4], 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'notes' => dead_notes }] }] }
+        ]
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Dead notes", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
       expect(result['gp']).to be_present
@@ -161,22 +177,23 @@ RSpec.describe AlphaTab do
         'measures' => [{ 'signature' => [4, 4], 'voices' => [{ 'beats' => [
           beat.('slapping' => true, 'pickStroke' => 'down',
                 'notes' => [{ 'fret' => 5, 'string' => 2, 'wideVibrato' => true, 'slide' => 'belowlegato' }]),
-          beat.('brushStroke' => { 'direction' => 'down', 'duration' => 30, 'shift' => 100 }, 'upStroke' => 1),
+          beat.('brushStroke' => { 'direction' => 'down', 'duration' => 30, 'shift' => 100 }, 'upStroke' => 1, 'popping' => true),
           beat.('brushStroke' => { 'direction' => 'up', 'duration' => 60, 'shift' => 100 }, 'downStroke' => 1),
-          beat.('tremolo' => [1, 32], 'tapping' => true)
+          beat.('tremolo' => [1, 32], 'tapping' => true, 'arpeggio' => { 'direction' => 'up', 'duration' => 60, 'shift' => 100 },
+                'notes' => [{ 'fret' => 5, 'string' => 2, 'trill' => { 'auxiliaryFret' => 7, 'speed' => 62 } }])
         ] }] }]
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Techniques", 'tracks' => [{ 'title' => "Bass" }] }, [part])
-      none = { 'slap' => false, 'tap' => false, 'brush' => [0, 0], 'pickStroke' => 0, 'tremoloMarks' => nil, 'vibrato' => 0,
-               'slide' => [0, 0] }
+      none = { 'slap' => false, 'pop' => false, 'tap' => false, 'brush' => [0, 0], 'pickStroke' => 0, 'tremoloMarks' => nil,
+               'vibrato' => 0, 'slide' => [0, 0], 'trillFret' => nil }
 
       expect(result['warnings']).to eq []
       expect(AlphaTabInspector.new.techniques(result['gp'])).to eq [
         # PickStroke.Down, VibratoType.Wide, SlideInType.IntoFromBelow + SlideOutType.Legato
         none.merge('slap' => true, 'pickStroke' => 2, 'vibrato' => 2, 'slide' => [1, 2]),
-        none.merge('brush' => [2, 30], 'pickStroke' => 1), # BrushDown, PickStroke.Up
+        none.merge('brush' => [2, 30], 'pickStroke' => 1, 'pop' => true), # BrushDown, PickStroke.Up
         none.merge('brush' => [1, 60], 'pickStroke' => 2), # BrushUp, PickStroke.Down
-        none.merge('tremoloMarks' => 3, 'tap' => true)
+        none.merge('tremoloMarks' => 3, 'tap' => true, 'brush' => [3, 60], 'trillFret' => 7) # ArpeggioUp
       ]
     end
 
@@ -197,8 +214,8 @@ RSpec.describe AlphaTab do
             beat.([note], 'harmonic' => true),
             beat.([note.merge('tremolo' => true, 'trill' => true)])
           ] }] },
-          { 'index' => 2, 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }] }] },
-          { 'index' => 3, 'voices' => [{ 'beats' => [{ 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }] }] }
+          rest_measure('index' => 2),
+          rest_measure('index' => 3)
         ]
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Version 5", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
