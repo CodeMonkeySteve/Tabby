@@ -53,6 +53,15 @@ RSpec.describe Song::Songsterr, clean_db: true do
     expect(Song.from_songsterr(url).score.original_filename).to eq "AC-DC - W.M.A..gp"
   end
 
+  it "imports with a warning when the video's sync points are a few bars short" do
+    video_points.first['points'] = video_points.first['points'].first(148)
+    messages = []
+    song = Song.from_songsterr(url) { messages << it }
+
+    expect(song.sync_points).to have(148).items
+    expect(messages).to include("Warning: Video has 148 sync points for 150 played bars; bars after 148 will follow the score's tempo")
+  end
+
   describe "failures" do
     it "raises when there is no original recording video" do
       page.metadata['videos'] = page.videos.reject { it['feature'].nil? }

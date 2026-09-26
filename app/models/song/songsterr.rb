@@ -33,7 +33,7 @@ module Song::Songsterr
       result['warnings'].each { log.("Warning: unmapped Songsterr data #{it}") }
 
       log.("Fetching sync points")
-      sync_points = ::Songsterr::SyncPoints.build(client.video_points(video_id), result['playedBars'])
+      sync_points = ::Songsterr::SyncPoints.build(client.video_points(video_id), result['playedBars']) { log.("Warning: #{it}") }
 
       Dir.mktmpdir('songsterr') do |dir|
         log.("Downloading audio from YouTube video #{video_id}")

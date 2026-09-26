@@ -7,6 +7,8 @@ module Songsterr
   class Error < StandardError; end
 
   USER_AGENT = 'Mozilla/5.0'
+  OPEN_TIMEOUT = 10 # seconds
+  TIMEOUT = 60
 
   def self.get(url)
     http.get(url).body
@@ -15,7 +17,7 @@ module Songsterr
   end
 
   def self.http
-    @http ||= Faraday.new(headers: { 'User-Agent' => USER_AGENT }) do |faraday|
+    @http ||= Faraday.new(headers: { 'User-Agent' => USER_AGENT }, request: { open_timeout: OPEN_TIMEOUT, timeout: TIMEOUT }) do |faraday|
       faraday.response :raise_error
     end
   end

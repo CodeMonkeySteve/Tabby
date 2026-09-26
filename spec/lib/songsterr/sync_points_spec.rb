@@ -19,7 +19,25 @@ RSpec.describe Songsterr::SyncPoints do
     expect(described_class.build([0, 1, 2, 3, 4], played_bars).pluck(:millisecondOffset)).to eq [0, 1000, 2000, 3000]
   end
 
-  it "raises when the point count doesn't match the played bars" do
+  describe "with a slightly different number of points and played bars" do
+    let(:played_bars) { (0...20).map { [it, 0] } }
+
+    it "syncs as many bars as there are points, with a warning" do
+      warnings = []
+      sync_points = described_class.build((0...19).to_a, played_bars) { warnings << it }
+      expect(sync_points.pluck(:barIndex)).to eq (0...19).to_a
+      expect(warnings).to eq ["Video has 19 sync points for 20 played bars; bars after 19 will follow the score's tempo"]
+    end
+
+    it "ignores extra points, with a warning" do
+      warnings = []
+      sync_points = described_class.build((0...22).to_a, played_bars) { warnings << it }
+      expect(sync_points.pluck(:millisecondOffset)).to eq (0...20).map { it * 1000 }
+      expect(warnings).to eq ["Video has 22 sync points for 20 played bars; ignoring the last 2"]
+    end
+  end
+
+  it "raises when the point count is far from the played bar count" do
     expect { described_class.build([0, 1], played_bars) }.to raise_error(Songsterr::Error, /\(2\).*\(4\)/)
   end
 end
