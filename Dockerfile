@@ -12,9 +12,17 @@ RUN \
     libxml2-dev libxslt1-dev \
     # NodeJS
     nodejs npm \
+    # yt-dlp audio extraction
+    ffmpeg \
     # debug tools
     less nano \
     && \
+
+  # yt-dlp: official standalone release (distro packages lag behind YouTube changes), using NodeJS as its JavaScript runtime
+  case "$(dpkg --print-architecture)" in arm64) YT_DLP=yt-dlp_linux_aarch64 ;; *) YT_DLP=yt-dlp_linux ;; esac && \
+  curl -fsSL -o /usr/local/bin/yt-dlp "https://github.com/yt-dlp/yt-dlp/releases/latest/download/$YT_DLP" && \
+  chmod a+rx /usr/local/bin/yt-dlp && \
+  echo '--js-runtimes node' > /etc/yt-dlp.conf && \
 
   # other setup and cleanup
   mkdir -p $HOME && \
