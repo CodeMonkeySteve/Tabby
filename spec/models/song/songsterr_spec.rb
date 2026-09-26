@@ -17,7 +17,7 @@ RSpec.describe Song::Songsterr, clean_db: true do
     stub_request(:get, 'https://www.songsterr.com/api/video-points/2687597/3537915/list')
       .to_return(body: ->(_request) { JSON.generate(video_points) })
     allow(Songsterr::YouTube).to receive(:download_audio) do |video_id, dir|
-      Pathname(dir).join("#{video_id}.mp3").tap { FileUtils.cp(file_fixture('empty.mp3'), it) }
+      Pathname(dir).join("#{video_id}.m4a").tap { FileUtils.cp(file_fixture('empty.mp3'), it) }
     end
     allow_any_instance_of(Song).to receive(:find_jellyfin).and_return([])
   end

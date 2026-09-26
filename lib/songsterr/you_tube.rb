@@ -6,19 +6,22 @@ module Songsterr
   module YouTube
     extend self
 
+    # The original audio stream, never re-encoded. M4A (AAC) is preferred for property seeking in browser
+    FORMAT = 'bestaudio[ext=m4a]/bestaudio'
+
+    # Returns the Pathname of the downloaded audio file, in whatever format YouTube served it
     def download_audio(video_id, dir)
       url = "https://www.youtube.com/watch?v=#{video_id}"
       begin
         _out, err, status = Open3.capture3(
-          'yt-dlp', '--quiet', '--no-playlist', '--extract-audio', '--audio-format', 'mp3',
-          '--output', File.join(dir, '%(id)s.%(ext)s'), url
+          'yt-dlp', '--quiet', '--no-playlist', '--format', FORMAT, '--output', File.join(dir, '%(id)s.%(ext)s'), url
         )
       rescue Errno::ENOENT
         raise Error, "yt-dlp is not installed"
       end
 
-      path = Pathname(dir).join("#{video_id}.mp3")
-      unless status.success? && path.exist?
+      path = Pathname(dir).glob("#{video_id}.*").first
+      unless status.success? && path
         raise Error, "yt-dlp failed to download audio from #{url}: #{err.strip}"
       end
       path
