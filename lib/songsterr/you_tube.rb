@@ -22,7 +22,9 @@ module Songsterr
 
       path = Pathname(dir).glob("#{video_id}.*").first
       unless status.success? && path
-        raise Error, "yt-dlp failed to download audio from #{url}: #{err.strip}"
+        # yt-dlp's warnings are mostly noise here; its errors say what went wrong
+        errors = err.lines.grep(/\AERROR:/).join.presence || err
+        raise Error, "yt-dlp failed to download audio from #{url}: #{errors.strip}"
       end
       path
     end

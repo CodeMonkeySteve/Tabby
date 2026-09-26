@@ -28,6 +28,19 @@ RSpec.describe Songsterr::Page do
     expect(page.original_video_id).to be_nil
   end
 
+  it "lists recording videos: the original, then alternatives, skipping backing, solo, unprocessed, and duplicate videos" do
+    page = page_with_meta(videos: [
+      { videoId: 'alt1', status: 'done', feature: 'alternative' },
+      { videoId: 'backing', status: 'done', feature: 'backing' },
+      { videoId: 'original', status: 'done', feature: nil },
+      { videoId: 'solo', status: 'done', feature: 'solo' },
+      { videoId: 'pending', status: 'processing', feature: 'alternative' },
+      { videoId: 'alt2', status: 'done', feature: 'alternative' },
+      { videoId: 'alt1', status: 'done', feature: 'alternative' }
+    ])
+    expect(page.recording_video_ids).to eq %w[original alt1 alt2]
+  end
+
   it "falls back to the default CloudFront host" do
     expect(page_with_meta(songId: 1).cloudfront_host).to eq Songsterr::Page::DEFAULT_CLOUDFRONT_HOST
   end

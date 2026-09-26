@@ -27,9 +27,17 @@ RSpec.describe Songsterr::YouTube do
     expect(described_class.download_audio('K1NcoxzNgbM', @dir)).to eq Pathname(@dir).join('K1NcoxzNgbM.webm')
   end
 
-  it "raises with yt-dlp's error output when the download fails" do
-    allow(Open3).to receive(:capture3).and_return(['', "ERROR: Video unavailable\n", instance_double(Process::Status, success?: false)])
-    expect { described_class.download_audio('K1NcoxzNgbM', @dir) }.to raise_error(Songsterr::Error, /Video unavailable/)
+  it "raises with yt-dlp's errors (not its warnings) when the download fails" do
+    err = "WARNING: [youtube] No supported JavaScript runtime could be found.\nERROR: [youtube] K1NcoxzNgbM: Video unavailable\n"
+    allow(Open3).to receive(:capture3).and_return(['', err, instance_double(Process::Status, success?: false)])
+    expect { described_class.download_audio('K1NcoxzNgbM', @dir) }.to raise_error(Songsterr::Error) { |error|
+      expect(error.message).to end_with ": ERROR: [youtube] K1NcoxzNgbM: Video unavailable"
+    }
+  end
+
+  it "raises with all of yt-dlp's output when it has no errors" do
+    allow(Open3).to receive(:capture3).and_return(['', "Killed\n", instance_double(Process::Status, success?: false)])
+    expect { described_class.download_audio('K1NcoxzNgbM', @dir) }.to raise_error(Songsterr::Error, /: Killed\z/)
   end
 
   it "raises when yt-dlp succeeds without producing a file" do

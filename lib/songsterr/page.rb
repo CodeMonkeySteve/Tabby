@@ -36,6 +36,12 @@ module Songsterr
       videos.find { it['feature'].nil? && it['status'] == 'done' }&.fetch('videoId')
     end
 
+    # Synced videos of the song's recording, best first: the original, then alternatives (other uploads of the recording, as opposed
+    # to 'solo' or 'backing' videos)
+    def recording_video_ids
+      [original_video_id, *videos.select { it['feature'] == 'alternative' && it['status'] == 'done' }.pluck('videoId')].compact.uniq
+    end
+
     def cloudfront_host
       hosts = @doc.css('link[rel="dns-prefetch"]').map { it['href'].to_s.delete_prefix('//').delete_suffix('/') }
       hosts.find { it.end_with?('.cloudfront.net') } || DEFAULT_CLOUDFRONT_HOST

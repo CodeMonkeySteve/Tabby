@@ -62,15 +62,39 @@ RSpec.describe Song::Songsterr, clean_db: true do
     expect(messages).to include("Warning: Video has 148 sync points for 150 played bars; bars after 148 will follow the score's tempo")
   end
 
-  describe "failures" do
-    it "raises when there is no original recording video" do
-      page.metadata['videos'] = page.videos.reject { it['feature'].nil? }
-      expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error, /no original recording/)
+  describe "when the original video can't be used" do
+    let(:alternative_points) { video_points.find { it['videoId'] == 'U4-mKh4anJk' }['points'] }
+
+    it "falls back to an alternative recording video, with its own sync points" do
+      allow(Songsterr::YouTube).to receive(:download_audio).with('K1NcoxzNgbM', anything)
+        .and_raise(Songsterr::Error, "ERROR: [youtube] K1NcoxzNgbM: Video unavailable")
+      messages = []
+      song = Song.from_songsterr(url) { messages << it }
+
+      expect(Songsterr::YouTube).to have_received(:download_audio).with('U4-mKh4anJk', anything)
+      expect(song.audio.original_filename).to eq 'U4-mKh4anJk.m4a'
+      expect(song.sync_points.first).to include('millisecondOffset' => (alternative_points.first * 1000).round)
+      expect(messages).to include("Warning: Can't use YouTube video K1NcoxzNgbM: ERROR: [youtube] K1NcoxzNgbM: Video unavailable")
     end
 
-    it "raises without changing anything when sync points don't match the score" do
-      existing = create(:song, title: "W.M.A.", artist: "Pearl Jam")
+    it "skips a video whose sync points don't match the score, without downloading it" do
       video_points.first['points'] = [0, 1, 2]
+      song = Song.from_songsterr(url)
+
+      expect(Songsterr::YouTube).not_to have_received(:download_audio).with('K1NcoxzNgbM', anything)
+      expect(song.audio.original_filename).to eq 'U4-mKh4anJk.m4a'
+    end
+  end
+
+  describe "failures" do
+    it "raises when there is no original or alternative recording video" do
+      page.metadata['videos'] = page.videos.reject { it['feature'].nil? || it['feature'] == 'alternative' }
+      expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error, /no original or alternative recording video/)
+    end
+
+    it "raises without changing anything when no video's sync points match the score" do
+      existing = create(:song, title: "W.M.A.", artist: "Pearl Jam")
+      video_points.each { it['points'] = [0, 1, 2] }
 
       expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error, /Sync point count/)
       expect(existing.reload.songsterr_id).to be_nil
@@ -82,9 +106,10 @@ RSpec.describe Song::Songsterr, clean_db: true do
       expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error, /Failed to convert score/)
     end
 
-    it "raises when the audio download fails" do
-      allow(Songsterr::YouTube).to receive(:download_audio).and_raise(Songsterr::Error, "yt-dlp failed")
-      expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error, /yt-dlp failed/)
+    it "raises, listing each video's problem, when no video's audio can be downloaded" do
+      allow(Songsterr::YouTube).to receive(:download_audio) { |video_id| raise Songsterr::Error, "#{video_id} unavailable" }
+      expect { Song.from_songsterr(url) }
+        .to raise_error(Songsterr::Error, /No usable recording video.*K1NcoxzNgbM unavailable.*U4-mKh4anJk unavailable/m)
       expect(Song.count).to eq 0
     end
   end
