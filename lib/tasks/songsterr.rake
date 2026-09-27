@@ -9,7 +9,7 @@ namespace :songsterr do
     song = Song.from_songsterr(url) { puts it }
     song.save!
     puts "Imported #{song.artist} - #{song.title}: /p/#{song.slug}"
-  rescue Songsterr::Error, NoBrainer::Error::DocumentInvalid => ex
+  rescue Songsterr::Error, ActiveRecord::RecordInvalid => ex
     abort "Import failed: #{ex.message}"
   end
 end

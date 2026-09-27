@@ -2,7 +2,7 @@ class SongsController < ApplicationController
   before_action :find_song, except: %i[index new create]
 
   def index
-    @songs ||= Song.all.order_by(:artist, :title)
+    @songs ||= Song.order(:artist, :title)
   end
 
   def show
@@ -56,7 +56,7 @@ class SongsController < ApplicationController
   end
 
   def player
-    @playlists = Current.user.playlists.order_by(:name)
+    @playlists = Current.user.playlists.order(:name)
     render layout: false
   end
 
@@ -85,19 +85,10 @@ class SongsController < ApplicationController
     if params[:new_playlist_name].present?
       Playlist.create!(name: params[:new_playlist_name], user: Current.user, songs: [@song])
     else
-      song_id = @song.id
-      playlist = Playlist.find(params[:playlist])
-      playlist.queue_atomic do
-        if params[:checked]
-          playlist.songs << song_id
-        else
-          playlist.songs -= [song_id]
-        end
-      end
-      playlist.save!
+      Current.user.playlists.find(params[:playlist]).include_song!(@song, params[:checked].to_bool)
     end
 
-    playlists = Current.user.playlists.order_by(:name)
+    playlists = Current.user.playlists.order(:name)
     render partial: 'songs/playlist_menu', locals: { song: @song, playlists: }
   end
 
@@ -105,9 +96,7 @@ class SongsController < ApplicationController
     date = params[:date].present? ? Date.parse(params[:date]) : Date.current
     duration = params[:duration].to_f
 
-    history = PlayHistory.where(user: Current.user, song: @song, date:).first || PlayHistory.new(user: Current.user, song: @song, date:)
-    history.queue_atomic { history.duration += duration }
-    history.save!
+    PlayHistory.track!(user: Current.user, song: @song, date:, duration:)
     head :ok
   end
 

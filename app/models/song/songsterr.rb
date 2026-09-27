@@ -6,10 +6,6 @@ require 'alpha_tab'
 module Song::Songsterr
   extend ActiveSupport::Concern
 
-  included do
-    field :songsterr_id, type: Integer, index: true
-  end
-
   module ClassMethods
     # Builds (without saving) a Song from a Songsterr tab page URL, with score, audio, and sync points.  Audio and sync points come
     # from the original recording's video when possible, otherwise from an alternative upload of the recording.  Yields progress
@@ -37,7 +33,7 @@ module Song::Songsterr
         score_path = Pathname(dir).join("#{page.artist} - #{page.title}.gp".tr('/', '-'))
         score_path.binwrite(result['gp'].unpack1('m'))
 
-        song = where(songsterr_id: page.song_id).first || where(title: page.title, artist: page.artist).first || new
+        song = find_by(songsterr_id: page.song_id) || find_by(title: page.title, artist: page.artist) || new
         song.assign_attributes(
           songsterr_id: page.song_id,
           title: page.title,

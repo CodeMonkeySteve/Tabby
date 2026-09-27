@@ -24,7 +24,7 @@ module AuthenticationController
   def current_user
     user = Current.user
     if !user && (user_id = session[:user].presence)
-      user = User.find?(user_id)
+      user = User.find_by(id: user_id)
       sign_in user
     end
     user

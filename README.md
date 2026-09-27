@@ -5,7 +5,7 @@ cover art. Music scores are parsed via AlphaTab (a JavaScript library called fro
 
 ## Tech Stack
 
-- **Ruby 4.0.1 / Rails 8.1** — no ActiveRecord; uses **NoBrainer** ORM with **RethinkDB**
+- **Ruby / Rails 8.1** — **ActiveRecord** with **PostgreSQL**
 - **Falcon** — async HTTP server (not Puma)
 - **Shrine** — file uploads for scores, audio, and cover images
 - **Hotwire** (Turbo + Stimulus) with **Importmap** (no JS bundler)
@@ -15,7 +15,7 @@ cover art. Music scores are parsed via AlphaTab (a JavaScript library called fro
 
 ## Architecture
 
-**Database**: RethinkDB (NoSQL). Models use `NoBrainer::Document` instead of ActiveRecord. There are no SQL migrations — NoBrainer handles schema sync. The `ApplicationRecord` base class includes `NoBrainer::Document`.
+**Database**: PostgreSQL via ActiveRecord. `bin/rails rethinkdb:import` copies data from the legacy RethinkDB database into an empty PostgreSQL database.
 
 **Authentication**: OmniAuth Google OAuth2 flow. Session helpers in `Authentication` concern. `Current.user` holds the authenticated user per-request.
 

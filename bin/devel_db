@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+HOST_DB=whale
+SRC_DB=postgres://tabby@whale/tabby
+TGT_DB=postgres://postgres@localhost/tabby_devel
+
+pg_dump -Fc "$SRC_DB" | pg_restore --clean --if-exists --no-owner --no-privileges -d "$TGT_DB"

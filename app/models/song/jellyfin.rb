@@ -6,8 +6,6 @@ module Song::Jellyfin
   extend ActiveSupport::Concern
 
   included do
-    field :jellyfin_id, type: String, index: true
-
     before_save :set_cover, if: ->{ !cover_data && jellyfin_id_changed? }
     before_save :set_audio, if: ->{ !audio_data && jellyfin_id_changed? }
   end
@@ -92,7 +90,7 @@ module Song::Jellyfin
         artist, title = filename.split('-', 2).map(&:strip)
       end
 
-      song = Song.where(title:, artist:).first || Song.new(title:, artist:)
+      song = Song.find_or_initialize_by(title:, artist:)
       song.score ||= File.open(path, 'rb')
       song.tempo ||= info['tempo']
       song.instruments ||= Song.normalize_instruments(info['tracks']&.pluck('name')).presence

@@ -7,7 +7,7 @@
     %i.bi.bi-x-circle
     Delete
 
-- songs = @playlist.songs
+- songs = @playlist.ordered_songs
 - if songs.any?
   .list-group.mb-3
     - songs.each do |song|

@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
 
-  rescue_from(NoBrainer::Error::DocumentNotFound) do
+  rescue_from(ActiveRecord::RecordNotFound) do
     raise ActionController::RoutingError.new('Not Found')
   end
 

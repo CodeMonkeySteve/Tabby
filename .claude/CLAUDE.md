@@ -8,7 +8,7 @@ Tabby is a Rails 8.1 music score library and player application. It manages song
 
 ## Tech Stack
 
-- **Ruby 4.0.1 / Rails 8.1** — no ActiveRecord; uses **NoBrainer** ORM with **RethinkDB**
+- **Ruby / Rails 8.1** — **ActiveRecord** with **PostgreSQL** (plus `torque-postgresql`, `online_migrations`, `passive_columns`)
 - **Falcon** — async HTTP server (not Puma)
 - **Shrine** — file uploads for scores, audio, and cover images
 - **Hotwire** (Turbo + Stimulus) with **Importmap** (no JS bundler)
@@ -32,7 +32,7 @@ bin/bundler-audit            # Gem vulnerability scan
 
 ## Architecture
 
-**Database**: RethinkDB (NoSQL). Models use `NoBrainer::Document` instead of ActiveRecord. There are no SQL migrations — NoBrainer handles schema sync. The `ApplicationRecord` base class includes `NoBrainer::Document`.
+**Database**: PostgreSQL via ActiveRecord. Migrations are checked by `online_migrations`, so create indexes concurrently in a migration with `disable_ddl_transaction!`. `Playlist` stores its ordered songs in a `song_ids` array column (`belongs_to_many` from `torque-postgresql`). `rethinkdb:import` is a one-time task that copies the legacy RethinkDB data into an empty database.
 
 **Models**:
 - `Song` — core entity with title, artist, instruments, tempo, score file (GPX/GTP), audio (MP3), cover image, and sync points (bar-to-millisecond mappings for playback sync)
@@ -51,16 +51,16 @@ bin/bundler-audit            # Gem vulnerability scan
 
 ## Testing
 
-RSpec with FactoryBot. No transactional fixtures (NoBrainer). Test helpers in `spec/support/`:
+RSpec with FactoryBot and transactional fixtures. Test helpers in `spec/support/`:
 - `authentication.rb` — `sign_in` helper for controller specs
 - `uploaded_file.rb` — `upload_fixture` for file upload tests
-- `nobrainer.rb` — DB cleaning between tests
+- `shrine.rb` — in-memory Shrine storage
 
 Fixtures (audio/score files) are in `spec/fixtures/`.
 
 ## Generators
 
-Rails generators are configured for NoBrainer, HAML, RSpec, and FactoryBot (see `config/application.rb`).
+Rails generators are configured for ActiveRecord, HAML, RSpec, and FactoryBot (see `config/application.rb`).
 
 ## Player
 

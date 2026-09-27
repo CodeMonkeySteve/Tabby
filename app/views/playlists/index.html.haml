@@ -7,7 +7,7 @@
     - @playlists.each do |playlist|
       = link_to playlist, class: 'list-group-item list-group-item-action d-flex justify-content-between align-items-center' do
         %span= playlist.name
-        %span.badge.text-bg-secondary.rounded-pill= playlist.songs.size
+        %span.badge.text-bg-secondary.rounded-pill= playlist.song_ids.size
 
 - else
   %p.text-muted No playlists yet.

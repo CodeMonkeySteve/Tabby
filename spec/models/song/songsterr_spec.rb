@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'songsterr'
 
-RSpec.describe Song::Songsterr, clean_db: true do
+RSpec.describe Song::Songsterr do
   let(:url) { 'https://www.songsterr.com/a/wsa/pearl-jam-wma-bass-tab-s2687597' }
   let(:page) { Songsterr::Page.new(file_fixture('songsterr/page.html').read, url:) }
   let(:track_url) { 'https://dqsljvtekg760.cloudfront.net/2687597/3537915/v4-6-3-EAi4zBWPBvY-23HR/%d.json' }

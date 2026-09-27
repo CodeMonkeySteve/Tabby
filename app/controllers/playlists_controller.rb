@@ -1,10 +1,10 @@
 class PlaylistsController < ApplicationController
   def index
-    @playlists = Current.user.playlists.order_by(:name)
+    @playlists = Current.user.playlists.order(:name)
   end
 
   def show
-    @playlist = Current.user.playlists.eager_load(:songs).find(params[:id])
+    @playlist = Current.user.playlists.find(params[:id])
   end
 
   def new
@@ -21,7 +21,7 @@ class PlaylistsController < ApplicationController
   end
 
   def edit
-    @playlist = Current.user.playlists.eager_load(:songs).find(params[:id])
+    @playlist = Current.user.playlists.find(params[:id])
   end
 
   def update

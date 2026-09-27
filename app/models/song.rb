@@ -1,27 +1,26 @@
 # frozen_string_literal: true
 
 class Song < ApplicationRecord
-  include NoBrainer::Document::Timestamps
+  include PassiveColumns
   include Sluggable
   include Song::Jellyfin
   include Song::Songsterr
 
+    validates :title, presence: true
+  validates :score_data, presence: true
+
   slug_from :title, :artist
 
-  field :title,       type: String, required: true
-  field :artist,      type: String
-  field :instruments, type: Array.of(String) #, required: true
-  field :tempo,       type: Numeric
+  # only needed by the player
+  passive_columns :sync_points
+
+  has_many :play_histories
+
+  after_destroy { Playlist.where('? = ANY(song_ids)', id).update_all(['song_ids = array_remove(song_ids, ?)', id]) }
 
   include ScoreUploader::Attachment(:score)
-  field :score_data, type: Hash, required: true
-
   include ApplicationUploader::Attachment(:audio)
-  field :audio_data, type: Hash
-  field :sync_points, type: Array
-
   include ImageUploader::Attachment(:cover)
-  field :cover_data, type: Hash
 
   def self.normalize_instruments(names)
     names.filter_map do |name|

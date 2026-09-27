@@ -1,16 +1,28 @@
 source 'https://rubygems.org'
+ruby file: '.ruby-version'
+
+gem 'benchmark'
+gem 'ostruct'
+gem 'mutex_m'
 
 # core
-gem 'rails', '~> 8.1'
+gem 'rails'
+gem 'kreds'
 gem 'falcon'
 gem 'bootsnap', require: false
-gem 'kreds'                     # for Rails credentials
+gem 'lograge'
 
-# storage
-gem 'nobrainer', github: 'CodeMonkeySteve/nobrainer', branch: 'rails-8.1'
-  #, branch: 'main'    # https://github.com/NoBrainerORM/nobrainer/pull/292
-gem 'nobrainer-references'
+# database
+gem 'pg'
+gem 'online_migrations'
+gem 'torque-postgresql'
+gem 'passive_columns'
+gem 'activerecord_cursor_paginate'
+gem 'email_validator'
 gem 'normalizr'
+gem 'rethinkdb', require: false  # for `rethinkdb:import`, remove once migrated
+
+# file attachments
 gem 'shrine'
 gem 'marcel'
 gem 'fastimage'
@@ -21,21 +33,18 @@ gem 'omniauth-rails_csrf_protection'
 gem 'cancancan'
 
 # assets
-gem 'haml-rails'
-gem 'hotwire-rails'
 gem 'importmap-rails'
-gem 'stimulus-rails'
-gem 'sassc-rails'
-gem 'bootstrap'
 gem 'turbo-rails'
-gem 'turbo_power'
+gem 'stimulus-rails'
+gem 'haml-rails'
+gem 'sass-rails'
+gem 'bootstrap'
+gem 'terser'
+# gem 'turbo-rails'
+# gem 'turbo_power'
 
 # import
 gem 'nodo'
-
-group :development do
-  gem 'web-console'
-end
 
 group :development, :test do
   gem 'awesome_print'
@@ -48,8 +57,8 @@ group :test do
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'rails-controller-testing'
-  gem 'rspec-rails'
   gem 'rspec-collection_matchers'
+  gem 'rspec-rails'
 
   # gem 'timecop'
   gem 'webmock', require: nil

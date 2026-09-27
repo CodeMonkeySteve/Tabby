@@ -1,6 +1,6 @@
 class User < ApplicationRecord
-  include NoBrainer::Document::Timestamps
   include AuthenticationModel
 
   has_many :playlists
+  has_many :play_histories
 end

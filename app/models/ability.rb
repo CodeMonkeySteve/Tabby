@@ -8,7 +8,7 @@ class Ability
       ;
 
     else
-      can %i(read update), User, user_id: user.id
+      can %i(read update), User, id: user.id
       can :manage, Song
     end
   end

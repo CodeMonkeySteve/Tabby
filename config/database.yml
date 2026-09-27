@@ -1,0 +1,14 @@
+default: &default
+  url:  <%= ENV['POSTGRESQL_URL'].presence || Kreds.fetch!(:postgresql, :url) %>
+  pool: <%= ENV['RAILS_MAX_THREADS'] || Kreds.fetch!(:postgresql, :pool) { 5 } %>
+  encoding: unicode
+  timeout: 5000
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

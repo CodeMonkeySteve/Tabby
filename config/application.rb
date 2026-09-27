@@ -1,6 +1,7 @@
 require_relative 'boot'
 
 require 'rails'
+require 'active_record/railtie'
 require 'action_controller/railtie'
 require 'action_view/railtie'
 require 'action_cable/engine'
@@ -34,7 +35,7 @@ module Tabby
     config.time_zone = 'America/Los_Angeles'
 
     config.app_generators do |g|
-      g.orm :nobrainer
+      g.orm :active_record
       g.template_engine :haml
       g.integration_tool :rspec
       g.test_framework :rspec, fixture: true
