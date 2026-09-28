@@ -27,6 +27,7 @@ Rails.application.routes.draw do
   end
   get 'p/:id' => 'songs#player', as: 'player'
 
-  root to: redirect('/s')
+  resource :dashboard, only: :show
+  root to: 'dashboards#show'
   mount ActionDispatch::Static.new(Rails.application, Rails.root.join('storage/files').to_s), at: '/files'
 end

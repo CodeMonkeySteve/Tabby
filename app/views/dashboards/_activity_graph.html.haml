@@ -1,0 +1,19 @@
+-# A GitHub-style graph of daily practice: a column per week, a row per weekday
+.activity-graph
+  .activity-grid{role: 'img', aria: { label: "Practice activity for the last #{Dashboard::ACTIVITY_WEEKS} weeks" }}
+    .activity-weekdays
+      .activity-month
+      - %w[Sun Mon Tue Wed Thu Fri Sat].each_with_index do |weekday, index|
+        .activity-weekday= weekday if index.odd?
+    - dashboard.activity_weeks.each_with_index do |week, index|
+      - month_start = week.find { it.date.day == 1 }
+      .activity-week
+        .activity-month= (month_start || week.first).date.strftime('%b') if index.zero? || month_start
+        - week.each do |day|
+          .activity-day{class: "level-#{day.level}",
+                        title: "#{day.date.strftime('%a %b %-d')}: #{day.seconds.positive? ? practice_time(day.seconds) : "no practice"}"}
+  .activity-legend
+    Less
+    - 5.times do |level|
+      .activity-day{class: "level-#{level}"}
+    More

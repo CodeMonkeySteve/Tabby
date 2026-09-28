@@ -1,0 +1,93 @@
+- content_for :title, "Dashboard"
+
+.dashboard
+  .card.mb-4
+    .card-header.d-flex.align-items-center
+      %i.bi.bi-calendar3.me-2
+      Practice
+      %span.ms-auto.text-body-secondary.small= "Last #{Dashboard::ACTIVITY_WEEKS} weeks"
+    .card-body.d-flex.flex-wrap.align-items-center.gap-4
+      = render 'activity_graph', dashboard: @dashboard
+      %dl.activity-stats.mb-0
+        %dt Practice time
+        %dd= practice_time(@dashboard.activity_seconds)
+        %dt Days practiced
+        %dd= @dashboard.activity_days
+        %dt Current streak
+        %dd= pluralize(@dashboard.streak, 'day')
+
+  .row.g-4
+    .col-lg-4
+      .card.h-100
+        .card-header.d-flex.align-items-center
+          %i.bi.bi-music-note-list.me-2
+          Playlists
+          = link_to new_playlist_path, class: 'ms-auto', title: "New playlist" do
+            %i.bi.bi-plus-lg
+        - if @dashboard.playlists.any?
+          .accordion.accordion-flush#playlists
+            - @dashboard.playlists.each do |playlist|
+              - songs = @dashboard.playlist_songs(playlist)
+              .accordion-item
+                %h2.accordion-header
+                  %button.accordion-button.collapsed{type: 'button', data: { bs: { toggle: 'collapse', target: "#playlist-#{playlist.id}" } },
+                                                     aria: { expanded: false, controls: "playlist-#{playlist.id}" }}
+                    = playlist.name
+                    %span.badge.text-bg-secondary.rounded-pill.ms-2= songs.size
+                .accordion-collapse.collapse{id: "playlist-#{playlist.id}", data: { bs: { parent: '#playlists' } }}
+                  .list-group.list-group-flush
+                    - songs.each do |song|
+                      = link_to player_path(song), class: 'list-group-item list-group-item-action' do
+                        = song.title
+                        %small.text-body-secondary= song.artist
+                    = link_to playlist, class: 'list-group-item list-group-item-action small text-body-secondary' do
+                      %i.bi.bi-pencil.me-1
+                      Edit playlist
+        - else
+          .card-body.text-body-secondary
+            No playlists yet.
+
+    .col-lg-4
+      .card.h-100
+        .card-header
+          %i.bi.bi-clock-history.me-2
+          Recently Played
+        - if @dashboard.recent_plays.any?
+          .list-group.list-group-flush
+            - @dashboard.recent_plays.each do |play|
+              = link_to player_path(play.song), class: 'list-group-item list-group-item-action d-flex align-items-center gap-2' do
+                .text-truncate
+                  = play.song.title
+                  %small.d-block.text-body-secondary= play.song.artist
+                %small.ms-auto.text-end.text-nowrap.text-body-secondary
+                  = relative_date(play.date)
+                  %span.d-block{title: "Total practice time"}= practice_time(play.seconds)
+        - else
+          .card-body.text-body-secondary
+            Songs you play will appear here.
+
+    .col-lg-4
+      .card.h-100
+        .card-header.d-flex.align-items-center
+          %i.bi.bi-plus-circle.me-2
+          Recently Added
+          - if current_user.instrument_types.any?
+            %span.ms-auto.small.text-body-secondary{title: "Songs with a track for your instruments"}
+              = current_user.instrument_types.map(&:humanize).to_sentence
+          - else
+            = link_to "Choose your instruments", edit_user_path, class: 'ms-auto small'
+        - if @dashboard.recent_songs.any?
+          .list-group.list-group-flush
+            - @dashboard.recent_songs.each do |song|
+              = link_to player_path(song), class: 'list-group-item list-group-item-action d-flex align-items-center gap-2' do
+                .text-truncate
+                  = song.title
+                  %small.d-block.text-body-secondary= song.artist
+                %small.ms-auto.text-end.text-nowrap.text-body-secondary
+                  = relative_date(song.created_at.to_date)
+                  %span.d-block
+                    - song.instrument_types.each do |type|
+                      %span.badge{class: current_user.instrument_types.include?(type) ? 'text-bg-primary' : 'text-bg-secondary'}= type
+        - else
+          .card-body.text-body-secondary
+            No songs for your instruments yet.

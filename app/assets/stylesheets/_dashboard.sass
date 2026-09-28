@@ -1,0 +1,57 @@
+// GitHub-style practice activity graph (see dashboards/_activity_graph)
+$activity-day-size: 17px
+$activity-gap: 3px
+
+.activity-graph
+  font-size: 0.7rem
+  color: var(--bs-secondary-color)
+
+.activity-grid, .activity-week, .activity-weekdays
+  display: flex
+  gap: $activity-gap
+
+.activity-week, .activity-weekdays
+  flex-direction: column
+
+.activity-month, .activity-weekday
+  height: $activity-day-size
+  line-height: $activity-day-size
+  white-space: nowrap
+
+.activity-month
+  width: $activity-day-size
+  overflow: visible
+
+.activity-weekdays
+  padding-right: 2px
+
+.activity-day
+  width: $activity-day-size
+  height: $activity-day-size
+  border-radius: 3px
+  background-color: var(--bs-secondary-bg)
+
+  &.level-1
+    background-color: rgba(var(--bs-success-rgb), 0.35)
+  &.level-2
+    background-color: rgba(var(--bs-success-rgb), 0.55)
+  &.level-3
+    background-color: rgba(var(--bs-success-rgb), 0.8)
+  &.level-4
+    background-color: rgba(var(--bs-success-rgb), 1)
+
+.activity-legend
+  display: flex
+  align-items: center
+  justify-content: flex-end
+  gap: $activity-gap
+  margin-top: 0.5rem
+
+.activity-stats
+  dt
+    font-weight: normal
+    font-size: 0.8rem
+    color: var(--bs-secondary-color)
+  dd
+    font-size: 1.25rem
+    font-weight: 500

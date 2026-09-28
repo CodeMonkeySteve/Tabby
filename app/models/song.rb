@@ -34,6 +34,9 @@ class Song < ApplicationRecord
 
   has_many :play_histories
 
+  # Songs with a track for any of the given instrument types (or all songs, if none are given)
+  scope :for_instruments, ->(types) { types.empty? ? all : where('track_types && ARRAY[?]::instrument_type[]', types) }
+
   after_destroy { Playlist.where('? = ANY(song_ids)', id).update_all(['song_ids = array_remove(song_ids, ?)', id]) }
 
   include ScoreUploader::Attachment(:score)
