@@ -109,7 +109,9 @@ private
   def song_params
     sync_points = JSON.parse(params[:song][:sync_points].presence || '[]')
     params.require(:song)
-      .permit(:title, :artist, :sync_points, :cover, :cover_data, score: {}, audio: {})
+      # files are uploads or cached file JSON from a form, or cached file hashes from JSON requests
+      .permit(:title, :artist, :sync_points, :cover, :cover_data, :score, :audio, score: {}, audio: {}, track_types: [])
       .merge(sync_points:)
+      .tap { it.delete(:track_types) if params[:song][:score].present? } # a new score's tracks are detected instead
   end
 end

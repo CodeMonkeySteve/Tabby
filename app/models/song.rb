@@ -58,11 +58,18 @@ class Song < ApplicationRecord
     info['tracks'].map { Song::Track.from_info(it).instrument_type }
   end
 
+  # The score's tracks, as read by AlphaTab (raising Nodo::Error or Shrine::FileNotFound if it can't be)
+  def score_tracks
+    @score_tracks = nil if @score_tracks_id != score&.id
+    @score_tracks_id = score&.id
+    @score_tracks ||= score ? score.download { AlphaTab.new.score_info(it.path) }['tracks'].map { Song::Track.from_info(it) } : []
+  end
+
   # Sets the instrument type of each score track (see Song::Track), or adds an error if the score is missing or unreadable
   def classify_tracks
     score && score_attacher.errors.empty? or return
 
-    self.track_types = score.download { self.class.track_types_from(AlphaTab.new.score_info(it.path)) }
+    self.track_types = score_tracks.map(&:instrument_type)
   rescue Nodo::Error, Shrine::FileNotFound => ex
     errors.add(:score, "can't be read (#{ex.message})")
   end

@@ -25,6 +25,26 @@
       = f.hidden_field :score, value: @song.cached_score_data
       = f.file_field :score, class: 'form-control'
 
+    - tracks = @song.persisted? ? (@song.score_tracks rescue []) : []
+    - if tracks.any?
+      .mb-3
+        #tracks-label.form-label Tracks
+        %table.table.table-sm.align-middle{aria: { labelledby: 'tracks-label' }}
+          %tbody
+            - tracks.each_with_index do |track, index|
+              - detected = track.instrument_type.to_s
+              - type = @song.track_types[index] || detected
+              %tr
+                %td= track.name.presence || "Track #{index + 1}"
+                %td
+                  = select_tag 'song[track_types][]', options_for_select(Song::INSTRUMENT_TYPES.map { [it.to_s.humanize, it] }, type),
+                    id: "song_track_types_#{index}", class: 'form-select form-select-sm', aria: { label: "Track #{index + 1} instrument" }
+                %td.text-body-secondary.small
+                  - if type != detected
+                    = "Detected as #{detected.humanize}"
+        .form-text
+          The player shows the tracks of your instruments by default.  Uploading a new score detects its tracks' instruments again.
+
     .mb-3
       = f.label :audio, class: 'form-label'
       = f.hidden_field :audio, value: @song.cached_audio_data
