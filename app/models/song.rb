@@ -43,6 +43,11 @@ class Song < ApplicationRecord
   # (Re)classify the tracks of a new score, unless their types were given with it
   before_validation :classify_tracks, if: -> { will_save_change_to_score_data? && !will_save_change_to_track_types? }
 
+  # The distinct instrument types of the score tracks, in INSTRUMENT_TYPES order
+  def instrument_types
+    INSTRUMENT_TYPES.map(&:to_s) & track_types
+  end
+
   # The indexes of the score tracks played by any of the given instrument types
   def track_indexes_for(types)
     track_types.each_index.select { types.include?(track_types[it]) }

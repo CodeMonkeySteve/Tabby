@@ -13,7 +13,7 @@
               %a{href: player_path(song)}
                 %h5.card-title= song.title
               %h6.card-text= song.artist
-              - song.track_types.uniq.each do |type|
+              - song.instrument_types.each do |type|
                 %span.badge.text-bg-secondary= type
 
 
