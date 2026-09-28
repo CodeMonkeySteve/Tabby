@@ -13,8 +13,8 @@
               %a{href: player_path(song)}
                 %h5.card-title= song.title
               %h6.card-text= song.artist
-              - song.instruments&.each do |instrument|
-                %span.badge.text-bg-secondary= instrument
+              - song.track_types.uniq.each do |type|
+                %span.badge.text-bg-secondary= type
 
 
 %a.mt-3{href: new_song_path, class: 'btn btn-primary'}

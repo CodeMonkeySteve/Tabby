@@ -98,6 +98,8 @@ RSpec.describe AlphaTab do
         info = alpha_tab.score_info(file.path)
         expect(info).to include('title' => "W.M.A.", 'artist' => "Pearl Jam", 'tempo' => 108)
         expect(info['tracks'].pluck('name')).to eq ["Distortion Guitar", "Electric Bass (finger)", "Drums"]
+        expect(info['tracks'].pluck('isPercussion', 'stringCount')).to eq [[false, 6], [false, 4], [true, 0]]
+        expect(info['tracks'].map { Song::Track.from_info(it).instrument_type }).to eq %i[guitar bass drums]
       end
       expect(result['playedBars']).to have(150).items
       expect(result['playedBars'].first(2)).to eq [[0, 0], [1, 0]]

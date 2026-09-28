@@ -29,7 +29,7 @@ RSpec.describe Song::Songsterr do
 
     expect(song.reload).to have_attributes(
       songsterr_id: 2687597, title: "W.M.A.", artist: "Pearl Jam", tempo: 108,
-      instruments: ["Distortion Guitar", 'bass', "Drums"], jellyfin_id: nil,
+      track_types: %w[guitar bass drums], jellyfin_id: nil,
     )
     expect(song.score.original_filename).to eq "Pearl Jam - W.M.A..gp"
     expect(song.audio).to be_present
@@ -37,6 +37,12 @@ RSpec.describe Song::Songsterr do
     expect(song.sync_points.second).to include('barIndex' => 1, 'barOccurence' => 0, 'millisecondOffset' => 2120)
     expect(Songsterr::YouTube).to have_received(:download_audio).with('K1NcoxzNgbM', anything)
     expect(messages).to include(/Downloading audio/)
+  end
+
+  it "classifies tracks by Songsterr's flags before their names and programs" do
+    page.metadata['tracks'][0].merge!('isVocalTrack' => true, 'title' => "Lead Vocals")
+    page.metadata['tracks'][1].merge!('instrumentId' => 30, 'title' => "Distortion Guitar")
+    expect(Song.from_songsterr(url).track_types).to eq %w[vocals bass drums]
   end
 
   it "updates an existing song instead of creating a duplicate" do

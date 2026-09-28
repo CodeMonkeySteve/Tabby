@@ -1,13 +1,22 @@
 FROM docker.finagle.org/ruby:3.4.11-slim-trixie
 MAINTAINER Steve Sloan <steve@finagle.org>
 
-ENV HOME=/app RAILS_ENV=production PORT=80
+ENV HOME=/app RAILS_ENV=production PORT=80 TZ="America/Los_Angeles"
 
 RUN \
   apt update -qq && \
+  apt install --no-install-recommends -y ca-certificates curl && \
+  # PostgreSQL client
+  install -d /usr/share/postgresql-common/pgdg && \
+  curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+  echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" \
+    > /etc/apt/sources.list.d/pgdg.list && \
+  apt update -qq && \
   apt install --no-install-recommends -y \
     # build
-    build-essential libssl-dev libyaml-dev curl gnupg git \
+    build-essential libssl-dev libyaml-dev gnupg git \
+    # pg_dump
+    postgresql-client-18 \
     # Nokogiri
     libxml2-dev libxslt1-dev \
     # NodeJS

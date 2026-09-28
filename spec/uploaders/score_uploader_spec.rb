@@ -3,6 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe ScoreUploader do
+  # the scores are empty files, which AlphaTab can't read
+  before { allow_any_instance_of(Song).to receive(:classify_tracks) }
+
   def song_with_score(extension)
     Song.new(title: "Title", score: Tempfile.new(['score', extension]))
   end

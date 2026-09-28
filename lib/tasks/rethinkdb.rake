@@ -14,7 +14,7 @@ module RethinkImport
 
     @ids = Hash.new { |hash, table| hash[table] = {} }
     ActiveRecord::Base.transaction do
-      [User, Credential, Song, Playlist, PlayHistory].each do |model|
+      [User, Credential, Song, Playlist].each do |model|
         model.none? or abort "The #{model.table_name} table isn't empty, run `bin/rails db:reset` first"
       end
 
@@ -26,6 +26,7 @@ module RethinkImport
         user_id = ref(:users, doc['user_id'], doc) or next
         doc.slice('provider', 'uid', 'token', *TIMESTAMPS).merge(user_id:)
       end
+
       # keep the most recently updated copy's values, filling in any it lacks from the other copies
       merge_song = ->(song, attrs) do
         attrs = attrs.except(:created_at).compact
@@ -33,21 +34,26 @@ module RethinkImport
         song.update_columns(attrs)
       end
       import(Song, 'songs', unique_by: %i[title artist], merge: merge_song) do |doc|
-        doc.slice(*%w[title artist slug instruments tempo score_data audio_data cover_data sync_points jellyfin_id songsterr_id],
+        doc.slice(*%w[title artist slug tempo score_data audio_data cover_data sync_points jellyfin_id songsterr_id],
                   *TIMESTAMPS)
       end
+
       import(Playlist, 'playlists') do |doc|
         user_id = ref(:users, doc['user_id'], doc) or next
         song_ids = doc['song_ids'].to_a.filter_map { ref(:songs, it, doc) }.uniq
         doc.slice('name', *TIMESTAMPS).merge(user_id:, song_ids:)
       end
-      merge_history = ->(history, attrs) { history.update_columns(duration: history.duration + attrs[:duration]) }
-      import(PlayHistory, 'play_histories', unique_by: %i[user_id song_id date], merge: merge_history) do |doc|
-        user_id = ref(:users, doc['user_id'], doc) or next
-        song_id = ref(:songs, doc['song_id'], doc) or next
-        doc.slice('duration').merge(user_id:, song_id:, date: doc['date'].utc.to_date)
-      end
+
+      # don't need to preserve play history
+      #
+      # merge_history = ->(history, attrs) { history.update_columns(duration: history.duration + attrs[:duration]) }
+      # import(PlayHistory, 'play_histories', unique_by: %i[user_id song_id date], merge: merge_history) do |doc|
+      #   user_id = ref(:users, doc['user_id'], doc) or next
+      #   song_id = ref(:songs, doc['song_id'], doc) or next
+      #   doc.slice('duration').merge(user_id:, song_id:, date: doc['date'].utc.to_date)
+      # end
     end
+
   ensure
     @conn&.close
   end
@@ -96,5 +102,6 @@ namespace :rethinkdb do
   desc "Copy all data from RethinkDB (RETHINKDB_URL or the rethinkdb.url credential) into the empty PostgreSQL database"
   task import: :environment do
     RethinkImport.run
+    Rake::Task['songs:classify_tracks'].invoke # songs are inserted without callbacks
   end
 end

@@ -2,7 +2,6 @@ FactoryBot.define do
   factory :song do
     title { "Head Over Heels" }
     artist { "Tears for Fears" }
-    instruments { %w[bass] }
     score { upload_fixture('Tears for Fears - Head Over Heels.gpx', 'audio/x-gtp') }
     sync_points { [] }
   end

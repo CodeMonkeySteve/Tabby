@@ -91,9 +91,11 @@ module Song::Jellyfin
       end
 
       song = Song.find_or_initialize_by(title:, artist:)
-      song.score ||= File.open(path, 'rb')
+      unless song.score
+        song.score = File.open(path, 'rb')
+        song.track_types = Song.track_types_from(info)
+      end
       song.tempo ||= info['tempo']
-      song.instruments ||= Song.normalize_instruments(info['tracks']&.pluck('name')).presence
 
       if !song.jellyfin_id && (jellyfin = song.find_jellyfin&.first)
         song.jellyfin_id = jellyfin.id

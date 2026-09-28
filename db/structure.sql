@@ -1,0 +1,358 @@
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: instrument_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.instrument_type AS ENUM (
+    'bass',
+    'brass',
+    'drums',
+    'guitar',
+    'keys',
+    'other',
+    'strings',
+    'vocals',
+    'woodwinds'
+);
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ar_internal_metadata (
+    key character varying NOT NULL,
+    value character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: credentials; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.credentials (
+    id bigint NOT NULL,
+    user_id uuid NOT NULL,
+    provider character varying NOT NULL,
+    uid character varying NOT NULL,
+    token jsonb,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: credentials_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.credentials_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: credentials_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.credentials_id_seq OWNED BY public.credentials.id;
+
+
+--
+-- Name: play_histories; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.play_histories (
+    id bigint NOT NULL,
+    user_id uuid NOT NULL,
+    song_id uuid NOT NULL,
+    date date NOT NULL,
+    duration double precision DEFAULT 0.0 NOT NULL
+);
+
+
+--
+-- Name: play_histories_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.play_histories_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: play_histories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.play_histories_id_seq OWNED BY public.play_histories.id;
+
+
+--
+-- Name: playlists; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.playlists (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id uuid NOT NULL,
+    name character varying NOT NULL,
+    song_ids uuid[] DEFAULT '{}'::uuid[] NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.schema_migrations (
+    version character varying NOT NULL
+);
+
+
+--
+-- Name: songs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.songs (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    title character varying NOT NULL,
+    artist character varying,
+    slug character varying,
+    tempo integer,
+    track_types public.instrument_type[] DEFAULT '{}'::public.instrument_type[] NOT NULL,
+    score_data jsonb NOT NULL,
+    audio_data jsonb,
+    cover_data jsonb,
+    sync_points jsonb,
+    jellyfin_id character varying,
+    songsterr_id integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.users (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    name character varying,
+    email character varying NOT NULL,
+    instrument_types public.instrument_type[] DEFAULT '{}'::public.instrument_type[] NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: credentials id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.credentials ALTER COLUMN id SET DEFAULT nextval('public.credentials_id_seq'::regclass);
+
+
+--
+-- Name: play_histories id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.play_histories ALTER COLUMN id SET DEFAULT nextval('public.play_histories_id_seq'::regclass);
+
+
+--
+-- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ar_internal_metadata
+    ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
+
+
+--
+-- Name: credentials credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.credentials
+    ADD CONSTRAINT credentials_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: play_histories play_histories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.play_histories
+    ADD CONSTRAINT play_histories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: playlists playlists_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.playlists
+    ADD CONSTRAINT playlists_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schema_migrations
+    ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: songs songs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.songs
+    ADD CONSTRAINT songs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: index_credentials_on_provider_and_uid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_credentials_on_provider_and_uid ON public.credentials USING btree (provider, uid);
+
+
+--
+-- Name: index_credentials_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_credentials_on_user_id ON public.credentials USING btree (user_id);
+
+
+--
+-- Name: index_play_histories_on_song_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_play_histories_on_song_id ON public.play_histories USING btree (song_id);
+
+
+--
+-- Name: index_play_histories_on_user_id_and_song_id_and_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_play_histories_on_user_id_and_song_id_and_date ON public.play_histories USING btree (user_id, song_id, date);
+
+
+--
+-- Name: index_playlists_on_user_id_and_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_playlists_on_user_id_and_name ON public.playlists USING btree (user_id, name);
+
+
+--
+-- Name: index_songs_on_artist_and_title; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_songs_on_artist_and_title ON public.songs USING btree (artist, title);
+
+
+--
+-- Name: index_songs_on_jellyfin_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_songs_on_jellyfin_id ON public.songs USING btree (jellyfin_id);
+
+
+--
+-- Name: index_songs_on_slug; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_songs_on_slug ON public.songs USING btree (slug);
+
+
+--
+-- Name: index_songs_on_songsterr_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_songs_on_songsterr_id ON public.songs USING btree (songsterr_id);
+
+
+--
+-- Name: index_songs_on_track_types; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_songs_on_track_types ON public.songs USING gin (track_types);
+
+
+--
+-- Name: index_users_on_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
+
+
+--
+-- Name: play_histories fk_rails_325b78ed95; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.play_histories
+    ADD CONSTRAINT fk_rails_325b78ed95 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: credentials fk_rails_32938455c2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.credentials
+    ADD CONSTRAINT fk_rails_32938455c2 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: play_histories fk_rails_a6647c9882; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.play_histories
+    ADD CONSTRAINT fk_rails_a6647c9882 FOREIGN KEY (song_id) REFERENCES public.songs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: playlists fk_rails_d67ef1eb45; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.playlists
+    ADD CONSTRAINT fk_rails_d67ef1eb45 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+SET search_path TO "$user", public;
+
+INSERT INTO "schema_migrations" (version) VALUES
+('20260927071000');
+

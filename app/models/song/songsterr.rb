@@ -39,7 +39,7 @@ module Song::Songsterr
           title: page.title,
           artist: page.artist,
           tempo: parts.first&.dig('automations', 'tempo', 0, 'bpm'),
-          instruments: normalize_instruments(page.tracks.pluck('instrument')).uniq,
+          track_types: page.tracks.map { songsterr_track_type(it) },
           sync_points:,
         )
         score_path.open('rb') { song.score = it }
@@ -53,6 +53,16 @@ module Song::Songsterr
     end
 
     private
+
+    # The instrument type of a Songsterr track, whose vocal, bass, and drums flags are more reliable than its name and program
+    # (e.g. vocal parts are written with sax or clarinet sounds)
+    def songsterr_track_type(track)
+      return :vocals if track['isVocalTrack']
+      return :bass if track['isBassGuitar']
+
+      Song::Track.new(name: track['title'], program: track['instrumentId'], percussion: track['isDrums'],
+                      strings: track['tuning']&.size).instrument_type
+    end
 
     # Returns the sync points and downloaded audio of the first video that has both, checking each video's sync points before
     # downloading its audio

@@ -1,13 +1,31 @@
 # frozen_string_literal: true
 
+require 'alpha_tab'
+
 class Song < ApplicationRecord
   include PassiveColumns
   include Sluggable
   include Song::Jellyfin
   include Song::Songsterr
 
-    validates :title, presence: true
+  INSTRUMENT_TYPES = [
+    :drums,     # drums and percussion
+    :bass,      # electric, acoustic, fretless
+    :guitar,    # electric, acoustic, banjo, mandolin, ukulele
+    :keys,      # piano, synth, organ, accordion, pitched percussion
+    :vocals,    # lead, backing, choir, synth voice
+    :strings,   # violin, viola, cello, other orchestral
+    :brass,     # trumpet, trombone, french horn, tuba, other brass
+    :woodwinds, # saxophone, clarinet, oboe, flute, whistle
+    :other      # harmonica, sitar, theramin, etc. (only on Song)
+  ].freeze
+
+  # The instrument type of each score track, in track order (so not a torque-postgresql EnumSet, which is unordered and unique)
+  attribute :track_types, :string, array: true, default: []
+
+  validates :title, presence: true
   validates :score_data, presence: true
+  validates :track_types, instrument_types: true
 
   slug_from :title, :artist
 
@@ -22,13 +40,20 @@ class Song < ApplicationRecord
   include ApplicationUploader::Attachment(:audio)
   include ImageUploader::Attachment(:cover)
 
-  def self.normalize_instruments(names)
-    names.filter_map do |name|
-      case name
-        when /\bbass\b/i then 'bass'
-        when /^pista\b/i then nil
-        else name
-      end
-    end
+  # (Re)classify the tracks of a new score, unless their types were given with it
+  before_validation :classify_tracks, if: -> { will_save_change_to_score_data? && !will_save_change_to_track_types? }
+
+  # The instrument type of each track described by AlphaTab#score_info
+  def self.track_types_from(info)
+    info['tracks'].map { Song::Track.from_info(it).instrument_type }
+  end
+
+  # Sets the instrument type of each score track (see Song::Track), or adds an error if the score is missing or unreadable
+  def classify_tracks
+    score && score_attacher.errors.empty? or return
+
+    self.track_types = score.download { self.class.track_types_from(AlphaTab.new.score_info(it.path)) }
+  rescue Nodo::Error, Shrine::FileNotFound => ex
+    errors.add(:score, "can't be read (#{ex.message})")
   end
 end

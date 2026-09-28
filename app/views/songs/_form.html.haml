@@ -15,19 +15,6 @@
       = f.label :artist, class: 'form-label'
       = f.text_field :artist, class: 'form-control'
 
-    %div{data: { controller: 'array-input' }}
-      .mb-3
-        = f.label :instruments, class: 'form-label'
-        %div{data: { 'array-input-target': 'list' }}
-          - Array(@song.instruments).each do |instrument|
-            .array-input-field
-              = f.text_field :instruments, value: instrument, name: 'song[instruments][]', class: 'form-control'
-              %button.btn{type: 'button', data: { action: 'click->array-input#removeField' }} Remove
-          %template{data: { 'array-input-target': 'template' }}
-            .array-input-field
-              = f.text_field :instruments, value: '', name: 'song[instruments][]', class: 'form-control'
-              %button.btn{type: 'button', data: { action: 'click->array-input#removeField' }} Remove
-
     .mb-3
       = f.label :cover, class: 'form-label'
       = f.hidden_field :cover, value: @song.cached_cover_data

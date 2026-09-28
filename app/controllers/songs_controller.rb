@@ -109,11 +109,7 @@ private
   def song_params
     sync_points = JSON.parse(params[:song][:sync_points].presence || '[]')
     params.require(:song)
-      .permit(:title, :artist, :sync_points, :cover, :cover_data,
-        score: {}, audio: {},
-        instruments: []
-      )
-      .with_defaults(instruments: %w[bass])
+      .permit(:title, :artist, :sync_points, :cover, :cover_data, score: {}, audio: {})
       .merge(sync_points:)
   end
 end

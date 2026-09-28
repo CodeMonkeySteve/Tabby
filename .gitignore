@@ -39,6 +39,8 @@ lib/alpha_tab/node_modules/
 # Ignore key files for decrypting credentials and more.
 /config/credentials/*.key
 
+/lib/tasks/debug.rake
+
 /sandbox
 /.idea
 

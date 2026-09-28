@@ -29,6 +29,8 @@ class AlphaTab < Nodo::Core
             trackInfo[trackKey] = value;
           }
         })
+        trackInfo.isPercussion = track.staves.some(staff => staff.isPercussion);
+        trackInfo.stringCount = track.staves[0]?.tuning?.length || 0;
         scoreInfo.tracks[track.index] = trackInfo;
       })
 
