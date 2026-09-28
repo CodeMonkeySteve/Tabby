@@ -33,6 +33,10 @@ class Song < ApplicationRecord
   passive_columns :sync_points
 
   has_many :play_histories
+  has_many :notes, class_name: 'SongNote'
+
+  # The current user's note, e.g. `song.note || song.build_note`
+  has_one :note, -> { where(user: Current.user) }, class_name: 'SongNote'
 
   # Songs with a track for any of the given instrument types (or all songs, if none are given)
   scope :for_instruments, ->(types) { types.empty? ? all : where('track_types && ARRAY[?]::instrument_type[]', types) }
@@ -45,6 +49,9 @@ class Song < ApplicationRecord
 
   # (Re)classify the tracks of a new score, unless their types were given with it
   before_validation :classify_tracks, if: -> { will_save_change_to_score_data? && !will_save_change_to_track_types? }
+
+  # Saved playback ranges are score ticks, so they may not fit a new score
+  after_update :clear_note_ranges, if: :saved_change_to_score_data?
 
   # The distinct instrument types of the score tracks, in INSTRUMENT_TYPES order
   def instrument_types
@@ -75,5 +82,11 @@ class Song < ApplicationRecord
     self.track_types = score_tracks.map(&:instrument_type)
   rescue Nodo::Error, Shrine::FileNotFound => ex
     errors.add(:score, "can't be read (#{ex.message})")
+  end
+
+private
+
+  def clear_note_ranges
+    notes.where.not(range_start_tick: nil).update_all(range_start_tick: nil, range_end_tick: nil, updated_at: Time.current)
   end
 end

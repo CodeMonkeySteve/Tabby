@@ -24,6 +24,9 @@ Rails.application.routes.draw do
       post 'playlist' => 'songs#playlist'
       post 'track' => 'songs#track_history'
     end
+
+    # the current user's note
+    resource :note, only: :update, controller: 'song_notes'
   end
   get 'p/:id' => 'songs#player', as: 'player'
 

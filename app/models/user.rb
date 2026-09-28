@@ -11,4 +11,5 @@ class User < ApplicationRecord
 
   has_many :playlists
   has_many :play_histories
+  has_many :song_notes
 end

@@ -2,7 +2,7 @@ class SongsController < ApplicationController
   before_action :find_song, except: %i[index new create]
 
   def index
-    @songs ||= Song.order(:artist, :title)
+    @songs ||= Song.order(:title, :artist)
   end
 
   def show

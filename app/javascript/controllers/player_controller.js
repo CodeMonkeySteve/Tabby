@@ -24,7 +24,14 @@ export default class extends Controller {
     this.accumulatedSeconds = 0    // running total of wall-clock seconds played
     this.playDate = null           // ISO date (YYYY-MM-DD) of first play start this session
     this.historyTimer = null       // debounce timer handle
-    this.unloadHandler = () => this.flushHistory()
+    this.note = this.songValue.note ?? {}  // the user's latest player settings for the song
+    this.savedNote = null          // JSON of the last saved (or restored) note, null until the saved note is applied
+    this.noteTimer = null          // debounce timer handle
+    this.rangeRestored = false
+    this.unloadHandler = () => {
+      this.flushHistory()
+      this.flushNote()
+    }
     window.addEventListener('beforeunload', this.unloadHandler)
 
     this.keyHandler = this.handleKeydown.bind(this)
@@ -64,6 +71,8 @@ export default class extends Controller {
     this.api.playerPositionChanged.on((args) => this.handlePlayerPositionChanged(args))
     this.api.playerReady.on(() => this.handlePlayerReady())
     this.api.playerStateChanged.on((args) => this.handlePlayerStateChanged(args))
+    this.api.midiLoaded.on(() => this.rangeRestored || this.restoreRange())
+    this.api.playbackRangeChanged.on(() => this.scheduleNoteSave())
   }
 
   disconnect() {
@@ -71,6 +80,7 @@ export default class extends Controller {
     window.removeEventListener('beforeunload', this.unloadHandler)
     clearTimeout(this.historyTimer)
     this.flushHistory()
+    this.flushNote()
     if (this.themeObserver) {
       this.themeObserver.disconnect()
       this.themeObserver = null
@@ -162,6 +172,8 @@ export default class extends Controller {
     for (const c of this.element.querySelectorAll(".at-player .disabled")) {
       c.classList.remove("disabled")
     }
+    this.restoreRange()
+    this.applyNote()
   }
 
   handlePlayerStateChanged(args) {
@@ -207,23 +219,35 @@ export default class extends Controller {
 
   toggleCountIn(e) {
     e.stopPropagation()
-    const link = e.target.closest("a")
-    link.classList.toggle("active")
-    this.api.countInVolume = link.classList.contains("active") ? 1 : 0
+    this.setCountIn(!this.countInTarget.classList.contains("active"))
+    this.scheduleNoteSave()
   }
 
   toggleMetronome(e) {
     e.stopPropagation()
-    const link = e.target.closest("a")
-    link.classList.toggle("active")
-    this.api.metronomeVolume = link.classList.contains("active") ? 1 : 0
+    this.setMetronome(!this.metronomeTarget.classList.contains("active"))
+    this.scheduleNoteSave()
   }
 
   toggleLoop(e) {
     e.stopPropagation()
-    const link = e.target.closest("a")
-    link.classList.toggle("active")
-    this.api.isLooping = link.classList.contains("active")
+    this.setLoop(!this.loopTarget.classList.contains("active"))
+    this.scheduleNoteSave()
+  }
+
+  setCountIn(on) {
+    this.countInTarget.classList.toggle("active", on)
+    this.api.countInVolume = on ? 1 : 0
+  }
+
+  setMetronome(on) {
+    this.metronomeTarget.classList.toggle("active", on)
+    this.api.metronomeVolume = on ? 1 : 0
+  }
+
+  setLoop(on) {
+    this.loopTarget.classList.toggle("active", on)
+    this.api.isLooping = on
   }
 
   toggleTracks(e) {
@@ -233,9 +257,14 @@ export default class extends Controller {
 
   changeSpeed(e) {
     e.preventDefault()
-    const value = Number.parseInt(e.target.value)
-    this.api.playbackSpeed = value / 100
-    this.speedLabelTarget.innerText = `${value / 100}x`
+    this.setSpeed(Number.parseInt(e.target.value) / 100)
+    this.scheduleNoteSave()
+  }
+
+  setSpeed(speed) {
+    this.api.playbackSpeed = speed
+    this.speedSliderTarget.value = Math.round(speed * 100)
+    this.speedLabelTarget.innerText = `${speed}x`
   }
 
   changeVolume(e) {
@@ -351,6 +380,85 @@ export default class extends Controller {
     } else {
       icon.classList.add('fa-volume-off')
     }
+  }
+
+  // --- Song note (the user's player settings for this song) ---
+
+  // Applies the saved speed and toggles once the player is ready
+  applyNote() {
+    const note = this.note
+    if (note.speed) this.setSpeed(note.speed)
+    this.setCountIn(!!note.count_in)
+    this.setMetronome(!!note.metronome)
+    this.setLoop(!!note.looping)
+    this.savedNote = JSON.stringify(this.currentNote())
+  }
+
+  // Selects the saved playback range, highlighting the beats of the first shown track at its ends, and moves the playback
+  // position to its start.  This needs the MIDI (for the tick lookup), and is repeated whenever a player is created, since a
+  // new player (e.g. when the backing track is set up after loading, see handleScoreLoaded) starts without a range, at the
+  // beginning.
+  restoreRange() {
+    const tickCache = this.api.tickCache
+    const { range_start_tick: startTick, range_end_tick: endTick } = this.note
+    if (!tickCache || startTick == null || endTick == null) return
+    this.rangeRestored = true
+
+    const beats = this.api.tracks[0]?.staves[0]?.bars.flatMap(bar => bar.voices[0]?.beats ?? []) ?? []
+    const startBeat = beats.findLast(beat => tickCache.getBeatStart(beat) <= startTick)
+    const endBeat = beats.findLast(beat => tickCache.getBeatStart(beat) < endTick)
+    if (startBeat && endBeat) this.api.highlightPlaybackRange(startBeat, endBeat)
+
+    this.api.playbackRange = Object.assign(new alphaTab.synth.PlaybackRange(), { startTick, endTick })
+    this.api.tickPosition = startTick
+    if (this.savedNote !== null) this.savedNote = JSON.stringify(this.currentNote())
+  }
+
+  currentNote() {
+    const range = this.api.playbackRange
+    return {
+      speed: this.api.playbackSpeed,
+      looping: this.api.isLooping,
+      count_in: this.api.countInVolume > 0,
+      metronome: this.api.metronomeVolume > 0,
+      range_start_tick: range?.startTick ?? null,
+      range_end_tick: range?.endTick ?? null,
+    }
+  }
+
+  scheduleNoteSave() {
+    clearTimeout(this.noteTimer)
+    this.noteTimer = setTimeout(() => this.saveNote(), 1000)
+  }
+
+  flushNote() {
+    clearTimeout(this.noteTimer)
+    this.saveNote()
+  }
+
+  // Saves the note if it changed (keepalive lets it finish while the page unloads)
+  saveNote() {
+    if (this.savedNote === null || !this.api) return
+    const note = JSON.stringify(this.currentNote())
+    if (note === this.savedNote) return
+
+    const previous = this.savedNote
+    this.savedNote = note
+    this.note = JSON.parse(note)
+    fetch(`/s/${this.songValue.id}/note`, {
+      method: 'PATCH',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content,
+      },
+      body: JSON.stringify({ song_note: JSON.parse(note) }),
+    }).then(response => {
+      if (!response.ok) throw new Error(`Note PATCH failed: ${response.status}`)
+    }).catch(e => {
+      if (this.savedNote === note) this.savedNote = previous  // so the next change retries
+      console.error('Failed to save song note', e)
+    })
   }
 
   // --- Helpers ---

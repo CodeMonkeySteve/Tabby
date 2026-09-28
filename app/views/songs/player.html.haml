@@ -21,7 +21,8 @@
 
   %body
     - song_attributes = { id: @song.to_param, title: @song.title, artist: @song.artist, syncPoints: @song.sync_points || [],
-                          trackTypes: @song.track_types, tracks: @song.track_indexes_for(current_user.instrument_types).presence }
+                          trackTypes: @song.track_types, tracks: @song.track_indexes_for(current_user.instrument_types).presence,
+                          note: @song.note&.playback }
     .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json, sync_editor_outlet: '.sync-editor' } } }
       .at-overlay
         .at-overlay-content

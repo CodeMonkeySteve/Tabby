@@ -44,14 +44,12 @@ module RethinkImport
         doc.slice('name', *TIMESTAMPS).merge(user_id:, song_ids:)
       end
 
-      # don't need to preserve play history
-      #
-      # merge_history = ->(history, attrs) { history.update_columns(duration: history.duration + attrs[:duration]) }
-      # import(PlayHistory, 'play_histories', unique_by: %i[user_id song_id date], merge: merge_history) do |doc|
-      #   user_id = ref(:users, doc['user_id'], doc) or next
-      #   song_id = ref(:songs, doc['song_id'], doc) or next
-      #   doc.slice('duration').merge(user_id:, song_id:, date: doc['date'].utc.to_date)
-      # end
+      merge_history = ->(history, attrs) { history.update_columns(duration: history.duration + attrs[:duration]) }
+      import(PlayHistory, 'play_histories', unique_by: %i[user_id song_id date], merge: merge_history) do |doc|
+        user_id = ref(:users, doc['user_id'], doc) or next
+        song_id = ref(:songs, doc['song_id'], doc) or next
+        doc.slice('duration').merge(user_id:, song_id:, date: doc['date'].utc.to_date)
+      end
     end
 
   ensure

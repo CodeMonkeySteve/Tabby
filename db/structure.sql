@@ -133,6 +133,25 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: song_notes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.song_notes (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id uuid NOT NULL,
+    song_id uuid NOT NULL,
+    speed double precision,
+    looping boolean,
+    count_in boolean,
+    metronome boolean,
+    range_start_tick integer,
+    range_end_tick integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
 -- Name: songs; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -223,6 +242,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: song_notes song_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.song_notes
+    ADD CONSTRAINT song_notes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: songs songs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -271,6 +298,20 @@ CREATE UNIQUE INDEX index_play_histories_on_user_id_and_song_id_and_date ON publ
 --
 
 CREATE INDEX index_playlists_on_user_id_and_name ON public.playlists USING btree (user_id, name);
+
+
+--
+-- Name: index_song_notes_on_song_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_song_notes_on_song_id ON public.song_notes USING btree (song_id);
+
+
+--
+-- Name: index_song_notes_on_user_id_and_song_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_song_notes_on_user_id_and_song_id ON public.song_notes USING btree (user_id, song_id);
 
 
 --
@@ -332,6 +373,22 @@ ALTER TABLE ONLY public.credentials
 
 
 --
+-- Name: song_notes fk_rails_740efb49a0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.song_notes
+    ADD CONSTRAINT fk_rails_740efb49a0 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: song_notes fk_rails_8deb7ab4b7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.song_notes
+    ADD CONSTRAINT fk_rails_8deb7ab4b7 FOREIGN KEY (song_id) REFERENCES public.songs(id) ON DELETE CASCADE;
+
+
+--
 -- Name: play_histories fk_rails_a6647c9882; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -354,5 +411,6 @@ ALTER TABLE ONLY public.playlists
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260928000000'),
 ('20260927071000');
 

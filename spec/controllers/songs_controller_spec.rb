@@ -92,6 +92,13 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       expect(player_song).to include('trackTypes' => %w[guitar bass drums], 'tracks' => [1, 2])
     end
 
+    it "includes the user's note" do
+      create(:song_note, user:, song:, speed: 0.75, looping: true)
+      create(:song_note, song:, speed: 0.5)
+      get :player, params: { id: song }
+      expect(player_song['note']).to include('speed' => 0.75, 'looping' => true)
+    end
+
     it "shows the default track when the user's instruments aren't in the song" do
       user.update!(instrument_types: %w[keys])
       get :player, params: { id: song }
