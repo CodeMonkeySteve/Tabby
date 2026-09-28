@@ -20,7 +20,8 @@
     = javascript_importmap_tags
 
   %body
-    - song_attributes = { id: @song.to_param, title: @song.title, artist: @song.artist, syncPoints: @song.sync_points || [] }
+    - song_attributes = { id: @song.to_param, title: @song.title, artist: @song.artist, syncPoints: @song.sync_points || [],
+                          trackTypes: @song.track_types, tracks: @song.track_indexes_for(current_user.instrument_types).presence }
     .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json, sync_editor_outlet: '.sync-editor' } } }
       .at-overlay
         .at-overlay-content
@@ -149,6 +150,7 @@
           .at-track-info
             %input.at-track-check{type: 'checkbox', checked: true}/
             %label.at-track-name
+            %span.at-track-type.badge.text-bg-secondary
             .at-track-buttons
               %button.btn.btn-sm.at-track-solo{type: 'button', title: 'Solo'} S
               %button.btn.btn-sm.at-track-mute{type: 'button', title: 'Mute'} M

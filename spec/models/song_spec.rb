@@ -44,6 +44,12 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
       expect(create(:song).track_types).to eq %w[bass]
     end
 
+    it "finds the tracks played by instrument types" do
+      song = build(:song, track_types: %w[guitar bass vocals bass])
+      expect(song.track_indexes_for(%w[bass keys])).to eq [1, 3]
+      expect(song.track_indexes_for(%w[keys])).to eq []
+    end
+
     it "keeps track types given with the score" do
       expect(create(:song, track_types: %w[vocals]).reload.track_types).to eq %w[vocals]
     end

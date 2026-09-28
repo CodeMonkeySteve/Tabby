@@ -32,6 +32,7 @@ export default class extends Controller {
 
     this.api = new alphaTab.AlphaTabApi(this.canvasTarget, {
       file: `/s/${this.songValue.id}/score`,
+      tracks: this.songValue.tracks, // the user's instruments' tracks, or null for AlphaTab's default (the first track)
       player: {
         enablePlayer: true,
         soundFont: "/sonivox.sf2",
@@ -408,6 +409,7 @@ export default class extends Controller {
     const trackItem = clone.firstElementChild
 
     trackItem.querySelector(".at-track-name").textContent = track.name
+    trackItem.querySelector(".at-track-type").textContent = this.songValue.trackTypes?.[track.index] ?? ""
 
     const checkbox = trackItem.querySelector(".at-track-check")
     const muteButton = trackItem.querySelector(".at-track-mute")

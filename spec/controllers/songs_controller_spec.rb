@@ -46,10 +46,26 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     expect(response).to have_http_status(:see_other)
   end
 
-  it "#player" do
-    get :player, params: { id: song }
-    expect(response).to render_template(:player)
-    expect(response).to be_successful
+  describe "#player" do
+    let(:song) { create(:song, track_types: %w[guitar bass drums]) }
+
+    def player_song
+      JSON.parse(Nokogiri::HTML(response.body).at_css('[data-controller="player"]')['data-player-song-value'])
+    end
+
+    it "shows the tracks of the user's instruments" do
+      user.update!(instrument_types: %w[bass drums])
+      get :player, params: { id: song }
+      expect(response).to render_template(:player)
+      expect(response).to be_successful
+      expect(player_song).to include('trackTypes' => %w[guitar bass drums], 'tracks' => [1, 2])
+    end
+
+    it "shows the default track when the user's instruments aren't in the song" do
+      user.update!(instrument_types: %w[keys])
+      get :player, params: { id: song }
+      expect(player_song).to include('tracks' => nil)
+    end
   end
 
   it "#score" do
