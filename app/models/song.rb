@@ -6,6 +6,7 @@ class Song < ApplicationRecord
   include PassiveColumns
   include Sluggable
   include Song::Songsterr
+  include Song::CoverArt
 
   INSTRUMENT_TYPES = [
     :drums,     # drums and percussion

@@ -45,9 +45,7 @@ module Song::Songsterr
         score_path.open('rb') { song.score = it }
         audio_path.open('rb') { song.audio = it }
 
-        if song.cover.nil? && (item = song.find_jellyfin.first) && (cover = song.jellyfin_cover(item))
-          song.cover = cover
-        end
+        fetch_cover_art(song, log) if song.cover.nil?
         song
       end
     end
@@ -82,6 +80,18 @@ module Song::Songsterr
       end
 
       raise ::Songsterr::Error, "No usable recording video:\n#{failures.join("\n")}"
+    end
+
+    # Attaches the song's cover art if it can be found, since the import doesn't depend on it
+    def fetch_cover_art(song, log)
+      log.("Searching for cover art")
+      if (match = song.fetch_cover_art)
+        log.("Found cover art for #{match.album} on #{match.source}")
+      else
+        log.("Warning: No cover art found")
+      end
+    rescue ::CoverArt::Error => ex
+      log.("Warning: Can't fetch cover art: #{ex.message}")
     end
   end
 end

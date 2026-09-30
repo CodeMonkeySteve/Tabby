@@ -16,4 +16,24 @@ namespace :songs do
     end
     puts "#{changed} of #{Song.count} songs reclassified, #{failed} failed"
   end
+
+  desc "Fetch cover art for songs without covers from online music catalogs"
+  task covers: :environment do
+    songs = Song.where(cover_data: nil).order(:artist, :title).to_a
+    found = 0
+    songs.each_with_index do |song, index|
+      sleep 3 if index.positive? # stay within iTunes' rate limit of about 20 requests per minute
+
+      if (match = song.fetch_cover_art)
+        song.save!
+        found += 1
+        puts "#{song.artist} - #{song.title}: #{match.album} (#{match.source})"
+      else
+        warn "#{song.artist} - #{song.title}: not found"
+      end
+    rescue CoverArt::Error, ActiveRecord::RecordInvalid => ex
+      warn "#{song.artist} - #{song.title}: #{ex.message}"
+    end
+    puts "Found covers for #{found} of #{songs.size} songs"
+  end
 end

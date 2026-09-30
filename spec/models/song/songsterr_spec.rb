@@ -19,7 +19,26 @@ RSpec.describe Song::Songsterr do
     allow(Songsterr::YouTube).to receive(:download_audio) do |video_id, dir|
       Pathname(dir).join("#{video_id}.m4a").tap { FileUtils.cp(file_fixture('empty.mp3'), it) }
     end
-    allow_any_instance_of(Song).to receive(:find_jellyfin).and_return([])
+    allow(CoverArt).to receive(:search).and_return(nil)
+  end
+
+  it "attaches cover art when it can be found, and imports without it when it can't" do
+    match = CoverArt::Match.new(source: :deezer, artist: "Pearl Jam", title: "W.M.A.", album: "Vs.",
+                                image_url: 'https://cdn.example/vs.jpg')
+    allow(CoverArt).to receive(:search).with(artist: "Pearl Jam", title: "W.M.A.").and_return(match)
+    stub_request(:get, match.image_url).to_return(body: file_fixture('cover.jpg').binread)
+    messages = []
+    song = Song.from_songsterr(url) { messages << it }
+    song.save!
+
+    expect(song.reload.cover).to have_attributes(original_filename: "Pearl Jam - Vs..jpg", mime_type: 'image/jpeg')
+    expect(messages).to include("Found cover art for Vs. on deezer")
+
+    song.update!(cover: nil)
+    allow(CoverArt).to receive(:search).and_raise(CoverArt::Error, "Failed to fetch")
+    messages.clear
+    expect(Song.from_songsterr(url) { messages << it }).to be_valid
+    expect(messages).to include("Warning: Can't fetch cover art: Failed to fetch")
   end
 
   it "imports score, audio, and sync points" do
