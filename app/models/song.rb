@@ -5,7 +5,6 @@ require 'alpha_tab'
 class Song < ApplicationRecord
   include PassiveColumns
   include Sluggable
-  include Song::Jellyfin
   include Song::Songsterr
 
   INSTRUMENT_TYPES = [

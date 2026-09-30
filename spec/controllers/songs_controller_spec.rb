@@ -47,7 +47,6 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
   end
 
   it "#create" do
-    expect_any_instance_of(Song).to receive(:find_jellyfin) { [] }
     expect {
       attrs = attributes_for(:song).except(:jellyfin_id).as_json
       post :create, params: { song: attrs }
@@ -87,7 +86,6 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
   end
 
   it "#update" do
-    expect_any_instance_of(Song).to receive(:find_jellyfin) { [] }
     patch :update, params: { id: song, song: { title: "New title" } }
     expect(response).to have_http_status(:see_other)
     expect(song.reload.title).to eq "New title"
