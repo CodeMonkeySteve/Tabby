@@ -88,4 +88,22 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
     expect(Song.search("100%")).to be_empty
     expect(Song.search("  ")).to contain_exactly schism, lateralus, hysteria
   end
+
+  it "sorts by title, artist, newest, or the user's most recent play" do
+    user = create(:user)
+    schism = create(:song, title: "Schism", artist: "Tool", created_at: 3.days.ago)
+    lateralus = create(:song, title: "Lateralus", artist: "Tool", created_at: 1.day.ago)
+    hysteria = create(:song, title: "Hysteria", artist: "Muse", created_at: 2.days.ago)
+    create(:play_history, user:, song: schism, date: 2.days.ago)
+    create(:play_history, user:, song: schism, date: 5.days.ago)
+    create(:play_history, user:, song: hysteria, date: 3.days.ago)
+    create(:play_history, song: lateralus, date: Date.current) # another user's
+
+    expect(Song.sorted(nil)).to eq [hysteria, lateralus, schism]
+    expect(Song.sorted('bogus')).to eq [hysteria, lateralus, schism]
+    expect(Song.sorted('artist')).to eq [hysteria, lateralus, schism]
+    expect(Song.sorted('newest')).to eq [lateralus, hysteria, schism]
+    expect(Song.sorted('played', user:)).to eq [schism, hysteria, lateralus]
+    expect(Song.search("tool").sorted('played', user:)).to eq [schism, lateralus]
+  end
 end

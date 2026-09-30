@@ -46,6 +46,19 @@ class Song < ApplicationRecord
     end
   end
 
+  # Songs sorted by 'artist', 'newest' (added), or 'played' (most recently by the user), or by title for any other sort
+  scope :sorted, ->(sort, user: Current.user) do
+    case sort
+    when 'artist' then order(:artist, :title)
+    when 'newest' then order(created_at: :desc)
+    when 'played'
+      last_played = PlayHistory.where(user:).group(:song_id).select(:song_id, 'MAX(date) AS last_played_on')
+      joins("LEFT JOIN (#{last_played.to_sql}) plays ON plays.song_id = songs.id")
+        .order(Arel.sql('plays.last_played_on DESC NULLS LAST'), :title, :artist)
+    else order(:title, :artist)
+    end
+  end
+
   # Songs with a track for any of the given instrument types (or all songs, if none are given)
   scope :for_instruments, ->(types) { types.empty? ? all : where('track_types && ARRAY[?]::instrument_type[]', types) }
 

@@ -43,6 +43,17 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       expect(checkboxes.map { it['id'] }).to eq ["playlist_#{hysteria.id}_#{practice.id}", "playlist_#{schism.id}_#{practice.id}"]
     end
 
+    it "sorts the songs, keeping the selected sort" do
+      Song.find_by(title: "Schism").update!(created_at: 1.hour.from_now)
+      get :index, params: { sort: 'newest' }
+      expect(titles).to eq ["Schism", "Hysteria"]
+      expect(Nokogiri::HTML(response.body).at_css('select[name=sort] option[selected]')['value']).to eq 'newest'
+
+      get :index
+      expect(titles).to eq ["Hysteria", "Schism"]
+      expect(Nokogiri::HTML(response.body).at_css('select[name=sort] option[selected]')).to be_nil
+    end
+
     it "says when nothing matches" do
       get :index, params: { q: 'nothing' }
       expect(response.body).to include "No songs match"
