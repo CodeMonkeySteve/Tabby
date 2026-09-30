@@ -8,6 +8,7 @@
     %meta{name: 'apple-mobile-web-app-capable', content: 'yes'}/
     %meta{name: 'application-name', content: 'Tabby'}/
     %meta{name: 'mobile-web-app-capable', content: 'yes'}/
+
     = csrf_meta_tags
     -# a standalone page (with AlphaTab's workers and audio), so always load it fully rather than with a Turbo visit
     %meta{name: 'turbo-visit-control', content: 'reload'}/
@@ -24,6 +25,8 @@
     = javascript_importmap_tags
 
   %body
+    = render partial: 'layouts/header'
+
     - song_attributes = { id: @song.to_param, title: @song.title, artist: @song.artist, syncPoints: @song.sync_points || [],
                           trackTypes: @song.track_types, tracks: @song.track_indexes_for(current_user.instrument_types).presence,
                           note: @song.note&.playback }
@@ -32,124 +35,126 @@
         .at-overlay-content
           .spinner-border{role: 'status', style: 'width: 3rem; height: 3rem;'}
       .at-content
-        .at-viewport{data: { player: { target: 'viewport' } }}
+        .at-viewport
           #alphaTab.at-canvas{data: { player: { target: 'canvas' } }}
         .at-track-panel{data: { player: { target: 'trackPanel' } }}
           %button.at-track-panel-close{type: 'button', data: { action: 'player#toggleTracks' }}
             %i.fas.fa-close
           %h4 Tracks
           .at-track-list{data: { player: { target: 'trackList' } }}
-      - if @song.audio.present?
-        .sync-editor{data: { controller: 'sync-editor', sync_editor: { song_id_value: @song.to_param } }}
-          .sync-toolbar
-            %div
-              .btn-group
-                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Auto Sync', data: { action: 'sync-editor#performAutoSync' }}
-                  %i.fas.fa-magic
-                  Auto Sync
-                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Reset Sync Points', data: { action: 'sync-editor#performResetSyncPoints' }}
-                  %i.fas.fa-map-pin
-                  Reset
-              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Zoom Out', data: { action: 'sync-editor#zoomOut' }}
-                %i.fas.fa-magnifying-glass-minus
-              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Reset Zoom', data: { action: 'sync-editor#resetZoom', sync_editor: { target: 'zoomLabel' } }}
-                100%
-              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Zoom In', data: { action: 'sync-editor#zoomIn' }}
-                %i.fas.fa-magnifying-glass-plus
-              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Undo', data: { action: 'sync-editor#performUndo', sync_editor: { target: 'undoBtn' } }, disabled: true}
-                %i.fas.fa-undo
-              %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Redo', data: { action: 'sync-editor#performRedo', sync_editor: { target: 'redoBtn' } }, disabled: true}
-                %i.fas.fa-redo
-            %div
-              %span.text-muted.me-2{data: { sync_editor: { target: 'statusMsg' } }}
-              %button.btn.btn-sm.btn-primary{type: 'button', title: 'Save', data: { action: 'sync-editor#save', sync_editor: { target: 'saveBtn' } }}
-                %i.fas.fa-save
-                Save
-          .sync-area{data: { action: 'scroll->sync-editor#onScroll', sync_editor: { target: 'syncArea' } }}
-            .sync-area-canvas-wrap
-              %canvas{data: { sync_editor: { target: 'canvas' } }}
-            .sync-area-marker-wrap{data: { action: 'click->sync-editor#onSyncAreaClick', sync_editor: { target: 'markerWrap' } }}
-            .sync-area-playback-cursor{data: { sync_editor: { target: 'cursor' } }}
-      .at-footer
-        .at-time-slider
-          .at-time-slider-value{data: { player: { target: 'timeSliderValue' } }}
-        .at-player
-          .at-player-left
-            %a.at-stop.disabled{href: '#', title: 'Stop', data: { action: 'player#stopPlayback', player: { target: 'stop' } }}
-              %i.fas.fa-stop
-            %a.at-play-pause.disabled{href: '#', title: 'Play/Pause', data: { action: 'player#playPause', player: { target: 'playPause' } }}
-              %i.fas.fa-play
-            %a.at-tracks{href: '#', title: 'Tracks', data: { action: 'player#toggleTracks' }}
-              %i.fas.fa-list-check
-            .btn-group.dropup
-              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
-                %i.fas.fa-gauge
-              .dropdown-menu.at-speed-options
-                .at-slider-container
-                  %span.at-slider-label Speed
-                  %input{type: 'range', min: 50, max: 200, value: 100, step: 10, data: { action: 'input->player#changeSpeed', player: { target: 'speedSlider' } }}/
-                  %span.at-slider-value{data: { player: { target: 'speedLabel' } }} 1x
-            .btn-group.dropup
-              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
-                %i.fas.fa-volume-low{data: { player: { target: 'volumeIcon' } }}
-              .dropdown-menu.at-volume-options
-                .at-slider-container
-                  %span.at-slider-label Volume
-                  %input.at-master-volume{type: 'range', min: 0, max: 100, value: 50, data: { action: 'input->player#changeVolume', player: { target: 'volumeSlider' } }}/
-                  %span.at-slider-value{data: { player: { target: 'volumeLabel' } }} 50%
+      -# stays at the bottom of the window as the page scrolls
+      .at-dock{data: { player: { target: 'dock' } }}
+        - if @song.audio.present?
+          .sync-editor{data: { controller: 'sync-editor', sync_editor: { song_id_value: @song.to_param } }}
+            .sync-toolbar
+              %div
+                .btn-group
+                  %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Auto Sync', data: { action: 'sync-editor#performAutoSync' }}
+                    %i.fas.fa-magic
+                    Auto Sync
+                  %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Reset Sync Points', data: { action: 'sync-editor#performResetSyncPoints' }}
+                    %i.fas.fa-map-pin
+                    Reset
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Zoom Out', data: { action: 'sync-editor#zoomOut' }}
+                  %i.fas.fa-magnifying-glass-minus
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Reset Zoom', data: { action: 'sync-editor#resetZoom', sync_editor: { target: 'zoomLabel' } }}
+                  100%
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Zoom In', data: { action: 'sync-editor#zoomIn' }}
+                  %i.fas.fa-magnifying-glass-plus
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Undo', data: { action: 'sync-editor#performUndo', sync_editor: { target: 'undoBtn' } }, disabled: true}
+                  %i.fas.fa-undo
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Redo', data: { action: 'sync-editor#performRedo', sync_editor: { target: 'redoBtn' } }, disabled: true}
+                  %i.fas.fa-redo
+              %div
+                %span.text-muted.me-2{data: { sync_editor: { target: 'statusMsg' } }}
+                %button.btn.btn-sm.btn-primary{type: 'button', title: 'Save', data: { action: 'sync-editor#save', sync_editor: { target: 'saveBtn' } }}
+                  %i.fas.fa-save
+                  Save
+            .sync-area{data: { action: 'scroll->sync-editor#onScroll', sync_editor: { target: 'syncArea' } }}
+              .sync-area-canvas-wrap
+                %canvas{data: { sync_editor: { target: 'canvas' } }}
+              .sync-area-marker-wrap{data: { action: 'click->sync-editor#onSyncAreaClick', sync_editor: { target: 'markerWrap' } }}
+              .sync-area-playback-cursor{data: { sync_editor: { target: 'cursor' } }}
+        .at-footer
+          .at-time-slider
+            .at-time-slider-value{data: { player: { target: 'timeSliderValue' } }}
+          .at-player
+            .at-player-left
+              %a.at-stop.disabled{href: '#', title: 'Stop', data: { action: 'player#stopPlayback', player: { target: 'stop' } }}
+                %i.fas.fa-stop
+              %a.at-play-pause.disabled{href: '#', title: 'Play/Pause', data: { action: 'player#playPause', player: { target: 'playPause' } }}
+                %i.fas.fa-play
+              %a.at-tracks{href: '#', title: 'Tracks', data: { action: 'player#toggleTracks' }}
+                %i.fas.fa-list-check
+              .btn-group.dropup
+                %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                  %i.fas.fa-gauge
+                .dropdown-menu.at-speed-options
+                  .at-slider-container
+                    %span.at-slider-label Speed
+                    %input{type: 'range', min: 50, max: 200, value: 100, step: 10, data: { action: 'input->player#changeSpeed', player: { target: 'speedSlider' } }}/
+                    %span.at-slider-value{data: { player: { target: 'speedLabel' } }} 1x
+              .btn-group.dropup
+                %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                  %i.fas.fa-volume-low{data: { player: { target: 'volumeIcon' } }}
+                .dropdown-menu.at-volume-options
+                  .at-slider-container
+                    %span.at-slider-label Volume
+                    %input.at-master-volume{type: 'range', min: 0, max: 100, value: 50, data: { action: 'input->player#changeVolume', player: { target: 'volumeSlider' } }}/
+                    %span.at-slider-value{data: { player: { target: 'volumeLabel' } }} 50%
 
-            .at-player-loading.progress{data: { player: { target: 'playerLoading' } }}
-              %span.progress-left
-                %span.progress-bar
-              %span.progress-right
-                %span.progress-bar
-              .progress-value.w-100.h-100.rounded-circle.d-flex.align-items-center.justify-content-center.font-weight-bold
-                %span.progress-value-number 0
-                %sup.small %
-            .at-time-position{title: 'Time Position', data: { player: { target: 'timePosition' } }}
+              .at-player-loading.progress{data: { player: { target: 'playerLoading' } }}
+                %span.progress-left
+                  %span.progress-bar
+                %span.progress-right
+                  %span.progress-bar
+                .progress-value.w-100.h-100.rounded-circle.d-flex.align-items-center.justify-content-center.font-weight-bold
+                  %span.progress-value-number 0
+                  %sup.small %
+              .at-time-position{title: 'Time Position', data: { player: { target: 'timePosition' } }}
 
-          .at-player-center
-            .at-song-details
-              %span.at-song-title{data: { player: { target: 'songTitle' } }}
-              %span.at-song-artist{data: { player: { target: 'songArtist' } }}
+            .at-player-center
+              .at-song-details
+                %span.at-song-title{data: { player: { target: 'songTitle' } }}
+                %span.at-song-artist{data: { player: { target: 'songArtist' } }}
 
-          .at-player-right
-            %a.at-count-in.disabled{href: '#', title: 'Count-In', data: { action: 'player#toggleCountIn', player: { target: 'countIn' } }}
-              %i.fas.fa-hourglass-half
-            %a.at-metronome.disabled{href: '#', title: 'Metronome', data: { action: 'player#toggleMetronome', player: { target: 'metronome' } }}
-              = image_tag 'metronome-icon.svg', class: 'icon'
-            %a.at-loop.disabled{href: '#', title: 'Loop', data: { action: 'player#toggleLoop', player: { target: 'loop' } }}
-              %i.fas.fa-retweet
-            .btn-group.dropup
-              %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
-                %i.fas.fa-folder-plus
-              .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
-                = render 'songs/playlist_menu', song: @song, playlists: @playlists
-            .btn-group.dropup
-              %button.btn.dropdown-toggle.at-layout-button{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
-                %i.fas.fa-table-columns
-              .dropdown-menu.dropdown-menu-right.at-layout-options
-                .at-slider-container
-                  %span.at-slider-label Scale
-                  %input{type: 'range', min: 25, max: 200, value: 100, step: 5, data: { action: 'input->player#changeZoom', player: { target: 'zoomSlider' } }}/
-                  %span.at-slider-value{data: { player: { target: 'zoomLabel' } }} 100%
-                .dropdown-divider
-                %a.dropdown-item{href: '#', data: { layout: 'horizontal-screen', action: 'player#changeLayout' }}
-                  %i.far.fa-caret-square-right
-                  Horizontal Layout (Off-Screen)
-                %a.dropdown-item{href: '#', data: { layout: 'horizontal-bar', action: 'player#changeLayout' }}
-                  %i.fas.fa-caret-square-right
-                  Horizontal Layout (Bar Wise)
-                %a.dropdown-item{href: '#', data: { layout: 'page', action: 'player#changeLayout' }}
-                  %i.fas.fa-caret-square-down
-                  Vertical Layout
-            - if @song.audio.present?
-              %a.at-sync{href: '#', title: 'Sync Editor', data: { action: 'player#toggleSyncEditor' }}
-                %i.fas.fa-wave-square
-            = link_to edit_song_path(@song) do
-              %i.fas.fa-edit
-            = link_to songs_path do
-              %i.fas.fa-indent
+            .at-player-right
+              %a.at-count-in.disabled{href: '#', title: 'Count-In', data: { action: 'player#toggleCountIn', player: { target: 'countIn' } }}
+                %i.fas.fa-hourglass-half
+              %a.at-metronome.disabled{href: '#', title: 'Metronome', data: { action: 'player#toggleMetronome', player: { target: 'metronome' } }}
+                = image_tag 'metronome-icon.svg', class: 'icon'
+              %a.at-loop.disabled{href: '#', title: 'Loop', data: { action: 'player#toggleLoop', player: { target: 'loop' } }}
+                %i.fas.fa-retweet
+              .btn-group.dropup
+                %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                  %i.fas.fa-folder-plus
+                .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
+                  = render 'songs/playlist_menu', song: @song, playlists: @playlists
+              .btn-group.dropup
+                %button.btn.dropdown-toggle.at-layout-button{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                  %i.fas.fa-table-columns
+                .dropdown-menu.dropdown-menu-right.at-layout-options
+                  .at-slider-container
+                    %span.at-slider-label Scale
+                    %input{type: 'range', min: 25, max: 200, value: 100, step: 5, data: { action: 'input->player#changeZoom', player: { target: 'zoomSlider' } }}/
+                    %span.at-slider-value{data: { player: { target: 'zoomLabel' } }} 100%
+                  .dropdown-divider
+                  %a.dropdown-item{href: '#', data: { layout: 'horizontal-screen', action: 'player#changeLayout' }}
+                    %i.far.fa-caret-square-right
+                    Horizontal Layout (Off-Screen)
+                  %a.dropdown-item{href: '#', data: { layout: 'horizontal-bar', action: 'player#changeLayout' }}
+                    %i.fas.fa-caret-square-right
+                    Horizontal Layout (Bar Wise)
+                  %a.dropdown-item{href: '#', data: { layout: 'page', action: 'player#changeLayout' }}
+                    %i.fas.fa-caret-square-down
+                    Vertical Layout
+              - if @song.audio.present?
+                %a.at-sync{href: '#', title: 'Sync Editor', data: { action: 'player#toggleSyncEditor' }}
+                  %i.fas.fa-wave-square
+              = link_to edit_song_path(@song) do
+                %i.fas.fa-edit
+              = link_to songs_path do
+                %i.fas.fa-indent
       %template#at-track-template{data: { player: { target: 'trackTemplate' } }}
         .at-track
           .at-track-info

@@ -9,7 +9,7 @@ export default class extends Controller {
   static outlets = ["sync-editor"]
 
   static targets = [
-    "canvas", "viewport", "trackList", "trackPanel", "playerLoading",
+    "canvas", "dock", "trackList", "trackPanel", "playerLoading",
     "songTitle", "songArtist", "timePosition", "timeSliderValue",
     "playPause", "stop", "countIn", "metronome", "loop",
     "speedLabel", "speedSlider", "zoomLabel", "zoomSlider", "trackTemplate",
@@ -43,7 +43,7 @@ export default class extends Controller {
       player: {
         enablePlayer: true,
         soundFont: "/sonivox.sf2",
-        scrollElement: this.viewportTarget,
+        // scrolls the page (AlphaTab's default scroll element), so the header scrolls away with the score
         scrollOffsetX: -10,
       },
     })
@@ -59,6 +59,12 @@ export default class extends Controller {
       attributes: true,
       attributeFilter: ["data-bs-theme"],
     })
+
+    // the track panel ends above the footer controls, whose height changes with the sync editor
+    this.dockObserver = new ResizeObserver(([entry]) => {
+      this.element.style.setProperty("--dock-height", `${entry.borderBoxSize[0].blockSize}px`)
+    })
+    this.dockObserver.observe(this.dockTarget)
 
     this.restoreVolume()
 
@@ -85,6 +91,7 @@ export default class extends Controller {
       this.themeObserver.disconnect()
       this.themeObserver = null
     }
+    this.dockObserver?.disconnect()
     if (this.api) {
       this.api.destroy()
       this.api = null
@@ -153,7 +160,8 @@ export default class extends Controller {
     }
   }
 
-  toggleSyncEditor() {
+  toggleSyncEditor(e) {
+    e.preventDefault()
     if (this.hasSyncEditorOutlet) {
       this.syncEditorOutlet.toggle()
     }
@@ -204,32 +212,37 @@ export default class extends Controller {
   // --- Actions ---
 
   playPause(e) {
+    e.preventDefault() // a '#' link, which would scroll to the top of the page
     e.stopPropagation()
-    if (!e.target.classList.contains("disabled")) {
+    if (!e.currentTarget.classList.contains("disabled")) {
       this.api.playPause()
     }
   }
 
   stopPlayback(e) {
+    e.preventDefault()
     e.stopPropagation()
-    if (!e.target.classList.contains("disabled")) {
+    if (!e.currentTarget.classList.contains("disabled")) {
       this.api.stop()
     }
   }
 
   toggleCountIn(e) {
+    e.preventDefault()
     e.stopPropagation()
     this.setCountIn(!this.countInTarget.classList.contains("active"))
     this.scheduleNoteSave()
   }
 
   toggleMetronome(e) {
+    e.preventDefault()
     e.stopPropagation()
     this.setMetronome(!this.metronomeTarget.classList.contains("active"))
     this.scheduleNoteSave()
   }
 
   toggleLoop(e) {
+    e.preventDefault()
     e.stopPropagation()
     this.setLoop(!this.loopTarget.classList.contains("active"))
     this.scheduleNoteSave()

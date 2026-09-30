@@ -19,51 +19,47 @@
 html
   font-family: 'Roboto', sans-serif
   font-size: 14px
-  height: 100vh
 
+// the page scrolls (not just the score), so the header scrolls away, and a short score still fills the window
 body
   font-family: 'Roboto', sans-serif
   font-size: 14px
-  height: 100vh
+  min-height: 100vh
   display: flex
-  align-content: stretch
   flex-direction: column
 
 .at-wrap
   position: relative
-  height: 100vh
+  flex: 1 0 auto
   margin: 0
   border: 1px solid rgba(0, 0, 0, 0.12)
   background: #fff
   display: flex
   flex-direction: column
-  overflow: hidden
 
 .at-content
-  flex: 1 1 auto
-  overflow: hidden
+  flex: 1 0 auto
   position: relative
 
+.at-dock
+  position: sticky
+  bottom: 0
+  z-index: 1000
+
 .at-footer
-  flex: 0 0 auto
   background: #1b8f40
   color: #fff
 
 .at-viewport
-  overflow-y: auto
-  position: absolute
-  top: 0
-  left: 0
-  right: 0
-  bottom: 0
   padding-right: 20px
 
+// a drawer over the window (since the score may be taller than it) above the footer controls, measured by the player controller
 .at-track-panel
-  position: absolute
+  position: fixed
   top: 0
   left: 0
   width: 280px
-  bottom: 0
+  bottom: var(--dock-height, 0)
   background: #f7f7f7
   border-left: 1px solid rgba(0, 0, 0, 0.12)
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15)
