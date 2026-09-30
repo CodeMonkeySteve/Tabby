@@ -1,25 +1,25 @@
 .songs.container-fluid
   - if @songs.empty?
     %p.text-body-secondary= params[:q].present? ? "No songs match “#{params[:q]}”." : "No songs yet."
-  - @songs.in_groups_of(3, false).each do |songs|
-    .row.mb-3
-      - songs.each do |song|
-        .col-md-4
-          .song.card
-            .card-body
-              %span.float-end
-                %a.btn{href: edit_song_path(song)}
-                  %i.bi.bi-pencil-square
-                .dropdown.d-inline-block
-                  %button.btn{type: 'button', title: "Playlists", aria: { expanded: false, haspopup: true },
-                              data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
-                    %i.bi.bi-folder-plus
-                  .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
-                    = render 'songs/playlist_menu', song:, playlists: @playlists
-              %a{href: player_path(song)}
-                %img.cover.img-fluid.rounded-start.float-start.me-3{src: song.cover&.url || image_path('cover-default.png')}
-              %a{href: player_path(song)}
-                %h5.card-title= song.title
-              %h6.card-text= song.artist
-              - song.instrument_types.each do |type|
-                %span.badge.text-bg-secondary= type
+  -# one wrapping row, so the gutters between cards are the same at every width, and cards in a row are the same height
+  .row.row-cols-1.row-cols-md-3.g-3.mb-3
+    - @songs.each do |song|
+      .col
+        .song.card.h-100
+          .card-body
+            %span.float-end.d-flex
+              %a.btn{href: edit_song_path(song)}
+                %i.bi.bi-pencil-square
+              .dropdown
+                %button.btn{type: 'button', title: "Playlists", aria: { expanded: false, haspopup: true },
+                            data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
+                  %i.bi.bi-folder-plus
+                .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
+                  = render 'songs/playlist_menu', song:, playlists: @playlists
+            %a{href: player_path(song)}
+              %img.cover.img-fluid.rounded-start.float-start.me-3{src: song.cover&.url || image_path('cover-default.png')}
+            %a{href: player_path(song)}
+              %h5.card-title= song.title
+            %h6.card-text= song.artist
+            - song.instrument_types.each do |type|
+              %span.badge.text-bg-secondary= type
