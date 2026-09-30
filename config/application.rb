@@ -35,6 +35,9 @@ module Tabby
 
     config.time_zone = 'America/Los_Angeles'
 
+    # Songsterr imports run in-process; an import interrupted by a restart is lost
+    config.active_job.queue_adapter = :async
+
     config.app_generators do |g|
       g.orm :active_record
       g.template_engine :haml

@@ -11,6 +11,7 @@ gem 'kreds'
 gem 'falcon'
 gem 'bootsnap', require: false
 gem 'lograge'
+gem 'solid_cable'
 
 # database
 gem 'pg'
@@ -45,12 +46,12 @@ gem 'terser'
 
 # import
 gem 'nodo'
+gem 'faraday-follow_redirects'
 
 group :development, :test do
   gem 'awesome_print'
   gem 'bundler-audit', require: false
   gem 'brakeman', require: false
-  gem 'rubocop-rails-omakase', require: false
 end
 
 group :test do

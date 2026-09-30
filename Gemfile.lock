@@ -181,6 +181,8 @@ GEM
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
+    faraday-follow_redirects (0.5.0)
+      faraday (>= 1, < 3)
     faraday-net_http (3.4.2)
       net-http (~> 0.5)
     fastimage (2.4.1)
@@ -473,6 +475,11 @@ GEM
     snaky_hash (2.0.3)
       hashie (>= 0.1.0, < 6)
       version_gem (>= 1.1.8, < 3)
+    solid_cable (4.1.0)
+      actioncable (>= 7.2)
+      activejob (>= 7.2)
+      activerecord (>= 7.2)
+      railties (>= 7.2)
     sprockets (4.2.2)
       concurrent-ruby (~> 1.0)
       logger
@@ -540,6 +547,7 @@ DEPENDENCIES
   factory_bot_rails
   faker
   falcon
+  faraday-follow_redirects
   fastimage
   haml-rails
   importmap-rails
@@ -563,6 +571,7 @@ DEPENDENCIES
   rubocop-rails-omakase
   sass-rails
   shrine
+  solid_cable
   stimulus-rails
   terser
   torque-postgresql
@@ -623,6 +632,7 @@ CHECKSUMS
   faker (3.8.0) sha256=c147b308df73a90f27a4fc84f18d4c22ef0ad9c2a64b2b61c86fd0ca71753efc
   falcon (0.55.3) sha256=0287bdace3554bb2e90dd8af2278800fc8ed8428710ceb31787abfe4463c973b
   faraday (2.14.1) sha256=a43cceedc1e39d188f4d2cdd360a8aaa6a11da0c407052e426ba8d3fb42ef61c
+  faraday-follow_redirects (0.5.0) sha256=5cde93c894b30943a5d2b93c2fe9284216a6b756f7af406a1e55f211d97d10ad
   faraday-net_http (3.4.2) sha256=f147758260d3526939bf57ecf911682f94926a3666502e24c69992765875906c
   fastimage (2.4.1) sha256=c64bebd46b6fd8943ab70c1e6e85ff728f970f2e48f92ecd249b6bc3a540ad20
   ffi (1.17.4) sha256=bcd1642e06f0d16fc9e09ac6d49c3a7298b9789bcb58127302f934e437d60acf
@@ -747,6 +757,7 @@ CHECKSUMS
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
   shrine (3.6.0) sha256=d361b7e5a452d65d900f3326ed99fe343d0d3b2ce17e012fc04ae85b0373358c
   snaky_hash (2.0.3) sha256=25a3d299566e8153fb02fa23fd9a9358845950f7a523ddbbe1fa1e0d79a6d456
+  solid_cable (4.1.0) sha256=828e3d509207b82b4f05f4e9c85f696994710679b52d511aa7f97ebd212d3226
   sprockets (4.2.2) sha256=761e5a49f1c288704763f73139763564c845a8f856d52fba013458f8af1b59b1
   sprockets-rails (3.5.2) sha256=a9e88e6ce9f8c912d349aa5401509165ec42326baf9e942a85de4b76dbc4119e
   stimulus-rails (1.3.4) sha256=765676ffa1f33af64ce026d26b48e8ffb2e0b94e0f50e9119e11d6107d67cb06

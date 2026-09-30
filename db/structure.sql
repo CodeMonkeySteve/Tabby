@@ -133,6 +133,38 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: solid_cable_messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.solid_cable_messages (
+    id bigint NOT NULL,
+    channel bytea NOT NULL,
+    payload bytea NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    channel_hash bigint NOT NULL
+);
+
+
+--
+-- Name: solid_cable_messages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.solid_cable_messages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: solid_cable_messages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.solid_cable_messages_id_seq OWNED BY public.solid_cable_messages.id;
+
+
+--
 -- Name: song_notes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -202,6 +234,13 @@ ALTER TABLE ONLY public.play_histories ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: solid_cable_messages id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.solid_cable_messages ALTER COLUMN id SET DEFAULT nextval('public.solid_cable_messages_id_seq'::regclass);
+
+
+--
 -- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -239,6 +278,14 @@ ALTER TABLE ONLY public.playlists
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: solid_cable_messages solid_cable_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.solid_cable_messages
+    ADD CONSTRAINT solid_cable_messages_pkey PRIMARY KEY (id);
 
 
 --
@@ -298,6 +345,20 @@ CREATE UNIQUE INDEX index_play_histories_on_user_id_and_song_id_and_date ON publ
 --
 
 CREATE INDEX index_playlists_on_user_id_and_name ON public.playlists USING btree (user_id, name);
+
+
+--
+-- Name: index_solid_cable_messages_on_channel_hash; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_solid_cable_messages_on_channel_hash ON public.solid_cable_messages USING btree (channel_hash);
+
+
+--
+-- Name: index_solid_cable_messages_on_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_solid_cable_messages_on_created_at ON public.solid_cable_messages USING btree (created_at);
 
 
 --
@@ -411,6 +472,7 @@ ALTER TABLE ONLY public.playlists
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260930000000'),
 ('20260928000000'),
 ('20260927071000');
 
