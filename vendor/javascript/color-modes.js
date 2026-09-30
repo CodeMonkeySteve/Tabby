@@ -1,6 +1,6 @@
 /*!
  * https://getbootstrap.com/docs/5.3/assets/js/color-modes.js
- * Modified to use font icons (instead of SVG)
+ * Modified to use font icons (instead of SVG), and for Turbo (which replaces the page body on each visit)
  *
  *
  * Color mode toggler for Bootstrap's docs (https://getbootstrap.com/)
@@ -64,17 +64,15 @@
     }
   })
 
-  window.addEventListener('DOMContentLoaded', () => {
-    showActiveTheme(getPreferredTheme())
+  document.addEventListener('turbo:load', () => showActiveTheme(getPreferredTheme()))
 
-    document.querySelectorAll('[data-bs-theme-value]')
-      .forEach(toggle => {
-        toggle.addEventListener('click', () => {
-          const theme = toggle.getAttribute('data-bs-theme-value')
-          setStoredTheme(theme)
-          setTheme(theme)
-          showActiveTheme(theme, true)
-        })
-      })
+  document.addEventListener('click', event => {
+    const toggle = event.target.closest('[data-bs-theme-value]')
+    if (!toggle) return
+
+    const theme = toggle.getAttribute('data-bs-theme-value')
+    setStoredTheme(theme)
+    setTheme(theme)
+    showActiveTheme(theme, true)
   })
 })()

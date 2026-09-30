@@ -7,9 +7,33 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
   let(:song) { create(:song) }
   before { sign_in user }
 
-  it "#index" do
-    get :index
-    expect(response).to be_successful
+  describe "#index" do
+    before do
+      create(:song, title: "Schism", artist: "Tool", track_types: %w[bass])
+      create(:song, title: "Hysteria", artist: "Muse", track_types: %w[bass])
+    end
+
+    def titles = Nokogiri::HTML(response.body).css('.song .card-title').map(&:text)
+
+    it "shows songs matching the search" do
+      get :index, params: { q: 'tool' }
+      expect(response).to be_successful
+      expect(titles).to eq ["Schism"]
+      expect(response.body).to include 'value="tool"'
+    end
+
+    it "renders just the page for the search box's Turbo Frame updates" do
+      request.headers['Turbo-Frame'] = 'songs'
+      get :index, params: { q: 'muse' }
+      expect(titles).to eq ["Hysteria"]
+      expect(response.body).to include '<turbo-frame id="songs" target="_top">'
+      expect(response.body).not_to include 'navbar' # turbo-rails' minimal frame layout, not the application layout
+    end
+
+    it "says when nothing matches" do
+      get :index, params: { q: 'nothing' }
+      expect(response.body).to include "No songs match"
+    end
   end
 
   it "#new" do

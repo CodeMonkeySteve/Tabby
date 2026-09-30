@@ -38,6 +38,10 @@ class UsersController < ApplicationController
     end
   end
 
+  def dashboard
+    @dashboard = Dashboard.new(current_user)
+  end
+
 private
 
   def user_params

@@ -1,4 +1,4 @@
-// import { Turbo } from '@hotwired/turbo'
+import '@hotwired/turbo-rails'
 import 'controllers'
 
 // import TurboPower from 'turbo_power'

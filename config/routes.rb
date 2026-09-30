@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   get 'signout' => 'users#logout', as: 'logout'
   get 'settings' => 'users#edit', as: 'settings'
   patch 'settings' => 'users#update'
+  get 'dashboard' => 'users#dashboard', as: 'dashboard'
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get 'manifest' => 'rails/pwa#manifest', as: :pwa_manifest
@@ -30,7 +31,6 @@ Rails.application.routes.draw do
   end
   get 'p/:id' => 'songs#player', as: 'player'
 
-  resource :dashboard, only: :show
-  root to: 'dashboards#show'
+  root to: 'users#dashboard'
   mount ActionDispatch::Static.new(Rails.application, Rails.root.join('storage/files').to_s), at: '/files'
 end

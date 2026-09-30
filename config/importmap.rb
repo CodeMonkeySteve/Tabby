@@ -11,7 +11,7 @@ pin 'bootstrap', to: 'bootstrap.min.js', preload: true
 
 # pin "handlebars", to: 'https://ga.jspm.io/npm:handlebars@4.7.8/dist/handlebars.min.js'
 
-#pin '@hotwired/turbo', to: 'turbo.min.js', preload: true
+pin '@hotwired/turbo-rails', to: 'turbo.min.js', preload: true
 pin '@hotwired/stimulus', to: 'stimulus.min.js', preload: true
 pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js', preload: true
 #pin 'turbo_power' # @0.7.0

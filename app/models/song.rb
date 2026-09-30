@@ -38,6 +38,14 @@ class Song < ApplicationRecord
   # The current user's note, e.g. `song.note || song.build_note`
   has_one :note, -> { where(user: Current.user) }, class_name: 'SongNote'
 
+  # Songs whose title or artist contains each word of the query (or all songs, for a blank query)
+  scope :search, ->(query) do
+    query.to_s.split.reduce(all) do |songs, word|
+      pattern = "%#{sanitize_sql_like(word)}%"
+      songs.where('title ILIKE :pattern OR artist ILIKE :pattern', pattern:)
+    end
+  end
+
   # Songs with a track for any of the given instrument types (or all songs, if none are given)
   scope :for_instruments, ->(types) { types.empty? ? all : where('track_types && ARRAY[?]::instrument_type[]', types) }
 

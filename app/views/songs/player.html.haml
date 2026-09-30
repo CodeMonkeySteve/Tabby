@@ -9,6 +9,8 @@
     %meta{name: 'application-name', content: 'Tabby'}/
     %meta{name: 'mobile-web-app-capable', content: 'yes'}/
     = csrf_meta_tags
+    -# a standalone page (with AlphaTab's workers and audio), so always load it fully rather than with a Turbo visit
+    %meta{name: 'turbo-visit-control', content: 'reload'}/
 
     %link{href: 'https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,700&display=swap', rel: 'stylesheet'}/
 

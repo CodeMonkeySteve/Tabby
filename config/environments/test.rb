@@ -45,6 +45,6 @@ Rails.application.configure do
 
   config.logger = ActiveSupport::Logger.new(STDOUT)
   config.logger.formatter = ->(severity, time, progname, msg, *args) { "#{severity[0, 1] * 2} #{msg}\n" }
-  config.log_level = ENV.fetch("LOG_LEVEL", "DEBUG")
+  config.log_level = ENV.fetch('LOG_LEVEL', 'WARN')
   config.colorize_logging = true
 end

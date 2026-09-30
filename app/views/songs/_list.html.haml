@@ -1,0 +1,19 @@
+.songs.container-fluid
+  - if @songs.empty?
+    %p.text-body-secondary= params[:q].present? ? "No songs match “#{params[:q]}”." : "No songs yet."
+  - @songs.in_groups_of(3, false).each do |songs|
+    .row.mb-3
+      - songs.each do |song|
+        .col-md-4
+          .song.card
+            .card-body
+              %span.float-end
+                %a.btn{href: edit_song_path(song)}
+                  %i.bi.bi-pencil-square
+              %a{href: player_path(song)}
+                %img.cover.img-fluid.rounded-start.float-start.me-3{src: song.cover&.url || image_path('cover-default.png')}
+              %a{href: player_path(song)}
+                %h5.card-title= song.title
+              %h6.card-text= song.artist
+              - song.instrument_types.each do |type|
+                %span.badge.text-bg-secondary= type

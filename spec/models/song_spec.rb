@@ -75,4 +75,17 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
       expect(song.errors[:score].sole).to match(/can't be read .* not found/)
     end
   end
+
+  it "searches by title and artist" do
+    schism = create(:song, title: "Schism", artist: "Tool", track_types: %w[bass])
+    lateralus = create(:song, title: "Lateralus", artist: "Tool", track_types: %w[bass])
+    hysteria = create(:song, title: "Hysteria", artist: "Muse", track_types: %w[bass])
+
+    expect(Song.search("tool")).to contain_exactly schism, lateralus
+    expect(Song.search("SCHISM")).to contain_exactly schism
+    expect(Song.search("tool lat")).to contain_exactly lateralus
+    expect(Song.search("teria mus")).to contain_exactly hysteria
+    expect(Song.search("100%")).to be_empty
+    expect(Song.search("  ")).to contain_exactly schism, lateralus, hysteria
+  end
 end

@@ -1,4 +1,4 @@
-- content_for :title, "Dashboard"
+- content_for :title, "Tabby - Dashboard"
 
 .dashboard
   .card.mb-4
@@ -8,6 +8,7 @@
       %span.ms-auto.text-body-secondary.small= "Last #{Dashboard::ACTIVITY_WEEKS} weeks"
     .card-body.d-flex.flex-wrap.align-items-center.gap-4
       = render 'activity_graph', dashboard: @dashboard
+
       %dl.activity-stats.mb-0
         %dt Practice time
         %dd= practice_time(@dashboard.activity_seconds)
@@ -75,7 +76,7 @@
             %span.ms-auto.small.text-body-secondary{title: "Songs with a track for your instruments"}
               = current_user.instrument_types.map(&:humanize).to_sentence
           - else
-            = link_to "Choose your instruments", edit_user_path, class: 'ms-auto small'
+            = link_to "Choose your instruments", settings_path, class: 'ms-auto small'
         - if @dashboard.recent_songs.any?
           .list-group.list-group-flush
             - @dashboard.recent_songs.each do |song|

@@ -53,6 +53,34 @@ RSpec.describe UsersController do
       end
     end
 
+    describe "#dashboard" do
+      let(:song) { create(:song, title: "Bass Song", track_types: %w[bass]) }
+
+      it "#show" do
+        create(:playlist, user:, name: "Warmups", songs: [song])
+        create(:play_history, user:, song:, date: Date.current, duration: 600)
+
+        get :dashboard
+        expect(response).to be_successful
+
+        page = Nokogiri::HTML(response.body)
+        expect(page.at_css('#playlists .accordion-button').text).to include "Warmups"
+        expect(page.css('.activity-week')).to have(Dashboard::ACTIVITY_WEEKS).items
+        expect(page.css('.activity-grid .activity-day.level-2')).to have(1).item
+        expect(page.css('.list-group-item').map(&:text).join).to include "Bass Song"
+      end
+
+      it "#show without any data" do
+        user.update!(instrument_types: [])
+
+        get :dashboard
+        expect(response).to be_successful
+
+        expect(response.body).to include "No playlists yet"
+        expect(Nokogiri::HTML(response.body).at_css('a:contains("Choose your instruments")')['href']).to eq settings_path
+      end
+    end
+
     xit "#logout" do
       delete :logout
       expect(controller.current_user).to be_nil

@@ -1,21 +1,15 @@
-.songs.container-fluid
-  - @songs.in_groups_of(3, false).each do |songs|
-    .row.mb-3
-      - songs.each do |song|
-        .col-md-4
-          .song.card
-            .card-body
-              %span.float-end
-                %a.btn{href: edit_song_path(song)}
-                  %i.bi.bi-pencil-square
-              %a{href: player_path(song)}
-                %img.cover.img-fluid.rounded-start.float-start.me-3{src: song.cover&.url || image_path('cover-default.png')}
-              %a{href: player_path(song)}
-                %h5.card-title= song.title
-              %h6.card-text= song.artist
-              - song.instrument_types.each do |type|
-                %span.badge.text-bg-secondary= type
+-# the results frame's URL replaces the page's as the search changes
+= form_with url: songs_path, method: :get, class: 'mb-3', role: 'search',
+  data: { controller: 'auto-submit', action: 'formdata->auto-submit#omitBlank', turbo_frame: 'songs', turbo_action: 'replace' } do |f|
+  .input-group
+    %span.input-group-text
+      %i.bi.bi-search
+    = f.search_field :q, value: params[:q], placeholder: "Search by title or artist", class: 'form-control', autocomplete: 'off',
+      aria: { label: "Search songs" }, data: { action: 'input->auto-submit#submit' }
 
+-# the search form updates the frame, but its links (to edit or play a song) navigate the whole page
+= turbo_frame_tag 'songs', target: '_top' do
+  = render 'list'
 
 %a.mt-3{href: new_song_path, class: 'btn btn-primary'}
   Add Song
