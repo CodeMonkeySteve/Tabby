@@ -33,7 +33,7 @@ class SongsController < ApplicationController
     respond_to do |format|
       @song.assign_attributes(song_params)
       if @song.save
-        format.html { redirect_to @song, notice: "Song was successfully updated.", status: :see_other }
+        format.html { redirect_to url_from(params[:return_to]) || @song, notice: "Song was successfully updated.", status: :see_other }
         format.json { render :player, status: :ok, location: @song }
       else
         format.html { render :edit, status: :unprocessable_entity }

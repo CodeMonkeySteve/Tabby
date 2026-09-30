@@ -89,6 +89,19 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     patch :update, params: { id: song, song: { title: "New title" } }
     expect(response).to have_http_status(:see_other)
     expect(song.reload.title).to eq "New title"
+    expect(response).to redirect_to song_path(song.reload)
+  end
+
+  it "returns to the page that linked to the edit page after saving, but only on this site" do
+    request.env['HTTP_REFERER'] = player_url(song)
+    get :edit, params: { id: song }
+    expect(Nokogiri::HTML(response.body).at_css('input[name="return_to"]')['value']).to eq player_url(song)
+
+    patch :update, params: { id: song, song: { title: "New title" }, return_to: player_url(song) }
+    expect(response).to redirect_to player_url(song)
+
+    patch :update, params: { id: song.reload, song: { title: "Newer title" }, return_to: 'https://evil.example/phish' }
+    expect(response).to redirect_to song_path(song.reload)
   end
 
   it "#destroy" do

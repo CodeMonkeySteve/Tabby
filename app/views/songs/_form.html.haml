@@ -1,4 +1,7 @@
 = form_with(model: @song) do |f|
+  -# return to the page that linked to the edit page after saving, even after redisplaying the form with errors
+  - if @song.persisted?
+    = hidden_field_tag :return_to, params[:return_to] || request.referer
   - if @song.errors.any?
     .alert.alert-danger
       %h4= "#{pluralize(@song.errors.count, 'error')} prohibited this song from being saved:"

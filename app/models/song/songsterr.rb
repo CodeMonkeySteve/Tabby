@@ -45,7 +45,7 @@ module Song::Songsterr
         score_path.open('rb') { song.score = it }
         audio_path.open('rb') { song.audio = it }
 
-        fetch_cover_art(song, log) if song.cover.nil?
+        fetch_cover_art(song, log) unless song.cover
         song
       end
     end
