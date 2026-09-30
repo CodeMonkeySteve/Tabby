@@ -1,0 +1,15 @@
+.songs.container-fluid
+  %p
+    = link_to songs_path(q: params[:q]), data: { turbo_frame: 'songs' } do
+      %i.bi.bi-arrow-left
+      Back to my songs
+  - if @error
+    .alert.alert-danger= @error
+  - elsif @matches.empty?
+    %p.text-body-secondary= "No Songsterr matches for “#{params[:q]}”."
+  - else
+    .row.row-cols-1.row-cols-md-3.g-3.mb-3
+      - @matches.each do |match|
+        .col
+          - song = @imported[match.song_id]
+          = render 'songsterr_card', match:, song:, state: song ? :imported : :available

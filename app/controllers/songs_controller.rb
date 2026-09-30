@@ -1,9 +1,35 @@
+require 'songsterr'
+
 class SongsController < ApplicationController
-  before_action :find_song, except: %i[index new create]
+  before_action :find_song, except: %i[index new create songsterr_search songsterr_import]
 
   def index
     @songs = Song.search(params[:q]).sorted(params[:sort], user: Current.user)
     @playlists = Current.user.playlists.order(:name)
+  end
+
+  # Songsterr songs matching the search, for importing
+  def songsterr_search
+    params[:q].present? or return redirect_to songs_path
+
+    @matches = Songsterr::Search.call(params[:q]).map { Song::SongsterrMatch.from_result(it) }
+    @imported = Song.for_songsterr_matches(@matches)
+  rescue Songsterr::Error => ex
+    @error = "Can't search Songsterr: #{ex.message}"
+  end
+
+  # Starts importing a Songsterr song, showing its card's progress
+  def songsterr_import
+    match = Song::SongsterrMatch.new(
+      song_id: Integer(params.require(:song_id), 10),
+      artist: params[:artist].to_s,
+      title: params.require(:title),
+      instrument_types: Song::INSTRUMENT_TYPES.map(&:to_s) & Array(params[:instrument_types]),
+    )
+    SongsterrImportJob.set(wait: SongsterrImportJob::START_DELAY).perform_later(Current.user, match.to_h)
+    render partial: 'songsterr_card', locals: { match:, state: :importing }
+  rescue ArgumentError, ActionController::ParameterMissing
+    head :bad_request
   end
 
   def show

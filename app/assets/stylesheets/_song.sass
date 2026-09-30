@@ -4,3 +4,16 @@
       max-width: 80px
     a
       text-decoration: none
+
+// Songsterr search matches, distinct from the library's songs
+$songsterr-accent: #2a9d8f
+
+.songsterr.card
+  border: 1px dashed $songsterr-accent
+  background-color: rgba($songsterr-accent, .06)
+  .songsterr-badge
+    background-color: $songsterr-accent
+    color: #fff
+  .songsterr-log
+    max-height: 8em
+    overflow-y: auto

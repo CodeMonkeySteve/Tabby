@@ -1,0 +1,12 @@
+-# the results frame's URL replaces the page's as the search changes
+= form_with url: songs_path, method: :get, class: 'mb-3', role: 'search',
+  data: { controller: 'auto-submit', action: 'formdata->auto-submit#omitBlank', turbo_frame: 'songs', turbo_action: 'replace' } do |f|
+  .input-group
+    %span.input-group-text
+      %i.bi.bi-search
+    = f.search_field :q, value: params[:q], placeholder: "Search by title or artist", class: 'form-control', autocomplete: 'off',
+      aria: { label: "Search songs" }, data: { action: 'input->auto-submit#submit' }
+    -# the default (title) is blank, so it's left out of the URL
+    = f.select :sort, [["Title", ''], ["Artist", 'artist'], ["Newest", 'newest'], ["Recently Played", 'played']],
+      { selected: params[:sort] }, class: 'form-select flex-grow-0 w-auto', aria: { label: "Sort songs" },
+      data: { action: 'change->auto-submit#submit' }

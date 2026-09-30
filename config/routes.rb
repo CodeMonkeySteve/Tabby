@@ -18,6 +18,11 @@ Rails.application.routes.draw do
   resources :playlists, path: '/pl'
 
   resources 'songs', path: '/s' do
+    collection do
+      get 'songsterr_search' => 'songs#songsterr_search'
+      post 'songsterr_import' => 'songs#songsterr_import'
+    end
+
     member do
       get 'score' => 'songs#score'
       get 'audio' => 'songs#audio'

@@ -58,6 +58,105 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       get :index, params: { q: 'nothing' }
       expect(response.body).to include "No songs match"
     end
+
+    it "offers a Songsterr search only when a search has no local results" do
+      get :index, params: { q: 'nothing' }
+      button = Nokogiri::HTML(response.body).at_css('a.songsterr-search')
+      expect(button['href']).to eq '/s/songsterr_search?q=nothing'
+      expect(button['data-turbo-frame']).to eq 'songs'
+
+      get :index, params: { q: 'tool' }
+      expect(response.body).not_to include 'songsterr-search'
+      get :index
+      expect(response.body).not_to include 'songsterr-search'
+    end
+  end
+
+  describe "#songsterr_search" do
+    let(:results) do
+      JSON.parse(file_fixture('songsterr/search.json').read).reject { it['isJunk'] }.map do
+        Songsterr::Result.new(song_id: it['songId'], artist: it['artist'], title: it['title'], tracks: it['tracks'])
+      end
+    end
+
+    it "shows Songsterr matches as cards, linking already-imported songs" do
+      imported = create(:song, title: "Head Over Heels", artist: "Accept", songsterr_id: 1041)
+      allow(Songsterr::Search).to receive(:call).with("head over heels").and_return(results)
+      get :songsterr_search, params: { q: "head over heels" }
+
+      doc = Nokogiri::HTML(response.body)
+      cards = doc.css('turbo-frame .songsterr.card')
+      expect(cards.map { it.at_css('.card-title').text }).to eq ["Head Over Heels", "Head Over Heels"]
+      expect(cards.first.css('.badge.text-bg-secondary').map(&:text)).to eq %w[drums bass guitar keys vocals]
+
+      tff = doc.at_css('turbo-frame#songsterr_20361')
+      expect(tff.at_css('a[target=_blank][rel=noopener]')['href'])
+        .to eq 'https://www.songsterr.com/a/wsa/tears-for-fears-head-over-heels-tab-s20361'
+      expect(tff.at_css('form[action="/s/songsterr_import"] button').text).to include "Import"
+      expect(tff.at_css('input[name=song_id]')['value']).to eq '20361'
+
+      accept = doc.at_css('turbo-frame#songsterr_1041')
+      expect(accept.at_css('form')).to be_nil
+      expect(accept.at_css("a[href='#{player_path(imported)}']")).to be_present
+    end
+
+    it "links songs already in the library by title and artist, since importing would replace them" do
+      manual = create(:song, title: "HEAD OVER HEELS", artist: "tears for fears")
+      allow(Songsterr::Search).to receive(:call).and_return(results)
+      get :songsterr_search, params: { q: "head over heels" }
+
+      tff = Nokogiri::HTML(response.body).at_css('turbo-frame#songsterr_20361')
+      expect(tff.at_css('form')).to be_nil
+      expect(tff.at_css("a[href='#{player_path(manual)}']")).to be_present
+    end
+
+    it "renders into the search results frame" do
+      allow(Songsterr::Search).to receive(:call).and_return([])
+      request.headers['Turbo-Frame'] = 'songs'
+      get :songsterr_search, params: { q: "zzz" }
+      expect(response.body).to include '<turbo-frame id="songs" target="_top">'
+      expect(response.body).to include "No Songsterr matches for “zzz”."
+    end
+
+    it "shows Songsterr errors" do
+      allow(Songsterr::Search).to receive(:call).and_raise(Songsterr::Error, "Failed to fetch")
+      get :songsterr_search, params: { q: "x" }
+      expect(response).to be_successful
+      expect(Nokogiri::HTML(response.body).at_css('.alert-danger').text).to include "Can't search Songsterr: Failed to fetch"
+    end
+
+    it "goes back to the song search without a query" do
+      get :songsterr_search
+      expect(response).to redirect_to songs_path
+    end
+  end
+
+  describe "#songsterr_import" do
+    include ActiveJob::TestHelper
+    include ActiveSupport::Testing::TimeHelpers
+
+    let(:params) { { song_id: '20361', artist: "Tears for Fears", title: "Head Over Heels", instrument_types: %w[bass keys] } }
+    let(:match) do
+      Song::SongsterrMatch.new(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels", instrument_types: %w[bass keys])
+    end
+
+    it "imports in the background, showing the card's progress" do
+      freeze_time do
+        expect { post :songsterr_import, params: }
+          .to have_enqueued_job(SongsterrImportJob).with(user, match.to_h).at(SongsterrImportJob::START_DELAY.from_now)
+      end
+
+      frame = Nokogiri::HTML(response.body).at_css('turbo-frame#songsterr_20361')
+      expect(frame.text).to include "Importing…"
+      expect(frame.at_css('turbo-cable-stream-source')).to be_present
+      expect(frame.at_css('ul#songsterr_20361_log')).to be_present
+      expect(frame.at_css('form')).to be_nil
+    end
+
+    it "rejects invalid Songsterr ids" do
+      expect { post :songsterr_import, params: params.merge(song_id: 'https://evil.example/') }.not_to have_enqueued_job
+      expect(response).to have_http_status :bad_request
+    end
   end
 
   it "#new" do

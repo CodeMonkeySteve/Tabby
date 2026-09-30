@@ -50,6 +50,17 @@ module Song::Songsterr
       end
     end
 
+    # The library's songs for Song::SongsterrMatches, by Songsterr song ID: those imported from them, or else with the same title
+    # and artist (ignoring case), which importing would replace
+    def for_songsterr_matches(matches)
+      songs = where(songsterr_id: matches.map(&:song_id)).or(where('LOWER(title) IN (?)', matches.map { it.title.downcase })).to_a
+      matches.to_h do |match|
+        song = songs.find { it.songsterr_id == match.song_id } ||
+               songs.find { it.title.casecmp?(match.title) && it.artist.to_s.casecmp?(match.artist) }
+        [match.song_id, song]
+      end.compact
+    end
+
     private
 
     # The instrument type of a Songsterr track, whose vocal, bass, and drums flags are more reliable than its name and program

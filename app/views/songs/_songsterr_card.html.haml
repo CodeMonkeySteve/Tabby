@@ -1,0 +1,41 @@
+-# A Songsterr search match, in its own frame so importing replaces just this card.  Links navigate the whole page, but the import
+-# form targets this frame.  States: :available, :importing, :imported (with song), :failed (with error)
+- song = local_assigns[:song]
+- error = local_assigns[:error]
+= turbo_frame_tag match.frame_id, target: '_top' do
+  .songsterr.card.h-100
+    .card-body
+      %span.float-end
+        %a.btn{href: match.url, target: '_blank', rel: 'noopener', title: "View on Songsterr"}
+          %i.bi.bi-box-arrow-up-right
+      %span.badge.songsterr-badge.float-start.me-3 Songsterr
+      %h5.card-title= match.title
+      %h6.card-text= match.artist
+      - match.instrument_types.each do |type|
+        %span.badge.text-bg-secondary= type
+
+      .mt-3
+        - case state
+        - when :imported
+          = link_to player_path(song), class: 'btn btn-sm btn-success' do
+            %i.bi.bi-play-circle
+            Play
+          = link_to edit_song_path(song), class: 'btn btn-sm btn-secondary' do
+            %i.bi.bi-pencil-square
+            Edit
+        - when :importing
+          = turbo_stream_from SongsterrImportJob.stream(Current.user, match)
+          .d-flex.align-items-center
+            .spinner-border.spinner-border-sm.me-2{role: 'status', aria: { hidden: true }}
+            Importing…
+          %ul.songsterr-log.list-unstyled.small.text-body-secondary.mt-2.mb-0{id: "#{match.frame_id}_log"}
+        - else
+          - if state == :failed
+            .alert.alert-danger.small.py-2.mb-2= error
+          -# no authenticity token, since a card broadcast by the import job has no session to make one; Turbo sends the page's
+          -# CSRF token in a header instead
+          = button_to songsterr_import_songs_path, class: 'btn btn-sm btn-primary', authenticity_token: false,
+            form: { data: { turbo_frame: match.frame_id } },
+            params: { song_id: match.song_id, artist: match.artist, title: match.title, instrument_types: match.instrument_types } do
+            %i.bi.bi-cloud-download
+            = state == :failed ? "Retry Import" : "Import"
