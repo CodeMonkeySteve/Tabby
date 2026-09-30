@@ -38,7 +38,7 @@
         .at-viewport
           #alphaTab.at-canvas{data: { player: { target: 'canvas' } }}
         .at-track-panel{data: { player: { target: 'trackPanel' } }}
-          %button.at-track-panel-close{type: 'button', data: { action: 'player#toggleTracks' }}
+          %button.at-track-panel-close{type: 'button', title: "Close", data: { action: 'player#toggleTracks' }}
             %i.fas.fa-close
           %h4 Tracks
           .at-track-list{data: { player: { target: 'trackList' } }}
@@ -49,25 +49,25 @@
             .sync-toolbar
               %div
                 .btn-group
-                  %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Auto Sync', data: { action: 'sync-editor#performAutoSync' }}
+                  %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: "Auto Sync", data: { action: 'sync-editor#performAutoSync' }}
                     %i.fas.fa-magic
                     Auto Sync
-                  %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Reset Sync Points', data: { action: 'sync-editor#performResetSyncPoints' }}
+                  %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: "Reset Sync Points", data: { action: 'sync-editor#performResetSyncPoints' }}
                     %i.fas.fa-map-pin
                     Reset
-                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Zoom Out', data: { action: 'sync-editor#zoomOut' }}
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: "Zoom Out", data: { action: 'sync-editor#zoomOut' }}
                   %i.fas.fa-magnifying-glass-minus
-                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Reset Zoom', data: { action: 'sync-editor#resetZoom', sync_editor: { target: 'zoomLabel' } }}
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: "Reset Zoom", data: { action: 'sync-editor#resetZoom', sync_editor: { target: 'zoomLabel' } }}
                   100%
-                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Zoom In', data: { action: 'sync-editor#zoomIn' }}
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: "Zoom In", data: { action: 'sync-editor#zoomIn' }}
                   %i.fas.fa-magnifying-glass-plus
-                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Undo', data: { action: 'sync-editor#performUndo', sync_editor: { target: 'undoBtn' } }, disabled: true}
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: "Undo", data: { action: 'sync-editor#performUndo', sync_editor: { target: 'undoBtn' } }, disabled: true}
                   %i.fas.fa-undo
-                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: 'Redo', data: { action: 'sync-editor#performRedo', sync_editor: { target: 'redoBtn' } }, disabled: true}
+                %button.btn.btn-sm.btn-outline-secondary{type: 'button', title: "Redo", data: { action: 'sync-editor#performRedo', sync_editor: { target: 'redoBtn' } }, disabled: true}
                   %i.fas.fa-redo
               %div
                 %span.text-muted.me-2{data: { sync_editor: { target: 'statusMsg' } }}
-                %button.btn.btn-sm.btn-primary{type: 'button', title: 'Save', data: { action: 'sync-editor#save', sync_editor: { target: 'saveBtn' } }}
+                %button.btn.btn-sm.btn-primary{type: 'button', title: "Save", data: { action: 'sync-editor#save', sync_editor: { target: 'saveBtn' } }}
                   %i.fas.fa-save
                   Save
             .sync-area{data: { action: 'scroll->sync-editor#onScroll', sync_editor: { target: 'syncArea' } }}
@@ -80,14 +80,14 @@
             .at-time-slider-value{data: { player: { target: 'timeSliderValue' } }}
           .at-player
             .at-player-left
-              %a.at-stop.disabled{href: '#', title: 'Stop', data: { action: 'player#stopPlayback', player: { target: 'stop' } }}
+              %a.at-stop.disabled{href: '#', title: "Stop", data: { action: 'player#stopPlayback', player: { target: 'stop' } }}
                 %i.fas.fa-stop
-              %a.at-play-pause.disabled{href: '#', title: 'Play/Pause', data: { action: 'player#playPause', player: { target: 'playPause' } }}
+              %a.at-play-pause.disabled{href: '#', title: "Play/Pause (Space)", data: { action: 'player#playPause', player: { target: 'playPause' } }}
                 %i.fas.fa-play
-              %a.at-tracks{href: '#', title: 'Tracks', data: { action: 'player#toggleTracks' }}
+              %a.at-tracks{href: '#', title: "Tracks", data: { action: 'player#toggleTracks' }}
                 %i.fas.fa-list-check
               .btn-group.dropup
-                %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                %button.btn.dropdown-toggle{type: 'button', title: "Speed", aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
                   %i.fas.fa-gauge
                 .dropdown-menu.at-speed-options
                   .at-slider-container
@@ -95,7 +95,7 @@
                     %input{type: 'range', min: 50, max: 200, value: 100, step: 10, data: { action: 'input->player#changeSpeed', player: { target: 'speedSlider' } }}/
                     %span.at-slider-value{data: { player: { target: 'speedLabel' } }} 1x
               .btn-group.dropup
-                %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                %button.btn.dropdown-toggle{type: 'button', title: "Volume (Up/Down Arrows)", aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
                   %i.fas.fa-volume-low{data: { player: { target: 'volumeIcon' } }}
                 .dropdown-menu.at-volume-options
                   .at-slider-container
@@ -111,7 +111,7 @@
                 .progress-value.w-100.h-100.rounded-circle.d-flex.align-items-center.justify-content-center.font-weight-bold
                   %span.progress-value-number 0
                   %sup.small %
-              .at-time-position{title: 'Time Position', data: { player: { target: 'timePosition' } }}
+              .at-time-position{title: "Time Position", data: { player: { target: 'timePosition' } }}
 
             .at-player-center
               .at-song-details
@@ -119,19 +119,19 @@
                 %span.at-song-artist{data: { player: { target: 'songArtist' } }}
 
             .at-player-right
-              %a.at-count-in.disabled{href: '#', title: 'Count-In', data: { action: 'player#toggleCountIn', player: { target: 'countIn' } }}
+              %a.at-count-in.disabled{href: '#', title: "Count-In", data: { action: 'player#toggleCountIn', player: { target: 'countIn' } }}
                 %i.fas.fa-hourglass-half
-              %a.at-metronome.disabled{href: '#', title: 'Metronome', data: { action: 'player#toggleMetronome', player: { target: 'metronome' } }}
+              %a.at-metronome.disabled{href: '#', title: "Metronome", data: { action: 'player#toggleMetronome', player: { target: 'metronome' } }}
                 = image_tag 'metronome-icon.svg', class: 'icon'
-              %a.at-loop.disabled{href: '#', title: 'Loop', data: { action: 'player#toggleLoop', player: { target: 'loop' } }}
+              %a.at-loop.disabled{href: '#', title: "Loop", data: { action: 'player#toggleLoop', player: { target: 'loop' } }}
                 %i.fas.fa-retweet
               .btn-group.dropup
-                %button.btn.dropdown-toggle{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                %button.btn.dropdown-toggle{type: 'button', title: "Playlists", aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
                   %i.fas.fa-folder-plus
                 .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
                   = render 'songs/playlist_menu', song: @song, playlists: @playlists
               .btn-group.dropup
-                %button.btn.dropdown-toggle.at-layout-button{aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }, type: 'button'}
+                %button.btn.dropdown-toggle.at-layout-button{type: 'button', title: "Layout", aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
                   %i.fas.fa-table-columns
                 .dropdown-menu.dropdown-menu-right.at-layout-options
                   .at-slider-container
@@ -149,21 +149,21 @@
                     %i.fas.fa-caret-square-down
                     Vertical Layout
               - if @song.audio.present?
-                %a.at-sync{href: '#', title: 'Sync Editor', data: { action: 'player#toggleSyncEditor' }}
+                %a.at-sync{href: '#', title: "Sync Editor", data: { action: 'player#toggleSyncEditor' }}
                   %i.fas.fa-wave-square
-              = link_to edit_song_path(@song) do
+              = link_to edit_song_path(@song), title: "Edit Song" do
                 %i.fas.fa-edit
-              = link_to songs_path do
+              = link_to songs_path, title: "Songs" do
                 %i.fas.fa-indent
       %template#at-track-template{data: { player: { target: 'trackTemplate' } }}
         .at-track
           .at-track-info
-            %input.at-track-check{type: 'checkbox', checked: true}/
+            %input.at-track-check{type: 'checkbox', title: "Show in Score", checked: true}/
             %label.at-track-name
             %span.at-track-type.badge.text-bg-secondary
             .at-track-buttons
-              %button.btn.btn-sm.at-track-solo{type: 'button', title: 'Solo'} S
-              %button.btn.btn-sm.at-track-mute{type: 'button', title: 'Mute'} M
+              %button.btn.btn-sm.at-track-solo{type: 'button', title: "Solo"} S
+              %button.btn.btn-sm.at-track-mute{type: 'button', title: "Mute"} M
           .at-track-volume-row
             %span.at-track-volume-label Volume
-            %input.at-track-volume{type: 'range', min: 0, max: 16, value: 8}/
+            %input.at-track-volume{type: 'range', title: "Track Volume", min: 0, max: 16, value: 8}/
