@@ -6,6 +6,10 @@
       %i.bi.bi-search
     = f.search_field :q, value: params[:q], placeholder: "Search by title or artist", class: 'form-control', autocomplete: 'off',
       aria: { label: "Search songs" }, data: { action: 'input->auto-submit#submit' }
+    -# the default (title) is blank, so it's left out of the URL
+    = f.select :sort, [["Title", ''], ["Artist", 'artist'], ["Newest", 'newest'], ["Recently Played", 'played']],
+      { selected: params[:sort] }, class: 'form-select flex-grow-0 w-auto', aria: { label: "Sort songs" },
+      data: { action: 'change->auto-submit#submit' }
 
 -# the search form updates the frame, but its links (to edit or play a song) navigate the whole page
 = turbo_frame_tag 'songs', target: '_top' do

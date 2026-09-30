@@ -43,6 +43,27 @@ class SongsController < ApplicationController
     end
   end
 
+  # Redisplays the edit form (unsaved, with its other changes) with cover art found for its title and artist
+  def find_cover
+    @song.assign_attributes(song_params)
+    if (match = @song.fetch_cover_art)
+      flash.now[:notice] = "Found the cover of #{match.album} on #{match.source.to_s.titleize}.  Save to keep it."
+    else
+      flash.now[:error] = "No cover art found for #{@song.artist} - #{@song.title}."
+    end
+    render :edit
+  rescue CoverArt::Error => ex
+    flash.now[:error] = "Can't search for cover art: #{ex.message}"
+    render :edit
+  end
+
+  # Redisplays the edit form (unsaved, with its other changes) without its cover
+  def remove_cover
+    @song.assign_attributes(song_params.merge(remove_cover: true))
+    flash.now[:notice] = "Save to delete the cover."
+    render :edit
+  end
+
   def destroy
     @song.destroy
     respond_to do |format|
@@ -106,7 +127,8 @@ private
     sync_points = JSON.parse(params[:song][:sync_points].presence || '[]')
     params.require(:song)
       # files are uploads or cached file JSON from a form, or cached file hashes from JSON requests
-      .permit(:title, :artist, :sync_points, :cover, :cover_data, :score, :audio, score: {}, audio: {}, track_types: [])
+      # remove_cover first, since attributes are assigned in this order, so a removed cover can be replaced
+      .permit(:title, :artist, :sync_points, :remove_cover, :cover, :cover_data, :score, :audio, score: {}, audio: {}, track_types: [])
       .merge(sync_points:)
       .tap { it.delete(:track_types) if params[:song][:score].present? } # a new score's tracks are detected instead
   end

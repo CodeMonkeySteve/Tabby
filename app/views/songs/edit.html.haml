@@ -2,9 +2,11 @@
 
 %h1 #{@song.title}
 
+-# shown with the form's buttons, but submits its own form below, since forms can't be nested
 - content_for :buttons do
-  = button_to @song, method: :delete, class: 'btn btn-danger btn-sm ms-5 float-end' do
+  %button.btn.btn-danger.btn-sm.ms-5.float-end{type: 'submit', form: 'delete_song'}
     %i.bi.bi-x-circle
     Delete
 
 = render 'form', song: @song
+= form_with(model: @song, method: :delete, id: 'delete_song') { }

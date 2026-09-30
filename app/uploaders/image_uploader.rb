@@ -4,6 +4,7 @@ class ImageUploader < ApplicationUploader
   MAX_DIMENSIONS = [5_000, 5_000]
 
   plugin :store_dimensions, analyzer: :fastimage
+  plugin :remove_attachment
 
   Attacher.validate do
     validate_size 0..MAX_SIZE

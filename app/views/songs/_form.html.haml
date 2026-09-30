@@ -1,4 +1,5 @@
-= form_with(model: @song) do |f|
+-# the session's CSRF token, not one for just this form's action, since the cover buttons submit it to other actions
+= form_with(model: @song, authenticity_token: form_authenticity_token) do |f|
   -# return to the page that linked to the edit page after saving, even after redisplaying the form with errors
   - if @song.persisted?
     = hidden_field_tag :return_to, params[:return_to] || request.referer
@@ -20,8 +21,23 @@
 
     .mb-3
       = f.label :cover, class: 'form-label'
+      = f.hidden_field :remove_cover
       = f.hidden_field :cover, value: @song.cached_cover_data
-      = f.file_field :cover, class: 'form-control'
+      - if @song.cover
+        = image_tag @song.cover.url, alt: "Cover", class: 'img-thumbnail d-block mb-2', style: 'max-width: 160px'
+      .input-group
+        = f.file_field :cover, class: 'form-control'
+        -# these redisplay the form (with its changes) without saving it, and without Turbo since the response isn't a redirect
+        - if @song.persisted?
+          = button_tag type: 'submit', formaction: find_cover_song_path(@song), class: 'btn btn-outline-secondary',
+            title: "Search online catalogs for the cover of this title and artist", data: { turbo: false } do
+            %i.bi.bi-search
+            Find Cover
+          - if @song.cover
+            = button_tag type: 'submit', formaction: remove_cover_song_path(@song), formnovalidate: true,
+              class: 'btn btn-outline-danger', data: { turbo: false } do
+              %i.bi.bi-trash
+              Delete Cover
 
     .mb-3
       = f.label :score, class: 'form-label'

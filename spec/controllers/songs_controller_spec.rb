@@ -57,6 +57,13 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
   it "#edit" do
     get :edit, params: { id: song }
     expect(response).to be_successful
+
+    # parsed as a browser does, which merges a nested form's fields (like its `_method`) into the outer form
+    doc = Nokogiri::HTML5(response.body)
+    edit_form, delete_form = doc.at_css("form[action=\"#{song_path(song)}\"]:not(#delete_song)"), doc.at_css('form#delete_song')
+    expect(edit_form.css('input[name=_method]').map { it['value'] }).to eq %w[patch]
+    expect(delete_form.css('input[name=_method]').map { it['value'] }).to eq %w[delete]
+    expect(doc.at_css('button[form=delete_song]').text.squish).to eq "Delete"
   end
 
   it "#create" do
@@ -115,6 +122,72 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
 
     patch :update, params: { id: song.reload, song: { title: "Newer title" }, return_to: 'https://evil.example/phish' }
     expect(response).to redirect_to song_path(song.reload)
+  end
+
+  describe "cover buttons" do
+    let(:match) do
+      CoverArt::Match.new(source: :deezer, artist: "Tears for Fears", title: "Shout", album: "Songs from the Big Chair",
+                          image_url: 'https://cdn.example/big-chair.jpg')
+    end
+    def cover = Rack::Test::UploadedFile.new(file_fixture('cover.jpg'), 'image/jpeg')
+
+    before { stub_request(:get, match.image_url).to_return(body: file_fixture('cover.jpg').binread) }
+
+    it "finds a cover for the form's title and artist, redisplaying the form unsaved until it's saved" do
+      allow(CoverArt).to receive(:search).with(artist: "Tears for Fears", title: "Shout").and_return(match)
+      patch :find_cover, params: { id: song, song: { title: "Shout" } }
+
+      expect(response).to have_http_status(:ok)
+      expect(flash.now[:notice]).to eq "Found the cover of Songs from the Big Chair on Deezer.  Save to keep it."
+      expect(response.body).to include 'value="Shout"'
+      expect(song.reload).to have_attributes(title: "Head Over Heels", cover: nil)
+
+      cover_data = Nokogiri::HTML(response.body).at_css('input[type=hidden][name="song[cover]"]')['value']
+      patch :update, params: { id: song, song: { title: "Shout", cover: cover_data } }
+      expect(song.reload.cover).to have_attributes(original_filename: "Tears for Fears - Songs from the Big Chair.jpg")
+    end
+
+    it "accepts the edit form's CSRF token from each of its buttons, which submit it to different actions" do
+      ActionController::Base.allow_forgery_protection = true
+      get :edit, params: { id: song }
+      token = Nokogiri::HTML5(response.body).at_css("form[action=\"#{song_path(song)}\"] input[name=authenticity_token]")['value']
+      allow(CoverArt).to receive(:search).and_return(nil)
+
+      statuses = %i[find_cover remove_cover update].map do |action|
+        patch action, params: { id: song, authenticity_token: token, song: { title: song.title } }
+        response.status
+      end
+      expect(statuses).to eq [200, 200, 303]
+    ensure
+      ActionController::Base.allow_forgery_protection = false
+    end
+
+    it "says when no cover is found, or the search fails" do
+      allow(CoverArt).to receive(:search).and_return(nil)
+      patch :find_cover, params: { id: song, song: { title: song.title } }
+      expect(flash.now[:error]).to eq "No cover art found for Tears for Fears - Head Over Heels."
+
+      allow(CoverArt).to receive(:search).and_raise(CoverArt::Error, "Failed to fetch")
+      patch :find_cover, params: { id: song, song: { title: song.title } }
+      expect(flash.now[:error]).to eq "Can't search for cover art: Failed to fetch"
+    end
+
+    it "deletes the cover when the form is saved, unless it's replaced" do
+      song.update!(cover:)
+      get :edit, params: { id: song }
+      expect(Nokogiri::HTML(response.body).css('button[formaction]').map(&:text).map(&:squish)).to eq ["Find Cover", "Delete Cover"]
+
+      patch :remove_cover, params: { id: song, song: { title: song.title } }
+      expect(Nokogiri::HTML(response.body).at_css('input[name="song[remove_cover]"]')['value']).to eq 'true'
+      expect(response.body).not_to include 'Delete Cover'
+      expect(song.reload.cover).to be_present
+
+      patch :update, params: { id: song, song: { remove_cover: 'true', cover: } }
+      expect(song.reload.cover).to be_present
+
+      patch :update, params: { id: song, song: { remove_cover: 'true' } }
+      expect(song.reload.cover).to be_nil
+    end
   end
 
   it "#destroy" do

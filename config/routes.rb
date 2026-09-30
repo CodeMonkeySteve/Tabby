@@ -22,6 +22,8 @@ Rails.application.routes.draw do
       get 'score' => 'songs#score'
       get 'audio' => 'songs#audio'
       patch 'sync_points' => 'songs#sync_points'
+      patch 'find_cover' => 'songs#find_cover'
+      patch 'remove_cover' => 'songs#remove_cover'
       post 'playlist' => 'songs#playlist'
       post 'track' => 'songs#track_history'
     end
