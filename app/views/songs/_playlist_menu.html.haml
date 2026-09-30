@@ -2,11 +2,12 @@
   %span.fw-bold Playlists
 = form_with url: playlist_song_path(song), method: :post, data: { controller: 'playlist-menu', action: 'submit->playlist-menu#save' } do |f|
   - playlists.each do |playlist|
+    - id = "playlist_#{song.id}_#{playlist.id}" # unique among the menus of a song list
     .form-check
-      = check_box_tag "playlists[#{playlist.id}]", playlist.id, playlist.song_ids.include?(song.id), id: "playlist_#{playlist.id}", class: 'form-check-input', data: { action: 'change->playlist-menu#toggle' }
-      %label.form-check-label{for: "playlist_#{playlist.id}"}= playlist.name
+      = check_box_tag "playlists[#{playlist.id}]", playlist.id, playlist.song_ids.include?(song.id), id:, class: 'form-check-input', data: { action: 'change->playlist-menu#toggle' }
+      %label.form-check-label{for: id}= playlist.name
   %hr.dropdown-divider
   .input-group.input-group-sm
     = text_field_tag :new_playlist_name, nil, class: 'form-control', placeholder: 'New playlist', data: { 'playlist-menu-target': 'newName' }
     %button.btn.btn-outline-secondary{type: 'button', data: { action: 'playlist-menu#create' }}
-      %i.fas.fa-plus
+      %i.bi.bi-plus-lg

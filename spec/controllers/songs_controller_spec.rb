@@ -30,6 +30,19 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       expect(response.body).not_to include 'navbar' # turbo-rails' minimal frame layout, not the application layout
     end
 
+    it "has a menu on each song for adding it to the user's playlists" do
+      hysteria, schism = Song.find_by(title: "Hysteria"), Song.find_by(title: "Schism")
+      practice = create(:playlist, name: "Practice", user:, songs: [schism])
+      create(:playlist, name: "Other user's", user: create(:user))
+      get :index
+
+      # listed by title, with checkbox IDs unique to each song's menu
+      checkboxes = Nokogiri::HTML(response.body).css('.song .dropdown-menu input[type=checkbox]')
+      expect(checkboxes.map { it.next_element.text }).to eq ["Practice", "Practice"]
+      expect(checkboxes.map { it['checked'] }).to eq [nil, 'checked']
+      expect(checkboxes.map { it['id'] }).to eq ["playlist_#{hysteria.id}_#{practice.id}", "playlist_#{schism.id}_#{practice.id}"]
+    end
+
     it "says when nothing matches" do
       get :index, params: { q: 'nothing' }
       expect(response.body).to include "No songs match"

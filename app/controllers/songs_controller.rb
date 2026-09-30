@@ -3,6 +3,7 @@ class SongsController < ApplicationController
 
   def index
     @songs = Song.search(params[:q]).order(:title, :artist)
+    @playlists = Current.user.playlists.order(:name)
   end
 
   def show

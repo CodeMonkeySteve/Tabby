@@ -22,6 +22,12 @@ export default class extends Controller {
       })
   }
 
+  // Enter in the new playlist name creates it, instead of submitting the form and leaving the page
+  save(ev) {
+    ev.preventDefault()
+    this.create()
+  }
+
   create() {
     const name = this.newNameTarget.value.trim()
     if (!name) return

@@ -10,6 +10,12 @@
               %span.float-end
                 %a.btn{href: edit_song_path(song)}
                   %i.bi.bi-pencil-square
+                .dropdown.d-inline-block
+                  %button.btn{type: 'button', title: "Playlists", aria: { expanded: false, haspopup: true },
+                              data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
+                    %i.bi.bi-folder-plus
+                  .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
+                    = render 'songs/playlist_menu', song:, playlists: @playlists
               %a{href: player_path(song)}
                 %img.cover.img-fluid.rounded-start.float-start.me-3{src: song.cover&.url || image_path('cover-default.png')}
               %a{href: player_path(song)}
