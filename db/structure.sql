@@ -201,6 +201,21 @@ CREATE TABLE public.songs (
     jellyfin_id character varying,
     songsterr_id integer,
     created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    genres character varying[] DEFAULT '{}'::character varying[] NOT NULL
+);
+
+
+--
+-- Name: songsterr_songs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.songsterr_songs (
+    id integer NOT NULL,
+    song_id uuid NOT NULL,
+    revision_id integer,
+    data jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL
 );
 
@@ -302,6 +317,14 @@ ALTER TABLE ONLY public.song_notes
 
 ALTER TABLE ONLY public.songs
     ADD CONSTRAINT songs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: songsterr_songs songsterr_songs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.songsterr_songs
+    ADD CONSTRAINT songsterr_songs_pkey PRIMARY KEY (id);
 
 
 --
@@ -411,6 +434,13 @@ CREATE INDEX index_songs_on_track_types ON public.songs USING gin (track_types);
 
 
 --
+-- Name: index_songsterr_songs_on_song_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_songsterr_songs_on_song_id ON public.songsterr_songs USING btree (song_id);
+
+
+--
 -- Name: index_users_on_email; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -431,6 +461,14 @@ ALTER TABLE ONLY public.play_histories
 
 ALTER TABLE ONLY public.credentials
     ADD CONSTRAINT fk_rails_32938455c2 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: songsterr_songs fk_rails_33c93acee3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.songsterr_songs
+    ADD CONSTRAINT fk_rails_33c93acee3 FOREIGN KEY (song_id) REFERENCES public.songs(id) ON DELETE CASCADE;
 
 
 --
@@ -472,6 +510,7 @@ ALTER TABLE ONLY public.playlists
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260930120000'),
 ('20260930000000'),
 ('20260928000000'),
 ('20260927071000');

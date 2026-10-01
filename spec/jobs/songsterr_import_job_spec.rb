@@ -23,11 +23,11 @@ RSpec.describe SongsterrImportJob do
   it "saves the imported song, broadcasting progress and then the song's card" do
     allow(Song).to receive(:from_songsterr).with(match.url) do |_url, &log|
       log.("Downloading 3 tracks")
-      build(:song, songsterr_id: 20361)
+      build(:song, songsterr_song: build(:songsterr_song, id: 20361, song: nil))
     end
 
     broadcasts = capture_turbo_stream_broadcasts(stream) { perform }
-    song = Song.find_by!(songsterr_id: 20361)
+    song = SongsterrSong.find(20361).song
     player_path = Rails.application.routes.url_helpers.player_path(song)
 
     expect(broadcasts.map { [it['action'], it['target']] }).to eq [%w[append songsterr_20361_log], %w[replace songsterr_20361]]

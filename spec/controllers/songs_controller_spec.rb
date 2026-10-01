@@ -80,7 +80,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     end
 
     it "shows Songsterr matches as cards, linking already-imported songs" do
-      imported = create(:song, title: "Head Over Heels", artist: "Accept", songsterr_id: 1041)
+      imported = create(:song, title: "Head Over Heels", artist: "Accept", songsterr_song: build(:songsterr_song, id: 1041, song: nil))
       allow(Songsterr::Search).to receive(:call).with("head over heels").and_return(results)
       get :songsterr_search, params: { q: "head over heels" }
 

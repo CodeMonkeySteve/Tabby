@@ -47,9 +47,16 @@ RSpec.describe Song::Songsterr do
     song.save!
 
     expect(song.reload).to have_attributes(
-      songsterr_id: 2687597, title: "W.M.A.", artist: "Pearl Jam", tempo: 108,
-      track_types: %w[guitar bass drums], jellyfin_id: nil,
+      title: "W.M.A.", artist: "Pearl Jam", tempo: 108, track_types: %w[guitar bass drums], jellyfin_id: nil,
+      genres: ['alternative', 'alternative pop/rock', 'alternative rock', 'alternative/indie rock', 'grunge', 'hard rock',
+               'hardnheavy', 'pop/rock', 'rock'],
     )
+    expect(song.songsterr_song).to have_attributes(id: 2687597, revision_id: 3537915, recording_video_id: 'K1NcoxzNgbM')
+    expect(song.songsterr_song.page).to include('aiGenerated' => true, 'author' => include('name' => 'surferstylee'))
+    expect(song.songsterr_song.page.keys).not_to include 'songId', 'revisionId'
+    expect(song.songsterr_song.parts).to have(3).items
+    expect(song.songsterr_song.parts.flat_map(&:keys)).to include('tuning', 'volume', 'automations')
+    expect(song.songsterr_song.parts.flat_map(&:keys)).not_to include 'measures', 'newLyrics'
     expect(song.score.original_filename).to eq "Pearl Jam - W.M.A..gp"
     expect(song.audio).to be_present
     expect(song.sync_points).to have(150).items
@@ -70,7 +77,15 @@ RSpec.describe Song::Songsterr do
     Song.from_songsterr(url).save!
 
     expect(Song.count).to eq 1
-    expect(existing.reload.songsterr_id).to eq 2687597
+    expect(existing.reload.songsterr_song.id).to eq 2687597
+  end
+
+  it "replaces the Songsterr source of a song imported from another Songsterr song with the same title and artist" do
+    existing = create(:song, title: "W.M.A.", artist: "Pearl Jam", songsterr_song: build(:songsterr_song, id: 1, song: nil))
+    Song.from_songsterr(url).save!
+
+    expect(existing.reload.songsterr_song).to have_attributes(id: 2687597, revision_id: 3537915)
+    expect(SongsterrSong.pluck(:id)).to eq [2687597]
   end
 
   it "makes a valid score filename from names containing slashes" do
@@ -122,7 +137,7 @@ RSpec.describe Song::Songsterr do
       video_points.each { it['points'] = [0, 1, 2] }
 
       expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error, /Sync point count/)
-      expect(existing.reload.songsterr_id).to be_nil
+      expect(existing.reload.songsterr_song).to be_nil
       expect(Songsterr::YouTube).not_to have_received(:download_audio)
     end
 

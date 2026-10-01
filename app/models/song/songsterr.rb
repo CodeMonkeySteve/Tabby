@@ -29,17 +29,22 @@ module Song::Songsterr
       result['warnings'].each { log.("Warning: unmapped Songsterr data #{it}") }
 
       Dir.mktmpdir('songsterr') do |dir|
-        sync_points, audio_path = download_recording(client, video_ids, result['playedBars'], dir, log)
+        video_id, sync_points, audio_path = download_recording(client, video_ids, result['playedBars'], dir, log)
         score_path = Pathname(dir).join("#{page.artist} - #{page.title}.gp".tr('/', '-'))
         score_path.binwrite(result['gp'].unpack1('m'))
 
-        song = find_by(songsterr_id: page.song_id) || find_by(title: page.title, artist: page.artist) || new
+        source = SongsterrSong.find_by(id: page.song_id)
+        song = source&.song || find_by(title: page.title, artist: page.artist) || new
+        # a song matched by title and artist may have been imported from another Songsterr song, which this replaces
+        source ||= song.songsterr_song || song.build_songsterr_song
+        source.assign_attributes(id: page.song_id, revision_id: page.revision_id,
+                                 data: SongsterrSong.data_from(page, parts, video_id))
         song.assign_attributes(
-          songsterr_id: page.song_id,
           title: page.title,
           artist: page.artist,
-          tempo: parts.first&.dig('automations', 'tempo', 0, 'bpm'),
-          track_types: page.tracks.map { songsterr_track_type(it) },
+          tempo: source.tempo,
+          genres: source.tags,
+          track_types: source.track_types,
           sync_points:,
         )
         score_path.open('rb') { song.score = it }
@@ -53,9 +58,12 @@ module Song::Songsterr
     # The library's songs for Song::SongsterrMatches, by Songsterr song ID: those imported from them, or else with the same title
     # and artist (ignoring case), which importing would replace
     def for_songsterr_matches(matches)
-      songs = where(songsterr_id: matches.map(&:song_id)).or(where('LOWER(title) IN (?)', matches.map { it.title.downcase })).to_a
+      songs = left_joins(:songsterr_song).preload(:songsterr_song)
+      songs = songs.where(songsterr_song: { id: matches.map(&:song_id) })
+        .or(songs.where('LOWER(title) IN (?)', matches.map { it.title.downcase }))
+        .to_a
       matches.to_h do |match|
-        song = songs.find { it.songsterr_id == match.song_id } ||
+        song = songs.find { it.songsterr_song&.id == match.song_id } ||
                songs.find { it.title.casecmp?(match.title) && it.artist.to_s.casecmp?(match.artist) }
         [match.song_id, song]
       end.compact
@@ -63,17 +71,7 @@ module Song::Songsterr
 
     private
 
-    # The instrument type of a Songsterr track, whose vocal, bass, and drums flags are more reliable than its name and program
-    # (e.g. vocal parts are written with sax or clarinet sounds)
-    def songsterr_track_type(track)
-      return :vocals if track['isVocalTrack']
-      return :bass if track['isBassGuitar']
-
-      Song::Track.new(name: track['title'], program: track['instrumentId'], percussion: track['isDrums'],
-                      strings: track['tuning']&.size).instrument_type
-    end
-
-    # Returns the sync points and downloaded audio of the first video that has both, checking each video's sync points before
+    # Returns the ID, sync points, and downloaded audio of the first video that has both, checking each video's sync points before
     # downloading its audio
     def download_recording(client, video_ids, played_bars, dir, log)
       failures = video_ids.map do |video_id|
@@ -84,7 +82,7 @@ module Song::Songsterr
         log.("Downloading audio from YouTube video #{video_id}")
         audio_path = ::Songsterr::YouTube.download_audio(video_id, dir)
         sync_warnings.each { log.("Warning: #{it}") }
-        return [sync_points, audio_path]
+        return [video_id, sync_points, audio_path]
       rescue ::Songsterr::Error => ex
         log.("Warning: Can't use YouTube video #{video_id}: #{ex.message}")
         "#{video_id}: #{ex.message}"

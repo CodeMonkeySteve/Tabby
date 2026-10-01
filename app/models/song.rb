@@ -20,6 +20,9 @@ class Song < ApplicationRecord
     :other      # harmonica, sitar, theramin, etc. (only on Song)
   ].freeze
 
+  # replaced by SongsterrSong, until it's dropped
+  self.ignored_columns += %w[songsterr_id]
+
   # The instrument type of each score track, in track order (so not a torque-postgresql EnumSet, which is unordered and unique)
   attribute :track_types, :string, array: true, default: []
 
@@ -33,6 +36,7 @@ class Song < ApplicationRecord
   passive_columns :sync_points
 
   has_many :play_histories
+  has_one :songsterr_song, autosave: true
   has_many :notes, class_name: 'SongNote'
 
   # The current user's note, e.g. `song.note || song.build_note`
