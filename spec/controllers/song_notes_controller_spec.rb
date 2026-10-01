@@ -5,7 +5,10 @@ require 'rails_helper'
 RSpec.describe SongNotesController do
   let(:user) { create(:user) }
   let(:song) { create(:song, track_types: %w[bass]) }
-  let(:playback) { { speed: 0.7, looping: true, count_in: false, metronome: true, range_start_tick: 960, range_end_tick: 7680 } }
+  let(:playback) do
+    { speed: 0.7, volume: 80, looping: true, count_in: false, metronome: true, range_start_tick: 960, range_end_tick: 7680, tracks: [1, 2],
+      muted_tracks: [2], solo_tracks: [], track_volumes: { '1' => 10, '2' => 8 } }
+  end
   before { sign_in user }
 
   def note_for(user) = SongNote.find_by(user:, song:)
@@ -20,8 +23,8 @@ RSpec.describe SongNotesController do
     other_note = create(:song_note, song:, speed: 0.5)
     create(:song_note, user:, song:, speed: 0.5, range_start_tick: 0, range_end_tick: 960)
 
-    patch :update, params: { song_id: song, song_note: playback.merge(range_start_tick: nil, range_end_tick: nil) }, as: :json
-    expect(note_for(user)).to have_attributes(speed: 0.7, range_start_tick: nil, range_end_tick: nil)
+    patch :update, params: { song_id: song, song_note: playback.merge(range_start_tick: nil, range_end_tick: nil, tracks: nil) }, as: :json
+    expect(note_for(user)).to have_attributes(speed: 0.7, range_start_tick: nil, range_end_tick: nil, tracks: nil)
     expect(other_note.reload.speed).to eq 0.5
     expect(SongNote.count).to eq 2
   end

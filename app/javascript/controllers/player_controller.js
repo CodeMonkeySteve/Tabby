@@ -39,7 +39,8 @@ export default class extends Controller {
 
     this.api = new alphaTab.AlphaTabApi(this.canvasTarget, {
       file: `/s/${this.songValue.id}/score`,
-      tracks: this.songValue.tracks, // the user's instruments' tracks, or null for AlphaTab's default (the first track)
+      // the saved tracks, else the user's instruments' tracks, or null for AlphaTab's default (the first track)
+      tracks: this.note.tracks ?? this.songValue.tracks,
       player: {
         enablePlayer: true,
         soundFont: "/sonivox.sf2",
@@ -289,6 +290,7 @@ export default class extends Controller {
     this.api.masterVolume = volume / 100
     this.updateVolumeUI(volume)
     localStorage.setItem('playerVolume', volume)
+    this.scheduleNoteSave()
   }
 
   changeZoom(e) {
@@ -370,9 +372,10 @@ export default class extends Controller {
 
   // --- Volume helpers ---
 
+  // Restores the song's saved volume, or else the last volume used for any song
   restoreVolume() {
     const stored = localStorage.getItem('playerVolume')
-    const volume = stored !== null ? Number.parseInt(stored) : 50
+    const volume = this.note.volume ?? (stored !== null ? Number.parseInt(stored) : 50)
     this.api.masterVolume = volume / 100
     this.volumeSliderTarget.value = volume
     this.updateVolumeUI(volume)
@@ -383,6 +386,7 @@ export default class extends Controller {
     this.volumeSliderTarget.value = volume
     this.updateVolumeUI(volume)
     localStorage.setItem('playerVolume', volume)
+    this.scheduleNoteSave()
   }
 
   updateVolumeUI(volume) {
@@ -400,13 +404,21 @@ export default class extends Controller {
 
   // --- Song note (the user's player settings for this song) ---
 
-  // Applies the saved speed and toggles once the player is ready
+  // Applies the saved speed and toggles, and the track panel's mixer settings (restored from the note in createTrackItem), once
+  // the player is ready
   applyNote() {
     const note = this.note
     if (note.speed) this.setSpeed(note.speed)
     this.setCountIn(!!note.count_in)
     this.setMetronome(!!note.metronome)
     this.setLoop(!!note.looping)
+    for (const trackItem of this.trackItems) {
+      const { track } = trackItem
+      const mix = this.trackMix(trackItem)
+      this.api.changeTrackMute([track], mix.mute)
+      this.api.changeTrackSolo([track], mix.solo)
+      this.setTrackVolume(track, mix.volume)
+    }
     this.savedNote = JSON.stringify(this.currentNote())
   }
 
@@ -432,13 +444,22 @@ export default class extends Controller {
 
   currentNote() {
     const range = this.api.playbackRange
+    const tracks = this.api.tracks.map(track => track.index)
+    const defaultTracks = this.songValue.tracks ?? [0]
+    const isDefault = tracks.length === defaultTracks.length && tracks.every((index, i) => index === defaultTracks[i])
+    const mixes = this.trackItems.map(trackItem => ({ index: trackItem.track.index, ...this.trackMix(trackItem) }))
     return {
       speed: this.api.playbackSpeed,
+      volume: Math.round(this.api.masterVolume * 100),
       looping: this.api.isLooping,
       count_in: this.api.countInVolume > 0,
       metronome: this.api.metronomeVolume > 0,
       range_start_tick: range?.startTick ?? null,
       range_end_tick: range?.endTick ?? null,
+      tracks: isDefault ? null : tracks,  // null follows the user's instruments if they change
+      muted_tracks: mixes.filter(mix => mix.mute).map(mix => mix.index),
+      solo_tracks: mixes.filter(mix => mix.solo).map(mix => mix.index),
+      track_volumes: Object.fromEntries(mixes.map(mix => [mix.index, mix.volume])),
     }
   }
 
@@ -546,31 +567,49 @@ export default class extends Controller {
         .map(item => item.track)
       if (selected.length > 0) {
         this.api.renderTracks(selected)
+        this.scheduleNoteSave()
       } else {
         checkbox.checked = true
       }
     }
 
     muteButton.onclick = () => {
-      muteButton.classList.toggle("active")
-      this.api.changeTrackMute([track], muteButton.classList.contains("active"))
+      this.api.changeTrackMute([track], muteButton.classList.toggle("active"))
+      this.scheduleNoteSave()
     }
 
     soloButton.onclick = () => {
-      soloButton.classList.toggle("active")
-      this.api.changeTrackSolo([track], soloButton.classList.contains("active"))
+      this.api.changeTrackSolo([track], soloButton.classList.toggle("active"))
+      this.scheduleNoteSave()
     }
 
     volumeSlider.oninput = () => {
-      this.api.changeTrackVolume([track], volumeSlider.value / track.playbackInfo.volume)
+      this.setTrackVolume(track, Number.parseInt(volumeSlider.value))
+      this.scheduleNoteSave()
     }
 
-    muteButton.value = track.playbackInfo.isMute
-    soloButton.value = track.playbackInfo.isSolo
-    volumeSlider.value = track.playbackInfo.volume
+    // the saved mixer settings, else the score's
+    const { muted_tracks: muted, solo_tracks: solo, track_volumes: volumes } = this.note
+    muteButton.classList.toggle("active", muted?.includes(track.index) ?? track.playbackInfo.isMute)
+    soloButton.classList.toggle("active", solo?.includes(track.index) ?? track.playbackInfo.isSolo)
+    volumeSlider.value = volumes?.[track.index] ?? track.playbackInfo.volume
 
     trackItem.track = track
     return trackItem
+  }
+
+  // The track's mixer settings in the track panel
+  trackMix(trackItem) {
+    return {
+      mute: trackItem.querySelector(".at-track-mute").classList.contains("active"),
+      solo: trackItem.querySelector(".at-track-solo").classList.contains("active"),
+      volume: Number.parseInt(trackItem.querySelector(".at-track-volume").value),
+    }
+  }
+
+  // Sets the track's volume (0-16, like the score's), which the player takes as a factor of the score's volume
+  setTrackVolume(track, volume) {
+    this.api.changeTrackVolume([track], volume / Math.max(track.playbackInfo.volume, 1))
   }
 
   formatDuration(milliseconds) {

@@ -179,7 +179,12 @@ CREATE TABLE public.song_notes (
     range_start_tick integer,
     range_end_tick integer,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    volume integer,
+    tracks integer[],
+    muted_tracks integer[],
+    solo_tracks integer[],
+    track_volumes jsonb
 );
 
 
@@ -510,6 +515,7 @@ ALTER TABLE ONLY public.playlists
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261001000000'),
 ('20260930120000'),
 ('20260930000000'),
 ('20260928000000'),

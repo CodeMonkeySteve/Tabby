@@ -75,8 +75,8 @@ class Song < ApplicationRecord
   # (Re)classify the tracks of a new score, unless their types were given with it
   before_validation :classify_tracks, if: -> { will_save_change_to_score_data? && !will_save_change_to_track_types? }
 
-  # Saved playback ranges are score ticks, so they may not fit a new score
-  after_update :clear_note_ranges, if: :saved_change_to_score_data?
+  # Saved playback ranges (score ticks) and track settings (by score track index) may not fit a new score
+  after_update :clear_note_score_settings, if: :saved_change_to_score_data?
 
   # The distinct instrument types of the score tracks, in INSTRUMENT_TYPES order
   def instrument_types
@@ -111,7 +111,11 @@ class Song < ApplicationRecord
 
 private
 
-  def clear_note_ranges
-    notes.where.not(range_start_tick: nil).update_all(range_start_tick: nil, range_end_tick: nil, updated_at: Time.current)
+  SCORE_NOTE_SETTINGS = %i[range_start_tick range_end_tick tracks muted_tracks solo_tracks track_volumes].freeze
+
+  # Clears the saved ranges and track settings, which are specific to the old score
+  def clear_note_score_settings
+    SCORE_NOTE_SETTINGS.map { notes.where.not(it => nil) }.reduce(:or)
+      .update_all(SCORE_NOTE_SETTINGS.index_with(nil).merge(updated_at: Time.current))
   end
 end
