@@ -21,7 +21,6 @@ gem 'passive_columns'
 gem 'activerecord_cursor_paginate'
 gem 'email_validator'
 gem 'normalizr'
-gem 'rethinkdb', require: false  # for `rethinkdb:import`, remove once migrated
 
 # file attachments
 gem 'shrine'
