@@ -202,7 +202,10 @@ export default class extends Controller {
       if (this.playStartedAt === null) {
         this.playStartedAt = Date.now()
         if (!this.playDate) {
-          this.playDate = new Date().toISOString().slice(0, 10)
+          // the local date, since toISOString() gives the UTC date, which is tomorrow in the evening in the Americas
+          const now = new Date()
+          this.playDate = [now.getFullYear(), now.getMonth() + 1, now.getDate()]
+            .map(n => String(n).padStart(2, '0')).join('-')
         }
       }
       clearTimeout(this.historyTimer)
