@@ -7,7 +7,7 @@ RSpec.describe SongNotesController do
   let(:song) { create(:song, track_types: %w[bass]) }
   let(:playback) do
     { speed: 0.7, volume: 80, looping: true, count_in: false, metronome: true, range_start_tick: 960, range_end_tick: 7680, tracks: [1, 2],
-      muted_tracks: [2], solo_tracks: [], track_volumes: { '1' => 10, '2' => 8 } }
+      muted_tracks: [2], solo_tracks: [], track_volumes: { '1' => 10, '2' => 8 }, track_tunings: { '1' => [43, 38, 33, 28, 23] } }
   end
   before { sign_in user }
 

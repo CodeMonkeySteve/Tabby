@@ -1,5 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 import * as alphaTab from "@coderline/alphatab"
+import AlternateTabs from "lib/alternate_tabs"
+import { DEFAULT_OPTIMIZER, optimizers } from "lib/fingering"
+import TrackTab from "lib/track_tab"
+import TabEditor from "lib/tab_editor"
+import { noteNames, tuningGroups } from "lib/tunings"
 
 export default class extends Controller {
   static values = {
@@ -11,9 +16,9 @@ export default class extends Controller {
   static targets = [
     "canvas", "dock", "trackList", "trackPanel", "playerLoading",
     "songTitle", "songArtist", "timePosition", "timeSliderValue",
-    "playPause", "stop", "countIn", "metronome", "loop",
+    "playPause", "stop", "countIn", "metronome", "loop", "tabEdit",
     "speedLabel", "speedSlider", "zoomLabel", "zoomSlider", "trackTemplate",
-    "volumeLabel", "volumeSlider", "volumeIcon",
+    "volumeLabel", "volumeSlider", "volumeIcon", "osd", "osdIcon", "osdText",
   ]
 
   connect() {
@@ -25,12 +30,18 @@ export default class extends Controller {
     this.playDate = null           // ISO date (YYYY-MM-DD) of first play start this session
     this.historyTimer = null       // debounce timer handle
     this.note = this.songValue.note ?? {}  // the user's latest player settings for the song
+    this.trackTunings = { ...this.note.track_tunings }  // the chosen tuning of each track not in the score's, by track index
+    this.trackTabs = new Map()     // the stringed tracks' TrackTab, by track index (once the score loads)
+    this.alternateTabs = new AlternateTabs(this.songValue.id, this.songValue.alternateTabs, {
+      onError: tab => this.showTuningMessage(tab.trackIndex, "Couldn't save your tab changes"),
+    })
     this.savedNote = null          // JSON of the last saved (or restored) note, null until the saved note is applied
     this.noteTimer = null          // debounce timer handle
     this.rangeRestored = false
     this.unloadHandler = () => {
       this.flushHistory()
       this.flushNote()
+      this.alternateTabs.flush({ keepalive: true })
     }
     window.addEventListener('beforeunload', this.unloadHandler)
 
@@ -39,6 +50,7 @@ export default class extends Controller {
 
     this.api = new alphaTab.AlphaTabApi(this.canvasTarget, {
       file: `/s/${this.songValue.id}/score`,
+      core: { includeNoteBounds: true },  // for selecting notes in the tab editor
       // the saved tracks, else the user's instruments' tracks, or null for AlphaTab's default (the first track)
       tracks: this.note.tracks ?? this.songValue.tracks,
       player: {
@@ -50,6 +62,11 @@ export default class extends Controller {
     })
 
     this.applyThemeColors()
+    this.tabEditor = new TabEditor(this.api, this.canvasTarget.parentElement, {
+      locate: note => this.locateNote(note),
+      context: trackTab => this.tabContext(trackTab),
+      move: (trackTab, index, string) => this.moveNote(trackTab, index, string),
+    })
 
     this.themeObserver = new MutationObserver(() => {
       this.applyThemeColors()
@@ -88,11 +105,13 @@ export default class extends Controller {
     clearTimeout(this.historyTimer)
     this.flushHistory()
     this.flushNote()
+    this.alternateTabs.flush({ keepalive: true })
     if (this.themeObserver) {
       this.themeObserver.disconnect()
       this.themeObserver = null
     }
     this.dockObserver?.disconnect()
+    this.tabEditor?.destroy()
     if (this.api) {
       this.api.destroy()
       this.api = null
@@ -102,7 +121,7 @@ export default class extends Controller {
   // --- AlphaTab event handlers ---
 
   handleRenderStarted(isResize) {
-    if (!isResize) {
+    if (!isResize && !this.renderingEdit) {
       this.element.classList.add("loading")
     }
     const tracks = new Map()
@@ -125,10 +144,12 @@ export default class extends Controller {
   }
 
   handleRenderFinished() {
+    this.renderingEdit = false
     this.element.classList.remove("loading")
   }
 
   async handleScoreLoaded(score) {
+    this.loadTrackTabs(score)
     this.songTitleTarget.innerText = this.songValue.title ?? score.title
 
     let artist = this.songValue.artist ?? score.artist
@@ -328,16 +349,37 @@ export default class extends Controller {
 
   handleKeydown(e) {
     if (e.defaultPrevented || e.target.matches('input, textarea, select')) return
+    if (this.tabEditor.handleKey(e)) {
+      e.preventDefault()
+      return
+    }
+
+    switch (e.code) {
+      case "NumpadAdd":
+        this.stepSpeed(1)
+        e.preventDefault()
+        return
+      case "NumpadSubtract":
+        this.stepSpeed(-1)
+        e.preventDefault()
+        return
+    }
 
     switch (e.key) {
       case "ArrowUp":
-        this.api.masterVolume = Math.min(this.api.masterVolume + 0.05, 1.0)
-        this.syncVolumeUI()
+        this.stepVolume(1)
         e.preventDefault()
         break
       case "ArrowDown":
-        this.api.masterVolume = Math.max(this.api.masterVolume - 0.05, 0.0)
-        this.syncVolumeUI()
+        this.stepVolume(-1)
+        e.preventDefault()
+        break
+      case "ArrowLeft":
+        this.skipBars(-1)
+        e.preventDefault()
+        break
+      case "ArrowRight":
+        this.skipBars(1)
         e.preventDefault()
         break
       case " ":
@@ -345,6 +387,45 @@ export default class extends Controller {
         e.preventDefault()
         break
     }
+  }
+
+  // Changes the volume by the given number of 5% steps
+  stepVolume(steps) {
+    const volume = Math.min(Math.max(Math.round(this.api.masterVolume * 100) + steps * 5, 0), 100)
+    this.api.masterVolume = volume / 100
+    this.syncVolumeUI()
+    this.scheduleNoteSave()
+    this.showOsd(this.volumeIconTarget.className, `${volume}%`)
+  }
+
+  // Changes the speed by the given number of the speed slider's steps, within its range
+  stepSpeed(steps) {
+    const slider = this.speedSliderTarget
+    const percent = Number.parseInt(slider.value) + steps * Number.parseInt(slider.step)
+    const clamped = Math.min(Math.max(percent, Number.parseInt(slider.min)), Number.parseInt(slider.max))
+    this.setSpeed(clamped / 100)
+    this.scheduleNoteSave()
+    this.showOsd("fas fa-gauge", `${clamped / 100}x`)
+  }
+
+  // Moves the playback position to the start of the bar the given number of bars from the current one, in playback order
+  // (with repeats expanded)
+  skipBars(count) {
+    const bars = this.api.tickCache?.masterBars
+    if (!bars?.length) return
+    const tick = this.api.tickPosition
+    const current = bars.findIndex(bar => tick >= bar.start && tick < bar.end)
+    const index = current < 0 ? (count < 0 ? bars.length : -1) : current
+    this.api.tickPosition = bars[Math.min(Math.max(index + count, 0), bars.length - 1)].start
+  }
+
+  // Briefly shows an on-screen display of a new setting's icon and value
+  showOsd(iconClass, text) {
+    this.osdIconTarget.className = iconClass
+    this.osdTextTarget.innerText = text
+    this.osdTarget.classList.add("visible")
+    clearTimeout(this.osdTimeout)
+    this.osdTimeout = setTimeout(() => this.osdTarget.classList.remove("visible"), 800)
   }
 
   // --- Theme ---
@@ -460,6 +541,7 @@ export default class extends Controller {
       muted_tracks: mixes.filter(mix => mix.mute).map(mix => mix.index),
       solo_tracks: mixes.filter(mix => mix.solo).map(mix => mix.index),
       track_volumes: Object.fromEntries(mixes.map(mix => [mix.index, mix.volume])),
+      track_tunings: Object.keys(this.trackTunings).length > 0 ? this.trackTunings : null,
     }
   }
 
@@ -496,6 +578,189 @@ export default class extends Controller {
       if (this.savedNote === note) this.savedNote = previous  // so the next change retries
       console.error('Failed to save song note', e)
     })
+  }
+
+  // --- Alternate tabs (the user's own fingerings of the stringed tracks, see AlternateTab) ---
+
+  // Indexes the stringed tracks' notes (dropping tabs that don't fit them), and fingers them in the user's chosen tunings
+  loadTrackTabs(score) {
+    this.trackTabs = new Map(score.tracks.filter(TrackTab.isStringed).map(track => [track.index, new TrackTab(track)]))
+    for (const tab of [...this.alternateTabs.tabs]) {
+      if (tab.noteCount === this.trackTabs.get(tab.trackIndex)?.notes.length) continue
+      console.warn(`Ignoring alternate tab ${tab.id}, for another version of the score`)
+      this.alternateTabs.forget(tab)  // a new tab for its tuning replaces it
+    }
+    for (const index of this.trackTabs.keys()) {
+      if (!this.applyTuning(index, this.trackTunings[index] ?? null)) delete this.trackTunings[index]
+    }
+  }
+
+  // The user's tab for a track in a tuning (null for the score's), if any
+  alternateTab(index, tuning) {
+    return this.alternateTabs.find(index, tuning ?? this.trackTabs.get(index).originalTuning) ?? null
+  }
+
+  // Fingers a track in a tuning (null for the score's) with the user's tab, returning false (fingering it in the score's
+  // tuning) if there's none for the tuning
+  applyTuning(index, tuning) {
+    const trackTab = this.trackTabs.get(index)
+    const tab = this.alternateTab(index, tuning)
+    if (tuning && !tab) {
+      trackTab.apply(null, this.alternateTab(index, null)?.strings)
+      return false
+    }
+    trackTab.apply(tuning, tab?.strings)
+    return true
+  }
+
+  // Fills a stringed track's tuning pulldown: "Original" and the presets it can be played in, marking those with a tab
+  setupTuningRow(trackItem, trackTab) {
+    const select = trackItem.querySelector(".at-track-tuning")
+    select.add(new Option(`Original (${noteNames(trackTab.originalTuning)})`, ''))
+    for (const group of tuningGroups(trackTab, this.songValue.trackTypes?.[trackTab.track.index])) {
+      const optgroup = document.createElement('optgroup')
+      optgroup.label = group.label
+      for (const { tuning, label } of group.tunings) {
+        const option = new Option(label, JSON.stringify(tuning))
+        option.dataset.label = label
+        optgroup.append(option)
+      }
+      select.add(optgroup)
+    }
+    select.onchange = () => this.changeTuning(trackItem, select.value ? JSON.parse(select.value) : null)
+    trackItem.querySelector(".at-track-tuning-reset").onclick = () => this.resetTuning(trackItem)
+    this.updateTuningRow(trackTab.track.index, trackItem)
+  }
+
+  // Shows a track's chosen tuning, marks the tunings it has tabs for, and enables Reset if there's a tab to reset
+  updateTuningRow(index, trackItem = this.trackItem(index)) {
+    const tuning = this.trackTunings[index] ?? null
+    const select = trackItem.querySelector(".at-track-tuning")
+    select.value = tuning ? JSON.stringify(tuning) : ''
+    for (const option of select.querySelectorAll("option[data-label]")) {
+      option.text = `${this.alternateTab(index, JSON.parse(option.value)) ? "• " : ""}${option.dataset.label}`
+    }
+    trackItem.querySelector(".at-track-tuning-reset").disabled = !this.alternateTab(index, tuning)
+  }
+
+  trackItem(index) {
+    return this.trackItems.find(item => item.track.index === index)
+  }
+
+  // Fingers a track in a tuning (null for the score's), generating its tab if there's none yet
+  async changeTuning(trackItem, tuning) {
+    const { index } = trackItem.track
+    this.showTuningMessage(index, null)
+    if (tuning && !this.alternateTab(index, tuning)) {
+      const strings = await this.optimize(trackItem, tuning)
+      if (!strings) {
+        this.updateTuningRow(index)
+        const name = alphaTab.model.Tuning.findTuning(tuning)?.name ?? noteNames(tuning)
+        this.showTuningMessage(index, `This track can't be played in ${name}`)
+        return
+      }
+      this.alternateTabs.add(index, tuning, this.trackTabs.get(index).notes.length, strings, DEFAULT_OPTIMIZER)
+    }
+
+    if (tuning) this.trackTunings[index] = tuning
+    else delete this.trackTunings[index]
+    this.applyTuning(index, tuning)
+    this.updateTuningRow(index)
+    this.renderEdit()
+    this.scheduleNoteSave()
+  }
+
+  // Discards the user's changes to a track's tab in its tuning: the score's fingering for its own tuning, else a new fingering
+  async resetTuning(trackItem) {
+    const { index } = trackItem.track
+    const tuning = this.trackTunings[index] ?? null
+    const tab = this.alternateTab(index, tuning)
+    if (!tab || !confirm("Discard your changes to this track's tab?")) return
+
+    if (tuning) {
+      const strings = await this.optimize(trackItem, tuning)
+      if (!strings) return
+      this.alternateTabs.replace(tab, strings, DEFAULT_OPTIMIZER)
+    } else {
+      this.alternateTabs.remove(tab)
+    }
+    this.applyTuning(index, tuning)
+    this.updateTuningRow(index)
+    this.renderEdit()
+  }
+
+  // The default optimizer's fingering of a track in a tuning, as a tab's strings (see TrackTab#stringsFor), or null if the track
+  // can't be played in it; the pulldown is disabled with a spinner meanwhile
+  async optimize(trackItem, tuning) {
+    const trackTab = this.trackTabs.get(trackItem.track.index)
+    const select = trackItem.querySelector(".at-track-tuning")
+    select.disabled = true
+    trackItem.classList.add("optimizing")
+    try {
+      await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)))  // shows the spinner before optimizing
+      const fingering = await optimizers[DEFAULT_OPTIMIZER](trackTab.problem(tuning))
+      return fingering && trackTab.stringsFor(fingering)
+    } finally {
+      select.disabled = false
+      trackItem.classList.remove("optimizing")
+    }
+  }
+
+  // Turns the tab editor on or off (with the footer button)
+  toggleTabEditing(e) {
+    e?.preventDefault()
+    const on = !this.tabEditTarget.classList.contains("active")
+    this.tabEditTarget.classList.toggle("active", on)
+    this.element.classList.toggle("editing-tab", on)
+    this.tabEditor.setActive(on)
+    if (!on) this.alternateTabs.flush()
+  }
+
+  // The stringed track and index of an AlphaTab note, if it's on a stringed staff
+  locateNote(note) {
+    for (const trackTab of this.trackTabs.values()) {
+      const index = trackTab.indexes.get(note)
+      if (index !== undefined) return { trackTab, index }
+    }
+    return null
+  }
+
+  // A track's current tuning and strings, for moving its notes
+  tabContext(trackTab) {
+    const { index } = trackTab.track
+    const tuning = this.trackTunings[index] ?? null
+    return { tuning: tuning ?? trackTab.originalTuning, strings: this.alternateTab(index, tuning)?.strings ?? {} }
+  }
+
+  // Moves a note and the notes chained to it to a string, in the track's tab for its tuning (creating the score tuning's tab)
+  moveNote(trackTab, i, string) {
+    const { index } = trackTab.track
+    const tuning = this.trackTunings[index] ?? null
+    const changes = trackTab.moveChanges(i, string)
+    const tab = this.alternateTab(index, tuning)
+    if (tab) {
+      this.alternateTabs.edit(tab, changes)
+    } else {
+      const strings = Object.fromEntries(Object.entries(changes).filter(([, change]) => change !== null))
+      this.alternateTabs.add(index, trackTab.originalTuning, trackTab.notes.length, strings)
+    }
+    this.applyTuning(index, tuning)
+    this.updateTuningRow(index)
+    this.renderEdit()
+  }
+
+  // Re-renders the score after changing its fingering, in place and without the loading overlay
+  renderEdit() {
+    this.renderingEdit = true
+    this.api.render({ reuseViewport: true })
+  }
+
+  // Shows a message under a track's tuning pulldown, or hides it (for null)
+  showTuningMessage(index, message) {
+    const element = this.trackItem(index)?.querySelector(".at-track-tuning-message")
+    if (!element) return
+    element.textContent = message ?? ""
+    element.classList.toggle("d-none", !message)
   }
 
   // --- Helpers ---
@@ -595,6 +860,9 @@ export default class extends Controller {
     volumeSlider.value = volumes?.[track.index] ?? track.playbackInfo.volume
 
     trackItem.track = track
+    const trackTab = this.trackTabs.get(track.index)
+    if (trackTab) this.setupTuningRow(trackItem, trackTab)
+    else trackItem.querySelector(".at-track-tuning-row").remove()
     return trackItem
   }
 

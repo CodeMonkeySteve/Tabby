@@ -330,6 +330,16 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       expect(player_song['note']).to include('speed' => 0.75, 'looping' => true)
     end
 
+    it "includes the user's alternate tabs" do
+      tab = create(:alternate_tab, user:, song:, strings: { '2' => 1 })
+      create(:alternate_tab, song:)
+      get :player, params: { id: song }
+      expect(player_song['alternateTabs']).to eq [
+        { 'id' => tab.id, 'trackIndex' => 0, 'tuning' => [43, 38, 33, 28], 'noteCount' => 477, 'strings' => { '2' => 1 },
+          'optimizer' => nil },
+      ]
+    end
+
     it "shows the default track when the user's instruments aren't in the song" do
       user.update!(instrument_types: %w[keys])
       get :player, params: { id: song }

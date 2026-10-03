@@ -35,6 +35,9 @@ Rails.application.routes.draw do
 
     # the current user's note
     resource :note, only: :update, controller: 'song_notes'
+
+    # the current user's alternate tabs
+    resources :alternate_tabs, path: 'alt', only: %i[create update destroy]
   end
   get 'p/:id' => 'songs#player', as: 'player'
 

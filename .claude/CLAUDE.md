@@ -24,6 +24,8 @@ bundle exec rails server     # Start the dev server
 bundle exec rspec                                    # Run all tests
 bundle exec rspec spec/models/song_spec.rb           # Run one spec file
 bundle exec rspec spec/models/song_spec.rb:15        # Run spec at line
+bin/test-js                                          # Run the JavaScript tests (Node's test runner)
+bin/test-js spec/javascript/track_tab.test.mjs       # Run one JavaScript test file
 
 bin/rubocop                  # Lint (Omakase style)
 bin/brakeman                 # Security static analysis
@@ -58,6 +60,10 @@ RSpec with FactoryBot and transactional fixtures. Test helpers in `spec/support/
 
 Fixtures (audio/score files) are in `spec/fixtures/`.
 
+JavaScript modules in `app/javascript/lib/` are tested with Node's built-in test runner (`spec/javascript/**/*.test.mjs`).
+`spec/javascript/resolve.mjs` resolves the importmap's bare specifiers (`lib/…`, `@coderline/alphatab`) for Node, and
+`spec/javascript/helpers.mjs` loads fixture scores with AlphaTab.
+
 ## Generators
 
 Rails generators are configured for ActiveRecord, HAML, RSpec, and FactoryBot (see `config/application.rb`).
@@ -65,6 +71,10 @@ Rails generators are configured for ActiveRecord, HAML, RSpec, and FactoryBot (s
 ## Player
 
 The player page is implemented in `player.html.haml`, `player.js`, and `player.sass`.  It uses AlphaTab for score display and playback, with backing track audio.
+
+Users can re-finger stringed tracks (see `AlternateTab`): each track's tuning pulldown in the track panel fingers it in another
+tuning with an optimizer (`lib/fingering.js`), and the edit mode moves notes to other strings (`lib/tab_editor.js`).
+`lib/track_tab.js` indexes a track's notes and applies fingerings to AlphaTab's model, and `lib/alternate_tabs.js` saves them.
 
 ## Style
 

@@ -14,6 +14,7 @@ class SongNotesController < ApplicationController
 private
 
   def note_params
-    params.require(:song_note).permit(*SongNote::PLAYBACK_ATTRIBUTES, tracks: [], muted_tracks: [], solo_tracks: [], track_volumes: {})
+    params.require(:song_note)
+      .permit(*SongNote::PLAYBACK_ATTRIBUTES, tracks: [], muted_tracks: [], solo_tracks: [], track_volumes: {}, track_tunings: {})
   end
 end

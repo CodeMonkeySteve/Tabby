@@ -41,6 +41,7 @@ class Song < ApplicationRecord
 
   # The current user's note, e.g. `song.note || song.build_note`
   has_one :note, -> { where(user: Current.user) }, class_name: 'SongNote'
+  has_many :alternate_tabs
 
   # Songs whose title or artist contains each word of the query (or all songs, for a blank query)
   scope :search, ->(query) do
@@ -78,6 +79,9 @@ class Song < ApplicationRecord
   # Saved playback ranges (score ticks) and track settings (by score track index) may not fit a new score
   after_update :clear_note_score_settings, if: :saved_change_to_score_data?
 
+  # Alternate tabs index the old score's notes
+  after_update :delete_alternate_tabs, if: :saved_change_to_score_data?
+
   # The distinct instrument types of the score tracks, in INSTRUMENT_TYPES order
   def instrument_types
     INSTRUMENT_TYPES.map(&:to_s) & track_types
@@ -111,11 +115,16 @@ class Song < ApplicationRecord
 
 private
 
-  SCORE_NOTE_SETTINGS = %i[range_start_tick range_end_tick tracks muted_tracks solo_tracks track_volumes].freeze
+  SCORE_NOTE_SETTINGS = %i[range_start_tick range_end_tick tracks muted_tracks solo_tracks track_volumes track_tunings].freeze
 
   # Clears the saved ranges and track settings, which are specific to the old score
   def clear_note_score_settings
     SCORE_NOTE_SETTINGS.map { notes.where.not(it => nil) }.reduce(:or)
       .update_all(SCORE_NOTE_SETTINGS.index_with(nil).merge(updated_at: Time.current))
+  end
+
+  # (with a relation, since the association's delete_all would nullify their song, and leave it loaded)
+  def delete_alternate_tabs
+    AlternateTab.where(song_id: id).delete_all
   end
 end

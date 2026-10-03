@@ -29,11 +29,15 @@
 
     - song_attributes = { id: @song.to_param, title: @song.title, artist: @song.artist, syncPoints: @song.sync_points || [],
                           trackTypes: @song.track_types, tracks: @song.track_indexes_for(current_user.instrument_types).presence,
-                          note: @song.note&.playback }
+                          note: @song.note&.playback,
+                          alternateTabs: @song.alternate_tabs.where(user: current_user).map(&:for_player) }
     .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json, sync_editor_outlet: '.sync-editor' } } }
       .at-overlay
         .at-overlay-content
           .spinner-border{role: 'status', style: 'width: 3rem; height: 3rem;'}
+      .at-osd{aria: { live: 'polite' }, data: { player: { target: 'osd' } }}
+        %i{data: { player: { target: 'osdIcon' } }}
+        %span{data: { player: { target: 'osdText' } }}
       .at-content
         .at-viewport
           #alphaTab.at-canvas{data: { player: { target: 'canvas' } }}
@@ -87,12 +91,12 @@
               %a.at-tracks{href: '#', title: "Tracks", data: { action: 'player#toggleTracks' }}
                 %i.fas.fa-list-check
               .btn-group.dropup
-                %button.btn.dropdown-toggle{type: 'button', title: "Speed", aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
+                %button.btn.dropdown-toggle{type: 'button', title: "Speed (Numpad +/-)", aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
                   %i.fas.fa-gauge
                 .dropdown-menu.at-speed-options
                   .at-slider-container
                     %span.at-slider-label Speed
-                    %input{type: 'range', min: 50, max: 200, value: 100, step: 10, data: { action: 'input->player#changeSpeed', player: { target: 'speedSlider' } }}/
+                    %input{type: 'range', min: 50, max: 200, value: 100, step: 5, data: { action: 'input->player#changeSpeed', player: { target: 'speedSlider' } }}/
                     %span.at-slider-value{data: { player: { target: 'speedLabel' } }} 1x
               .btn-group.dropup
                 %button.btn.dropdown-toggle{type: 'button', title: "Volume (Up/Down Arrows)", aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
@@ -148,6 +152,9 @@
                   %a.dropdown-item{href: '#', data: { layout: 'page', action: 'player#changeLayout' }}
                     %i.fas.fa-caret-square-down
                     Vertical Layout
+              %a.at-tab-edit{href: '#', title: "Edit Tab",
+                             data: { action: 'player#toggleTabEditing', player: { target: 'tabEdit' } }}
+                %i.fas.fa-guitar
               - if @song.audio.present?
                 %a.at-sync{href: '#', title: "Sync Editor", data: { action: 'player#toggleSyncEditor' }}
                   %i.fas.fa-wave-square
@@ -167,3 +174,10 @@
           .at-track-volume-row
             %span.at-track-volume-label Volume
             %input.at-track-volume{type: 'range', title: "Track Volume", min: 0, max: 16, value: 8}/
+          .at-track-tuning-row
+            %span.at-track-tuning-label Tuning
+            %select.form-select.form-select-sm.at-track-tuning{title: "Tuning"}
+            .spinner-border.spinner-border-sm.at-track-tuning-spinner{role: 'status'}
+            %button.btn.btn-sm.btn-outline-secondary.at-track-tuning-reset{type: 'button', title: "Reset this tuning's tab"}
+              %i.fas.fa-rotate-left
+          .at-track-tuning-message.text-danger.small.d-none

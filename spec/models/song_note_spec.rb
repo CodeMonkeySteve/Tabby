@@ -14,12 +14,13 @@ RSpec.describe SongNote do
     note = song.build_note
     expect(note).to have_attributes(user:, song:)
     note.update!(speed: 0.8, volume: 70, looping: true, range_start_tick: 0, range_end_tick: 3840, tracks: [0, 2], muted_tracks: [1],
-                 solo_tracks: [], track_volumes: { 0 => 12, 1 => 8 })
+                 solo_tracks: [], track_volumes: { 0 => 12, 1 => 8 }, track_tunings: { 1 => [43, 38, 33, 28, 23] })
     expect(song.reload.note).to eq note
     expect(song.notes).to contain_exactly note, other_note
     expect(note.playback).to eq(
       'speed' => 0.8, 'volume' => 70, 'looping' => true, 'count_in' => nil, 'metronome' => nil, 'range_start_tick' => 0,
       'range_end_tick' => 3840, 'tracks' => [0, 2], 'muted_tracks' => [1], 'solo_tracks' => [], 'track_volumes' => { '0' => 12, '1' => 8 },
+      'track_tunings' => { '1' => [43, 38, 33, 28, 23] },
     )
   ensure
     Current.reset
@@ -27,7 +28,7 @@ RSpec.describe SongNote do
 
   it "clears saved ranges and tracks when the song's score changes" do
     notes = [
-      create(:song_note, song:, speed: 0.5, range_start_tick: 0, range_end_tick: 960),
+      create(:song_note, song:, speed: 0.5, range_start_tick: 0, range_end_tick: 960, track_tunings: { 0 => [43, 38, 33, 26] }),
       create(:song_note, song:, speed: 0.5, tracks: [1]),
       create(:song_note, song:, speed: 0.5, muted_tracks: [], solo_tracks: [0], track_volumes: { 0 => 4 }),
     ]
@@ -51,8 +52,12 @@ RSpec.describe SongNote do
       .to eq %i[muted_tracks solo_tracks track_volumes]
     expect(error_attributes(build(:song_note, track_volumes: { 'a' => 8 }))).to eq %i[track_volumes]
     expect(error_attributes(build(:song_note, track_volumes: [8]))).to eq %i[track_volumes]
+    expect(error_attributes(build(:song_note, track_tunings: { 0 => [] }))).to eq %i[track_tunings]
+    expect(error_attributes(build(:song_note, track_tunings: { 0 => [128] }))).to eq %i[track_tunings]
+    expect(error_attributes(build(:song_note, track_tunings: { 'a' => [40] }))).to eq %i[track_tunings]
+    expect(error_attributes(build(:song_note, track_tunings: [[40]]))).to eq %i[track_tunings]
     expect(build(:song_note, speed: 0.5, volume: 0, range_start_tick: 0, range_end_tick: 50, tracks: [0, 3], muted_tracks: [],
-                             solo_tracks: [1], track_volumes: { 0 => 0, 3 => 16 })).to be_valid
+                             solo_tracks: [1], track_volumes: { 0 => 0, 3 => 16 }, track_tunings: { 3 => [60] })).to be_valid
   end
 
   it "is unique per user and song" do

@@ -32,6 +32,24 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: alternate_tabs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.alternate_tabs (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id uuid NOT NULL,
+    song_id uuid NOT NULL,
+    track_index integer NOT NULL,
+    tuning integer[] NOT NULL,
+    note_count integer NOT NULL,
+    strings jsonb DEFAULT '{}'::jsonb NOT NULL,
+    optimizer character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -184,7 +202,8 @@ CREATE TABLE public.song_notes (
     tracks integer[],
     muted_tracks integer[],
     solo_tracks integer[],
-    track_volumes jsonb
+    track_volumes jsonb,
+    track_tunings jsonb
 );
 
 
@@ -258,6 +277,14 @@ ALTER TABLE ONLY public.play_histories ALTER COLUMN id SET DEFAULT nextval('publ
 --
 
 ALTER TABLE ONLY public.solid_cable_messages ALTER COLUMN id SET DEFAULT nextval('public.solid_cable_messages_id_seq'::regclass);
+
+
+--
+-- Name: alternate_tabs alternate_tabs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alternate_tabs
+    ADD CONSTRAINT alternate_tabs_pkey PRIMARY KEY (id);
 
 
 --
@@ -338,6 +365,20 @@ ALTER TABLE ONLY public.songsterr_songs
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_on_user_id_song_id_track_index_tuning_ec0880e794; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_on_user_id_song_id_track_index_tuning_ec0880e794 ON public.alternate_tabs USING btree (user_id, song_id, track_index, tuning);
+
+
+--
+-- Name: index_alternate_tabs_on_song_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_alternate_tabs_on_song_id ON public.alternate_tabs USING btree (song_id);
 
 
 --
@@ -501,11 +542,27 @@ ALTER TABLE ONLY public.play_histories
 
 
 --
+-- Name: alternate_tabs fk_rails_cf2ed07d2d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alternate_tabs
+    ADD CONSTRAINT fk_rails_cf2ed07d2d FOREIGN KEY (song_id) REFERENCES public.songs(id) ON DELETE CASCADE;
+
+
+--
 -- Name: playlists fk_rails_d67ef1eb45; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.playlists
     ADD CONSTRAINT fk_rails_d67ef1eb45 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: alternate_tabs fk_rails_e8ce48a749; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alternate_tabs
+    ADD CONSTRAINT fk_rails_e8ce48a749 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -515,6 +572,8 @@ ALTER TABLE ONLY public.playlists
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261002000001'),
+('20261002000000'),
 ('20261001000000'),
 ('20260930120000'),
 ('20260930000000'),

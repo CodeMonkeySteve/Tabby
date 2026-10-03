@@ -52,6 +52,46 @@ body
 
 .at-viewport
   padding-right: 20px
+  position: relative  // positions the tab editor's selection
+
+.editing-tab
+  .at-canvas
+    cursor: pointer
+
+  .at-cursors
+    visibility: hidden
+
+.at-tab-selection
+  position: absolute
+  inset: 0 auto auto 0
+  pointer-events: none
+
+  .at-tab-note
+    position: absolute
+    border-radius: 3px
+
+    &.selected
+      outline: 2px solid #0d6efd
+
+    &.chained
+      outline: 1px dashed rgba(13, 110, 253, 0.6)
+
+  .at-tab-selection-buttons
+    position: absolute
+    transform: translateY(-50%)
+    pointer-events: auto
+
+    .btn
+      padding: 0 6px
+      line-height: 1.2
+
+  &.flash .at-tab-note.selected
+    animation: at-tab-flash 0.4s
+
+@keyframes at-tab-flash
+  50%
+    outline-color: #dc3545
+    background: rgba(220, 53, 69, 0.2)
 
 // a drawer over the window (since the score may be taller than it) above the footer controls, measured by the player controller
 .at-track-panel
@@ -162,6 +202,30 @@ body
     .at-track-volume
       flex: 1
 
+  .at-track-tuning-row
+    display: flex
+    align-items: center
+    gap: 8px
+    padding-left: 22px
+    margin-top: 4px
+
+    .at-track-tuning-label
+      font-size: 11px
+      color: #888
+
+    .at-track-tuning
+      flex: 1
+      min-width: 0
+
+    .at-track-tuning-spinner
+      display: none
+
+  &.optimizing .at-track-tuning-spinner
+    display: inline-block
+
+  .at-track-tuning-message
+    padding-left: 22px
+
 input[type='range']
   -webkit-appearance: none
   background: #d3d3d3
@@ -208,6 +272,28 @@ input[type='range']
     visibility: visible
     opacity: 1
     transition-delay: 0.2s
+
+.at-osd
+  position: fixed
+  top: 50%
+  left: 50%
+  transform: translate(-50%, -50%)
+  z-index: 1003
+  padding: 12px 20px
+  border-radius: 8px
+  background: rgba(0, 0, 0, 0.6)
+  color: #fff
+  font-size: 1.5rem
+  display: flex
+  align-items: center
+  gap: 10px
+  pointer-events: none
+  opacity: 0
+  transition: opacity 0.3s ease-out
+
+  &.visible
+    opacity: 1
+    transition: none
 
 .at-overlay-content
   margin-top: 20px
@@ -430,6 +516,9 @@ input[type='range']
         color: #adb5bd
 
     .at-track-volume-row .at-track-volume-label
+      color: #adb5bd
+
+    .at-track-tuning-row .at-track-tuning-label
       color: #adb5bd
 
   .at-overlay-content

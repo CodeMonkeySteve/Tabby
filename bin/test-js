@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Runs the JavaScript tests (spec/javascript/**/*.test.mjs, or the given files) with Node's test runner
+cd "$(dirname "$0")/.." || exit 1
+if [ $# -eq 0 ]; then set -- 'spec/javascript/**/*.test.mjs'; fi
+exec node --import ./spec/javascript/setup.mjs --test "$@"
