@@ -5,10 +5,14 @@ SRC_DB='postgres://tabby@whale/tabby'
 TGT_HOST=localhost
 TGT_USER=postgres
 TGT_NAME=tabby_devel
+DUMP_FILE="$(dirname "$0")/../tmp/tabby.dump"
+
+pg_dump -Fc --file "$DUMP_FILE" "$SRC_DB"
 
 dropdb --host "$TGT_HOST" --username "$TGT_USER" --if-exists --force "$TGT_NAME"
 createdb --host "$TGT_HOST" --username "$TGT_USER" "$TGT_NAME"
-pg_dump -Fc "$SRC_DB" | pg_restore --no-owner --no-privileges --dbname "postgres://$TGT_USER@$TGT_HOST/$TGT_NAME"
+pg_restore --no-owner --no-privileges --dbname "postgres://$TGT_USER@$TGT_HOST/$TGT_NAME" "$DUMP_FILE"
+rm "$DUMP_FILE"
 bin/rails db:migrate
 
 rsync -avz whale:/library/Tabby/files/ storage/files/
