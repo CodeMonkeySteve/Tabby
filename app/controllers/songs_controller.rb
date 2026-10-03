@@ -14,6 +14,7 @@ class SongsController < ApplicationController
 
     @matches = Songsterr::Search.call(params[:q]).map { Song::SongsterrMatch.from_result(it) }
     @imported = Song.for_songsterr_matches(@matches)
+    @playlists = Current.user.playlists.order(:name)
   rescue Songsterr::Error => ex
     @error = "Can't search Songsterr: #{ex.message}"
   end
@@ -24,7 +25,8 @@ class SongsController < ApplicationController
       song_id: Integer(params.require(:song_id), 10),
       artist: params[:artist].to_s,
       title: params.require(:title),
-      instrument_types: Song::INSTRUMENT_TYPES.map(&:to_s) & Array(params[:instrument_types]),
+      # keeps each track's place, for the page URL's track index
+      track_types: Array(params[:track_types]).map { Song::INSTRUMENT_TYPES.map(&:to_s).include?(it) ? it : 'other' },
     )
     SongsterrImportJob.set(wait: SongsterrImportJob::START_DELAY).perform_later(Current.user, match.to_h)
     render partial: 'songsterr_card', locals: { match:, state: :importing }

@@ -12,4 +12,4 @@
       - @matches.each do |match|
         .col
           - song = @imported[match.song_id]
-          = render 'songsterr_card', match:, song:, state: song ? :imported : :available
+          = render 'songsterr_card', match:, song:, playlists: @playlists, state: song ? :imported : :available

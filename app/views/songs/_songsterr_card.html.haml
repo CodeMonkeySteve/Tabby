@@ -1,12 +1,15 @@
 -# A Songsterr search match, in its own frame so importing replaces just this card.  Links navigate the whole page, but the import
--# form targets this frame.  States: :available, :importing, :imported (with song), :failed (with error)
+-# form targets this frame.  States: :available, :importing, :imported (with song and the user's playlists), :failed (with error).
+-# The user is the current one, except in the import job's broadcasts.
+- user = local_assigns[:user] || Current.user
 - song = local_assigns[:song]
+- playlists = local_assigns[:playlists]
 - error = local_assigns[:error]
 = turbo_frame_tag match.frame_id, target: '_top' do
   .songsterr.card.h-100
     .card-body
       %span.float-end
-        %a.btn{href: match.url, target: '_blank', rel: 'noopener', title: "View on Songsterr"}
+        %a.btn{href: match.url(user.instrument_types.first), target: '_blank', rel: 'noopener', title: "View on Songsterr"}
           %i.bi.bi-box-arrow-up-right
       %span.badge.songsterr-badge.float-start.me-3 Songsterr
       %h5.card-title= match.title
@@ -17,14 +20,22 @@
       .mt-3
         - case state
         - when :imported
-          = link_to player_path(song), class: 'btn btn-sm btn-success' do
-            %i.bi.bi-play-circle
-            Play
-          = link_to edit_song_path(song), class: 'btn btn-sm btn-secondary' do
-            %i.bi.bi-pencil-square
-            Edit
+          .d-flex.gap-2
+            = link_to player_path(song), class: 'btn btn-sm btn-success' do
+              %i.bi.bi-play-circle
+              Play
+            = link_to edit_song_path(song), class: 'btn btn-sm btn-secondary' do
+              %i.bi.bi-pencil-square
+              Edit
+            .dropdown
+              %button.btn.btn-sm.btn-outline-secondary{type: 'button', aria: { expanded: false, haspopup: true },
+                                                       data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
+                %i.bi.bi-folder-plus
+                Playlists
+              .dropdown-menu.p-2{style: 'min-width: 220px'}
+                = render 'songs/playlist_menu', song:, playlists:
         - when :importing
-          = turbo_stream_from SongsterrImportJob.stream(Current.user, match)
+          = turbo_stream_from SongsterrImportJob.stream(user, match)
           .d-flex.align-items-center
             .spinner-border.spinner-border-sm.me-2{role: 'status', aria: { hidden: true }}
             Importing…
@@ -36,6 +47,6 @@
           -# CSRF token in a header instead
           = button_to songsterr_import_songs_path, class: 'btn btn-sm btn-primary', authenticity_token: false,
             form: { data: { turbo_frame: match.frame_id } },
-            params: { song_id: match.song_id, artist: match.artist, title: match.title, instrument_types: match.instrument_types } do
+            params: { song_id: match.song_id, artist: match.artist, title: match.title, track_types: match.track_types } do
             %i.bi.bi-cloud-download
             = state == :failed ? "Retry Import" : "Import"

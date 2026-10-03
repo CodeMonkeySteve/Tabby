@@ -18,11 +18,11 @@ class SongsterrImportJob < ApplicationJob
       Turbo::StreamsChannel.broadcast_append_to(stream, target: "#{match.frame_id}_log", html: tag.li(message))
     end
     song.save!
-    broadcast_card(stream, match, state: :imported, song:)
+    broadcast_card(stream, match, state: :imported, song:, user:, playlists: user.playlists.order(:name))
   rescue ::Songsterr::Error, ActiveRecord::RecordInvalid => ex
-    broadcast_card(stream, match, state: :failed, error: ex.message)
+    broadcast_card(stream, match, state: :failed, user:, error: ex.message)
   rescue StandardError
-    broadcast_card(stream, match, state: :failed, error: "Import failed unexpectedly") if stream
+    broadcast_card(stream, match, state: :failed, user:, error: "Import failed unexpectedly") if stream
     raise
   end
 

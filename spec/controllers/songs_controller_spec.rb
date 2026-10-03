@@ -81,6 +81,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
 
     it "shows Songsterr matches as cards, linking already-imported songs" do
       imported = create(:song, title: "Head Over Heels", artist: "Accept", songsterr_song: build(:songsterr_song, id: 1041, song: nil))
+      user.update!(instrument_types: %w[guitar bass])
       allow(Songsterr::Search).to receive(:call).with("head over heels").and_return(results)
       get :songsterr_search, params: { q: "head over heels" }
 
@@ -91,13 +92,15 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
 
       tff = doc.at_css('turbo-frame#songsterr_20361')
       expect(tff.at_css('a[target=_blank][rel=noopener]')['href'])
-        .to eq 'https://www.songsterr.com/a/wsa/tears-for-fears-head-over-heels-tab-s20361'
+        .to eq 'https://www.songsterr.com/a/wsa/tears-for-fears-head-over-heels-tab-s20361t1' # the user's main instrument, guitar
       expect(tff.at_css('form[action="/s/songsterr_import"] button').text).to include "Import"
       expect(tff.at_css('input[name=song_id]')['value']).to eq '20361'
+      expect(tff.css('input[name="track_types[]"]').map { it['value'] }).to eq %w[vocals guitar bass keys drums]
 
       accept = doc.at_css('turbo-frame#songsterr_1041')
-      expect(accept.at_css('form')).to be_nil
+      expect(accept.at_css('form[action="/s/songsterr_import"]')).to be_nil
       expect(accept.at_css("a[href='#{player_path(imported)}']")).to be_present
+      expect(accept.at_css(".dropdown-menu form[action='#{playlist_song_path(imported)}']")).to be_present
     end
 
     it "links songs already in the library by title and artist, since importing would replace them" do
@@ -106,7 +109,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       get :songsterr_search, params: { q: "head over heels" }
 
       tff = Nokogiri::HTML(response.body).at_css('turbo-frame#songsterr_20361')
-      expect(tff.at_css('form')).to be_nil
+      expect(tff.at_css('form[action="/s/songsterr_import"]')).to be_nil
       expect(tff.at_css("a[href='#{player_path(manual)}']")).to be_present
     end
 
@@ -135,9 +138,9 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     include ActiveJob::TestHelper
     include ActiveSupport::Testing::TimeHelpers
 
-    let(:params) { { song_id: '20361', artist: "Tears for Fears", title: "Head Over Heels", instrument_types: %w[bass keys] } }
+    let(:params) { { song_id: '20361', artist: "Tears for Fears", title: "Head Over Heels", track_types: %w[bass keys evil] } }
     let(:match) do
-      Song::SongsterrMatch.new(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels", instrument_types: %w[bass keys])
+      Song::SongsterrMatch.new(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels", track_types: %w[bass keys other])
     end
 
     it "imports in the background, showing the card's progress" do

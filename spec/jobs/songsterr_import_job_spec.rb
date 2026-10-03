@@ -14,13 +14,16 @@ RSpec.describe SongsterrImportJob do
     ActionCable.server.pubsub.broadcasts(name).map { Nokogiri::HTML5.fragment(JSON.parse(it)).at_css('turbo-stream') }
   end
 
-  let(:user) { create(:user) }
-  let(:match) { Song::SongsterrMatch.new(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels", instrument_types: %w[bass]) }
+  let(:user) { create(:user, instrument_types: %w[bass]) }
+  let(:match) do
+    Song::SongsterrMatch.new(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels", track_types: %w[vocals bass])
+  end
   let(:stream) { described_class.stream(user, match) }
 
   def perform = described_class.perform_now(user, match.to_h)
 
   it "saves the imported song, broadcasting progress and then the song's card" do
+    create(:playlist, name: "Gig", user:)
     allow(Song).to receive(:from_songsterr).with(match.url) do |_url, &log|
       log.("Downloading 3 tracks")
       build(:song, songsterr_song: build(:songsterr_song, id: 20361, song: nil))
@@ -33,6 +36,8 @@ RSpec.describe SongsterrImportJob do
     expect(broadcasts.map { [it['action'], it['target']] }).to eq [%w[append songsterr_20361_log], %w[replace songsterr_20361]]
     expect(broadcasts.first.at_css('template li').text).to eq "Downloading 3 tracks"
     expect(broadcasts.last.at_css("a[href='#{player_path}']").text).to include "Play"
+    expect(broadcasts.last.css('.dropdown-menu .form-check-label').map(&:text)).to eq ["Gig"]
+    expect(broadcasts.last.at_css('a[target=_blank]')['href']).to end_with '-tab-s20361t1' # the user's bass track
   end
 
   it "broadcasts the failure, with a retry, when the import fails" do

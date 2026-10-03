@@ -36,7 +36,7 @@ class SongsterrSong < ApplicationRecord
   def tags = page['tags'] || []
 
   # The song's Songsterr tab page.  Songsterr redirects to its own slug if this one differs.
-  def url = Song::SongsterrMatch.new(song_id: id, artist: song.artist, title: song.title, instrument_types: []).url
+  def url = Song::SongsterrMatch.new(song_id: id, artist: song.artist, title: song.title, track_types: []).url
 
   # The initial tempo of the score
   def tempo = parts.first&.dig('automations', 'tempo', 0, 'bpm')
