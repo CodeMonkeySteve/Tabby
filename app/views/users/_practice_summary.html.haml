@@ -1,0 +1,18 @@
+-# A period's practice totals, followed by the stat in the block
+.practice-summary
+  .practice-summary-title
+    = title
+    - if local_assigns[:subtitle].present?
+      %span.text-body-secondary= subtitle
+  %dl.activity-stats.mb-0
+    .practice-time
+      %dt Practice time
+      %dd= practice_time(summary.seconds)
+    %div
+      %dt Songs
+      %dd= summary.songs
+    %div{title: "Songs played for the first time"}
+      %dt New songs
+      %dd= summary.new_songs
+    .practice-summary-extra
+      = yield

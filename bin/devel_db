@@ -5,7 +5,9 @@ SRC_DB='postgres://tabby@whale/tabby'
 TGT_HOST=localhost
 TGT_USER=postgres
 TGT_NAME=tabby_devel
-DUMP_FILE="$(dirname "$0")/../tmp/tabby.dump"
+DUMP_FILE=tmp/tabby.dump
+
+cd "$(dirname "$0")/.."
 
 pg_dump -Fc --file "$DUMP_FILE" "$SRC_DB"
 

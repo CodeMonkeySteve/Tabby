@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-# A user's practice overview: their playlists, recently played and added songs, and daily practice activity
+# A user's practice overview: their playlists, recently played and added songs, daily practice activity, and summaries of
+# this week's and the latest session's practice
 class Dashboard
   RECENT_LIMIT = 8
 
-  # About 90 days, in whole weeks (Sunday first), like GitHub's contribution graph
+  # About 90 days, in whole weeks (Monday first, so that a weekend falls within one week), like GitHub's contribution graph
   ACTIVITY_WEEKS = 13
 
   # Minutes of practice for activity levels 2, 3, and 4 (level 1 is any practice, level 0 none)
@@ -19,6 +20,9 @@ class Dashboard
   end
 
   RecentPlay = Data.define(:song, :date, :seconds)
+
+  # Practice from a date through today: total seconds, distinct songs, songs played for the first time, and the most practiced song
+  Summary = Data.define(:date, :seconds, :songs, :new_songs, :top_song)
 
   attr_reader :user, :today
 
@@ -68,21 +72,46 @@ class Dashboard
   end
 
   def activity_start
-    today.beginning_of_week(:sunday) - (ACTIVITY_WEEKS - 1).weeks
+    week_start - (ACTIVITY_WEEKS - 1).weeks
   end
 
-  def activity_seconds
-    activity.sum(&:seconds)
+  def week_summary
+    @week_summary ||= summary(week_start..today)
   end
 
-  def activity_days
-    activity.count { it.seconds.positive? }
+  # Today's practice, or the latest session's if the user hasn't practiced yet today
+  def session_summary
+    @session_summary ||= begin
+      date = practice.where(date: ..today).maximum(:date) || today
+      summary(date..date)
+    end
   end
 
-  # Consecutive days of practice through today, or through yesterday if the user hasn't practiced yet today
-  def streak
-    dates = user.play_histories.where.not(duration: ..0).distinct.order(date: :desc).pluck(:date)
-    day = dates.first == today ? today : today.yesterday
-    dates.drop_while { it > day }.each_with_index.take_while { |date, index| date == day - index }.size
+  # Consecutive weeks of practice through this week, or through last week if the user hasn't practiced yet this week
+  def weeks_in_a_row
+    weeks = practice.where(date: ..today).distinct.order(date: :desc).pluck(:date).map { it.beginning_of_week(:monday) }.uniq
+    week = weeks.first == week_start ? week_start : week_start - 1.week
+    weeks.drop_while { it > week }.each_with_index.take_while { |start, index| start == week - index.weeks }.size
+  end
+
+private
+
+  def week_start
+    today.beginning_of_week(:monday)
+  end
+
+  # Play histories with practice time
+  def practice
+    user.play_histories.where.not(duration: ..0)
+  end
+
+  def summary(dates)
+    seconds = practice.where(date: dates).group(:song_id).sum(:duration)
+    first_plays = practice.where(song_id: seconds.keys).group(:song_id).minimum(:date)
+    top_song_id = seconds.max_by(&:last)&.first
+    Summary.new(
+      date: dates.begin, seconds: seconds.values.sum, songs: seconds.size, new_songs: first_plays.values.count { it >= dates.begin },
+      top_song: top_song_id && Song.find_by(id: top_song_id),
+    )
   end
 end

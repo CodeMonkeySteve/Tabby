@@ -3,8 +3,8 @@
   .activity-grid{role: 'img', aria: { label: "Practice activity for the last #{Dashboard::ACTIVITY_WEEKS} weeks" }}
     .activity-weekdays
       .activity-month
-      - %w[Sun Mon Tue Wed Thu Fri Sat].each_with_index do |weekday, index|
-        .activity-weekday= weekday if index.odd?
+      - %w[Mon Tue Wed Thu Fri Sat Sun].each_with_index do |weekday, index|
+        .activity-weekday= weekday if index.even?
     - dashboard.activity_weeks.each_with_index do |week, index|
       - month_start = week.find { it.date.day == 1 }
       .activity-week

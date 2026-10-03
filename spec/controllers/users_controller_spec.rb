@@ -68,6 +68,9 @@ RSpec.describe UsersController do
         expect(page.css('.activity-week')).to have(Dashboard::ACTIVITY_WEEKS).items
         expect(page.css('.activity-grid .activity-day.level-2')).to have(1).item
         expect(page.css('.list-group-item').map(&:text).join).to include "Bass Song"
+        expect(page.css('.practice-summary-title').map { it.text.squish }).to eq ["This week", "Today"]
+        expect(page.css('.practice-time dd').map(&:text)).to eq %w[10m 10m]
+        expect(page.at_css('.practice-summary-extra a[href]')['href']).to eq player_path(song)
       end
 
       it "#show without any data" do
@@ -77,6 +80,7 @@ RSpec.describe UsersController do
         expect(response).to be_successful
 
         expect(response.body).to include "No playlists yet"
+        expect(Nokogiri::HTML(response.body).css('.practice-summary-title').map { it.text.squish }).to eq ["This week", "Today"]
         expect(Nokogiri::HTML(response.body).at_css('a:contains("Choose your instruments")')['href']).to eq settings_path
       end
     end

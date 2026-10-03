@@ -51,32 +51,61 @@ RSpec.describe Dashboard do
     play(bass_song, 2, 90)
     play(bass_song, 200, 10)
 
-    expect(dashboard.activity_start).to eq Date.new(2026, 7, 5) # a Sunday
+    expect(dashboard.activity_start).to eq Date.new(2026, 7, 6) # a Monday
     expect(dashboard.activity.first.date).to eq dashboard.activity_start
     expect(dashboard.activity.last).to eq Dashboard::Day.new(today, 900.0)
     expect(dashboard.activity_weeks).to have(Dashboard::ACTIVITY_WEEKS).items
-    expect(dashboard.activity_weeks.last.map(&:date)).to eq (Date.new(2026, 9, 27)..today).to_a
+    expect(dashboard.activity_weeks.last.map(&:date)).to eq (Date.new(2026, 9, 28)..today).to_a
     expect(dashboard.activity.last(4).map(&:level)).to eq [0, 4, 3, 2]
-    expect(dashboard.activity_seconds).to eq (5 + 10 + 30 + 90) * 60.0
-    expect(dashboard.activity_days).to eq 3
   end
 
-  describe "#streak" do
-    it "counts consecutive days of practice through today" do
-      [0, 1, 2, 4].each { play(bass_song, it, 5) }
-      expect(dashboard.streak).to eq 3
+  it "summarizes the current week, starting Monday" do
+    play(bass_song, 3, 20) # last Sunday
+    play(bass_song, 0, 5)
+    play(keys_song, 2, 10)
+    play(keys_song, 1, 0)
+
+    expect(dashboard.week_summary).to eq Dashboard::Summary.new(
+      date: Date.new(2026, 9, 28), seconds: 900.0, songs: 2, new_songs: 1, top_song: keys_song,
+    )
+  end
+
+  describe "#session_summary" do
+    it "summarizes today's practice" do
+      play(bass_song, 0, 5)
+      play(keys_song, 0, 10)
+      play(bass_song, 4, 20)
+
+      expect(dashboard.session_summary).to eq Dashboard::Summary.new(
+        date: today, seconds: 900.0, songs: 2, new_songs: 1, top_song: keys_song,
+      )
     end
 
-    it "counts through yesterday before practicing today" do
-      [1, 2].each { play(bass_song, it, 5) }
-      expect(dashboard.streak).to eq 2
-    end
-
-    it "ignores days without practice time" do
+    it "summarizes the last session before practicing today, or nothing without any" do
       play(bass_song, 0, 0)
-      play(bass_song, 1, 5)
-      expect(dashboard.streak).to eq 1
-      expect(described_class.new(create(:user), today:).streak).to eq 0
+      play(bass_song, 4, 20)
+      play(keys_song, 10, 5)
+
+      expect(dashboard.session_summary).to eq Dashboard::Summary.new(
+        date: today - 4, seconds: 1200.0, songs: 1, new_songs: 1, top_song: bass_song,
+      )
+      expect(described_class.new(create(:user), today:).session_summary).to eq Dashboard::Summary.new(
+        date: today, seconds: 0, songs: 0, new_songs: 0, top_song: nil,
+      )
+    end
+  end
+
+  describe "#weeks_in_a_row" do
+    it "counts consecutive weeks of practice through the current week" do
+      [0, 3, 9, 10, 30].each { play(bass_song, it, 5) } # this week, the last two weeks, and a month ago
+      expect(dashboard.weeks_in_a_row).to eq 3
+    end
+
+    it "counts through last week before practicing this week, ignoring days without practice time" do
+      play(bass_song, 0, 0)
+      [3, 10].each { play(bass_song, it, 5) }
+      expect(dashboard.weeks_in_a_row).to eq 2
+      expect(described_class.new(create(:user), today:).weeks_in_a_row).to eq 0
     end
   end
 end

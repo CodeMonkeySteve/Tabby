@@ -9,13 +9,21 @@
     .card-body.d-flex.flex-wrap.align-items-center.gap-4
       = render 'activity_graph', dashboard: @dashboard
 
-      %dl.activity-stats.mb-0
-        %dt Practice time
-        %dd= practice_time(@dashboard.activity_seconds)
-        %dt Days practiced
-        %dd= @dashboard.activity_days
-        %dt Current streak
-        %dd= pluralize(@dashboard.streak, 'day')
+      = render layout: 'practice_summary', locals: { title: "This week", summary: @dashboard.week_summary } do
+        %dt Weeks in a row
+        %dd= @dashboard.weeks_in_a_row
+
+      - last_session = @dashboard.session_summary
+      - practiced_today = last_session.date == @dashboard.today
+      = render layout: 'practice_summary', locals: { title: practiced_today ? "Today" : "Last session",
+                                                     subtitle: (relative_date(last_session.date) unless practiced_today),
+                                                     summary: last_session } do
+        %dt Top song
+        %dd.text-truncate
+          - if (song = last_session.top_song)
+            = link_to song.title, player_path(song), title: song.artist
+          - else
+            &mdash;
 
   .row.g-4
     .col-lg-4
