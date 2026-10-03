@@ -1,8 +1,4 @@
 class PlaylistsController < ApplicationController
-  def index
-    @playlists = Current.user.playlists.order(:name)
-  end
-
   def show
     @playlist = Current.user.playlists.find(params[:id])
   end
