@@ -8,6 +8,9 @@
     %meta{name: 'apple-mobile-web-app-capable', content: 'yes'}/
     %meta{name: 'application-name', content: 'Tabby'}/
     %meta{name: 'mobile-web-app-capable', content: 'yes'}/
+    %link{rel: 'icon', href: '/favicon.ico', sizes: '32x32'}/
+    %link{rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml'}/
+    %link{rel: 'apple-touch-icon', href: '/apple-touch-icon.png'}/
 
     = csrf_meta_tags
     -# a standalone page (with AlphaTab's workers and audio), so always load it fully rather than with a Turbo visit

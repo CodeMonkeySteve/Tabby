@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512">
+  <title>Tabby</title>
+  <rect width="512" height="512" rx="96" fill="#1b8f40"/>
+  <!-- a cat's head in the shape of a guitar pick, simplified for small sizes -->
+  <path d="M104 72L204 150Q256 138 308 150L408 72Q446 180 440 256C434 352 344 430 256 460C168 430 78 352 72 256Q66 180 104 72Z"
+        fill="#fff" stroke="#fff" stroke-width="24" stroke-linejoin="round"/>
+  <g stroke="#1b8f40" stroke-width="28" stroke-linecap="round">
+    <path d="M256 170V226M206 180L216 220M306 180L296 220"/>
+  </g>
+  <g fill="#2a9d8f">
+    <ellipse cx="184" cy="296" rx="30" ry="38"/>
+    <ellipse cx="328" cy="296" rx="30" ry="38"/>
+  </g>
+</svg>

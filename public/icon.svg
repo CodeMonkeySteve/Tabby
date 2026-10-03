@@ -1,3 +1,21 @@
-<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="256" cy="256" r="256" fill="red"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>Tabby</title>
+  <rect width="512" height="512" rx="108" fill="#1b8f40"/>
+  <!-- a six-string tab staff, its lines doubling as whiskers -->
+  <g stroke="#fff" stroke-opacity="0.5" stroke-width="7" stroke-linecap="round">
+    <path d="M48 232H464M48 260H464M48 288H464M48 316H464M48 344H464M48 372H464"/>
+  </g>
+  <!-- a cat's head in the shape of a guitar pick -->
+  <path d="M136 104L212 164Q256 154 300 164L376 104Q404 190 400 250C396 330 320 400 256 424C192 400 116 330 112 250Q108 190 136 104Z"
+        fill="#fff" stroke="#fff" stroke-width="20" stroke-linejoin="round"/>
+  <!-- tabby forehead stripes -->
+  <g stroke="#1b8f40" stroke-width="16" stroke-linecap="round">
+    <path d="M256 176V222M218 184L226 214M294 184L286 214"/>
+  </g>
+  <!-- eyes and nose -->
+  <g fill="#2a9d8f">
+    <ellipse cx="198" cy="282" rx="20" ry="26"/>
+    <ellipse cx="314" cy="282" rx="20" ry="26"/>
+    <path d="M238 336H274L256 358Z" stroke="#2a9d8f" stroke-width="10" stroke-linejoin="round"/>
+  </g>
 </svg>
