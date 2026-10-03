@@ -30,6 +30,35 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
     expect(song.errors[:track_types]).to eq ["is not included in the list"]
   end
 
+  describe "slugs" do
+    it "derives a slug from the title and artist, numbering taken slugs" do
+      song = create(:song, title: "Don't Fear the Reaper's Cowbell", artist: "Blue Öyster Cult")
+      expect(song.slug).to eq 'don-t-fear-the-reapers-cowbell-blue-oyster-cult'
+      expect(create(:song, title: song.title, artist: song.artist).slug).to eq "#{song.slug}-2"
+      expect(create(:song, title: "New", artist: nil).slug).to eq 'new-2' # not the new song page
+    end
+
+    it "keeps finding a renamed song by its old slugs, which other songs can't take" do
+      song = create(:song)
+      old_slug = song.slug
+      song.update!(title: "Shout")
+      expect(song.slug).to eq 'shout-tears-for-fears'
+      expect(Song.friendly.find(old_slug)).to eq song
+      expect(Song.friendly.find(song.id)).to eq song
+      expect(create(:song).slug).to eq "#{old_slug}-2"
+
+      song.update!(title: "Head Over Heels")
+      expect(song.slug).to eq old_slug
+    end
+
+    it "keeps the saved slug as its URL param until it's saved" do
+      song = create(:song)
+      song.title = "Shout"
+      expect(song).to be_valid
+      expect(song.to_param).to eq 'head-over-heels-tears-for-fears'
+    end
+  end
+
   describe "track classification" do
     let(:unreadable_score) do
       Shrine.upload(StringIO.new('not a score'), :cache, metadata: false).tap do

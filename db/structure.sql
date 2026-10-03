@@ -96,6 +96,20 @@ ALTER SEQUENCE public.credentials_id_seq OWNED BY public.credentials.id;
 
 
 --
+-- Name: friendly_id_slugs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.friendly_id_slugs (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    slug character varying NOT NULL,
+    sluggable_type character varying NOT NULL,
+    sluggable_id uuid NOT NULL,
+    scope character varying,
+    created_at timestamp(6) without time zone
+);
+
+
+--
 -- Name: play_histories; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -304,6 +318,14 @@ ALTER TABLE ONLY public.credentials
 
 
 --
+-- Name: friendly_id_slugs friendly_id_slugs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.friendly_id_slugs
+    ADD CONSTRAINT friendly_id_slugs_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: play_histories play_histories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -393,6 +415,20 @@ CREATE UNIQUE INDEX index_credentials_on_provider_and_uid ON public.credentials 
 --
 
 CREATE INDEX index_credentials_on_user_id ON public.credentials USING btree (user_id);
+
+
+--
+-- Name: index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope ON public.friendly_id_slugs USING btree (slug, sluggable_type, scope) NULLS NOT DISTINCT;
+
+
+--
+-- Name: index_friendly_id_slugs_on_sluggable; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_friendly_id_slugs_on_sluggable ON public.friendly_id_slugs USING btree (sluggable_type, sluggable_id);
 
 
 --
@@ -572,6 +608,7 @@ ALTER TABLE ONLY public.alternate_tabs
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261003000000'),
 ('20261002000001'),
 ('20261002000000'),
 ('20261001000000'),

@@ -147,8 +147,12 @@ class SongsController < ApplicationController
 
 private
 
+  # Finds the song by its current or an old slug, or its ID, redirecting pages to its current URL
   def find_song
-    @song = Song.find_by_slug_or_id!(params[:id])
+    @song = Song.friendly.find(params[:id])
+    if request.get? && params[:id] != @song.to_param
+      redirect_to url_for(id: @song, params: request.query_parameters), status: :moved_permanently
+    end
   end
 
   def song_params

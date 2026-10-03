@@ -225,6 +225,30 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     expect(response).to redirect_to song_path(song.reload)
   end
 
+  it "redirects pages for an old slug or ID to the song's current URL" do
+    old_slug = song.slug
+    song.update!(title: "Shout")
+
+    get :player, params: { id: old_slug, track: '1' }
+    expect(response).to have_http_status(:moved_permanently)
+    expect(response).to redirect_to player_url(song, track: '1')
+
+    get :show, params: { id: song.id }
+    expect(response).to redirect_to song_url(song)
+
+    get :show, params: { id: song.slug }
+    expect(response).to be_successful
+
+    post :track_history, params: { id: old_slug, duration: 1 }
+    expect(response).to be_successful
+  end
+
+  it "redisplays the edit form for the saved slug when changing the title fails" do
+    patch :update, params: { id: song, song: { title: '', artist: "Sigur Rós" } }
+    expect(response).to have_http_status(:unprocessable_entity)
+    expect(Nokogiri::HTML(response.body).at_css("form[action=\"#{song_path(song)}\"]")).to be_present
+  end
+
   it "returns to the page that linked to the edit page after saving, but only on this site" do
     request.env['HTTP_REFERER'] = player_url(song)
     get :edit, params: { id: song }

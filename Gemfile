@@ -21,6 +21,7 @@ gem 'passive_columns'
 gem 'activerecord_cursor_paginate'
 gem 'email_validator'
 gem 'normalizr'
+gem 'friendly_id'
 
 # file attachments
 gem 'shrine'

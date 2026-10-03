@@ -2,7 +2,7 @@
 
 class SongNotesController < ApplicationController
   def update
-    song = Song.find_by_slug_or_id!(params[:song_id])
+    song = Song.friendly.find(params[:song_id])
     note = song.note || song.build_note
     if note.update(note_params)
       head :no_content

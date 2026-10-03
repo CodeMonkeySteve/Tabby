@@ -36,6 +36,6 @@ class AlternateTabsController < ApplicationController
 private
 
   def find_tabs
-    @tabs = Song.find_by_slug_or_id!(params[:song_id]).alternate_tabs.where(user: Current.user)
+    @tabs = Song.friendly.find(params[:song_id]).alternate_tabs.where(user: Current.user)
   end
 end

@@ -4,7 +4,7 @@ require 'alpha_tab'
 
 class Song < ApplicationRecord
   include PassiveColumns
-  include Sluggable
+  extend FriendlyId
   include Song::Songsterr
   include Song::CoverArt
 
@@ -30,7 +30,7 @@ class Song < ApplicationRecord
   validates :score_data, presence: true
   validates :track_types, instrument_types: true
 
-  slug_from :title, :artist
+  friendly_id :title_and_artist, use: %i[sequentially_slugged history reserved], reserved_words: %w[new], treat_reserved_as_conflict: true
 
   # only needed by the player
   passive_columns :sync_points
@@ -82,6 +82,20 @@ class Song < ApplicationRecord
   # Alternate tabs index the old score's notes
   after_update :delete_alternate_tabs, if: :saved_change_to_score_data?
 
+  # The saved slug, for URLs that work while the song has unsaved changes, e.g. redisplaying the edit form with a new title
+  def to_param
+    slug_in_database || super
+  end
+
+  def should_generate_new_friendly_id?
+    will_save_change_to_title? || will_save_change_to_artist? || super
+  end
+
+  # Joins "'s" into its word ("Rock 'n' Roll's" to "rock-n-rolls"), instead of separating it with a hyphen
+  def normalize_friendly_id(value)
+    super(value.to_s.gsub(/['’](s)\b/i, '\\1'))
+  end
+
   # The distinct instrument types of the score tracks, in INSTRUMENT_TYPES order
   def instrument_types
     INSTRUMENT_TYPES.map(&:to_s) & track_types
@@ -126,5 +140,10 @@ private
   # (with a relation, since the association's delete_all would nullify their song, and leave it loaded)
   def delete_alternate_tabs
     AlternateTab.where(song_id: id).delete_all
+  end
+
+  # The slug's text (see `friendly_id`)
+  def title_and_artist
+    [title, artist].compact_blank.join(' ')
   end
 end
