@@ -7,12 +7,15 @@ module Songsterr
 
     # A video synced before its tab was edited (e.g. a repeat was added) can be off by a few bars; beyond this it's probably the
     # wrong video
-    MAX_MISMATCH = 0.1
+    MAX_OVERAGE = 0.1
+    # A video of a shorter edit of the song than the tab (e.g. a single edit of an album track) syncs only the bars it plays, so it
+    # just needs to cover most of the tab
+    MIN_COVERAGE = 0.75
 
     # Yields a warning message when the point and played bar counts differ
     def build(points, played_bars)
       points = points.first(played_bars.size) if points.size == played_bars.size + 1
-      if (points.size - played_bars.size).abs > (played_bars.size * MAX_MISMATCH)
+      if points.size < played_bars.size * MIN_COVERAGE || points.size > played_bars.size * (1 + MAX_OVERAGE)
         raise Error, "Sync point count (#{points.size}) doesn't match the number of played bars (#{played_bars.size})"
       end
 
