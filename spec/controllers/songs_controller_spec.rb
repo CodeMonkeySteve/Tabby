@@ -59,14 +59,15 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       expect(response.body).to include "No songs match"
     end
 
-    it "offers a Songsterr search only when a search has no local results" do
+    it "offers a Songsterr search for any search, with or without local results" do
       get :index, params: { q: 'nothing' }
       button = Nokogiri::HTML(response.body).at_css('a.songsterr-search')
       expect(button['href']).to eq '/s/songsterr_search?q=nothing'
       expect(button['data-turbo-frame']).to eq 'songs'
 
       get :index, params: { q: 'tool' }
-      expect(response.body).not_to include 'songsterr-search'
+      expect(titles).to be_present
+      expect(Nokogiri::HTML(response.body).at_css('a.songsterr-search')['href']).to eq '/s/songsterr_search?q=tool'
       get :index
       expect(response.body).not_to include 'songsterr-search'
     end

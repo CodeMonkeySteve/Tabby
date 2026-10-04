@@ -1,12 +1,12 @@
 .songs.container-fluid
   - if @songs.empty?
     %p.text-body-secondary= params[:q].present? ? "No songs match “#{params[:q]}”." : "No songs yet."
-    - if params[:q].present?
-      -# stays in the search results frame, which otherwise navigates the whole page
-      = link_to songsterr_search_songs_path(q: params[:q]), class: 'songsterr-search btn btn-outline-primary mb-3',
-        data: { turbo_frame: 'songs' } do
-        %i.bi.bi-globe
-        Search Songsterr
+  - if params[:q].present?
+    -# stays in the search results frame, which otherwise navigates the whole page
+    = link_to songsterr_search_songs_path(q: params[:q]), class: 'songsterr-search btn btn-outline-primary mb-3',
+      data: { turbo_frame: 'songs' } do
+      %i.bi.bi-globe
+      Search Songsterr
   -# one wrapping row, so the gutters between cards are the same at every width, and cards in a row are the same height
   .row.row-cols-1.row-cols-md-3.g-3.mb-3
     - @songs.each do |song|
