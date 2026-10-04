@@ -216,7 +216,7 @@ RSpec.describe AlphaTab do
       beat = ->(**options) { { 'type' => 4, 'duration' => [1, 4], 'notes' => [{ 'fret' => 5, 'string' => 2 }], **options } }
       part = {
         'instrumentId' => 36, 'strings' => 4, 'tuning' => [43, 38, 33, 28],
-        'measures' => [{ 'signature' => [6, 4], 'voices' => [{ 'beats' => [
+        'measures' => [{ 'signature' => [8, 4], 'voices' => [{ 'beats' => [
           beat.('slapping' => true, 'pickStroke' => 'down',
                 'notes' => [{ 'fret' => 5, 'string' => 2, 'wideVibrato' => true, 'slide' => 'belowlegato' }]),
           beat.('brushStroke' => { 'direction' => 'down', 'duration' => 30, 'shift' => 100 }, 'upStroke' => 1, 'popping' => true),
@@ -224,7 +224,10 @@ RSpec.describe AlphaTab do
           beat.('tremolo' => [1, 32], 'tapping' => true, 'arpeggio' => { 'direction' => 'up', 'duration' => 60, 'shift' => 100 },
                 'notes' => [{ 'fret' => 5, 'string' => 2, 'trill' => { 'auxiliaryFret' => 7, 'speed' => 62 } }]),
           beat.('notes' => [{ 'string' => 2, 'dead' => true, 'pickScrape' => 'down' }]),
-          beat.('notes' => [{ 'fret' => 5, 'string' => 2, 'pickScrape' => 'up' }])
+          beat.('notes' => [{ 'fret' => 5, 'string' => 2, 'pickScrape' => 'up' }]),
+          # slides in and then out are named by joining their in and out slides
+          beat.('notes' => [{ 'fret' => 5, 'string' => 2, 'slide' => 'belowshift' }]),
+          beat.('notes' => [{ 'fret' => 5, 'string' => 2, 'slide' => 'abovedownwards' }])
         ] }] }]
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Techniques", 'tracks' => [{ 'title' => "Bass" }] }, [part])
@@ -239,7 +242,9 @@ RSpec.describe AlphaTab do
         none.merge('brush' => [1, 60], 'pickStroke' => 2), # BrushUp, PickStroke.Down
         none.merge('tremoloMarks' => 3, 'tap' => true, 'brush' => [3, 60], 'trillFret' => 7), # ArpeggioUp
         none.merge('slide' => [0, 5]), # SlideOutType.PickSlideDown
-        none.merge('slide' => [0, 6]) # SlideOutType.PickSlideUp
+        none.merge('slide' => [0, 6]), # SlideOutType.PickSlideUp
+        none.merge('slide' => [1, 1]), # SlideInType.IntoFromBelow + SlideOutType.Shift
+        none.merge('slide' => [2, 4]) # SlideInType.IntoFromAbove + SlideOutType.OutDown
       ]
     end
 
