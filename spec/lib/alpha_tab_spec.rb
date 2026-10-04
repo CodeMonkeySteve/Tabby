@@ -112,6 +112,17 @@ RSpec.describe AlphaTab do
       expect(result['playedBars']).to eq [[0, 0], [1, 0], [2, 0], [3, 0], [1, 1], [2, 1], [4, 0], [5, 0]]
     end
 
+    it "repeats as many times as the alternate endings need, like Songsterr, even when the repeat count is lower" do
+      repeats = JSON.parse(file_fixture('songsterr/repeats.json').read)
+      repeats['measures'][3]['alternateEnding'] = [1, 2, 3]
+      repeats['measures'][4]['alternateEnding'] = [4]
+      result = alpha_tab.songsterr_to_gp(page.metadata, [repeats])
+      expect(result['playedBars']).to eq [
+        [0, 0], [1, 0], [2, 0], [3, 0], [1, 1], [2, 1], [3, 1], [1, 2], [2, 2], [3, 2], [1, 3], [2, 3], [4, 0], [5, 0]
+      ]
+      expect(AlphaTabInspector.new.effects(result['gp'])['repeatCounts']).to eq [0, 0, 0, 4, 0, 0]
+    end
+
     it "maps Songsterr notation effects" do
       beat = ->(notes, **options) { { 'type' => 4, 'duration' => [1, 4], 'notes' => notes, **options } }
       part = {
