@@ -68,6 +68,7 @@ RSpec.describe UsersController do
         expect(page.css('.activity-week')).to have(Dashboard::ACTIVITY_WEEKS).items
         expect(page.css('.activity-grid .activity-day.level-2')).to have(1).item
         expect(page.css('.list-group-item').map(&:text).join).to include "Bass Song"
+        expect(page.css('.list-group-item .dropdown-menu input[checked] + label').map(&:text)).to eq ["Warmups"]
         expect(page.css('.practice-summary-title').map { it.text.squish }).to eq ["This week", "Today"]
         expect(page.css('.practice-time dd').map(&:text)).to eq %w[10m 10m]
         expect(page.at_css('.practice-summary-extra a[href]')['href']).to eq player_path(song)

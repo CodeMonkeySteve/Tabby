@@ -88,15 +88,22 @@
         - if @dashboard.recent_songs.any?
           .list-group.list-group-flush
             - @dashboard.recent_songs.each do |song|
-              = link_to player_path(song), class: 'list-group-item list-group-item-action d-flex align-items-center gap-2' do
-                .text-truncate
+              -# the playlist button can't be inside the song's link, so the link fills the rest of the item
+              .list-group-item.list-group-item-action.d-flex.gap-2
+                = link_to player_path(song), class: 'flex-grow-1 text-truncate text-reset text-decoration-none' do
                   = song.title
                   %small.d-block.text-body-secondary= song.artist
-                %small.ms-auto.text-end.text-nowrap.text-body-secondary
-                  = relative_date(song.created_at.to_date)
-                  %span.d-block
+                  .d-flex.flex-wrap.gap-1
                     - song.instrument_types.each do |type|
                       %span.badge{class: current_user.instrument_types.include?(type) ? 'text-bg-primary' : 'text-bg-secondary'}= type
+                .d-flex.flex-column.align-items-end.justify-content-between
+                  %small.text-nowrap.text-body-secondary= relative_date(song.created_at.to_date)
+                  .dropdown
+                    %button.btn.btn-sm.p-0{type: 'button', title: "Playlists", aria: { expanded: false, haspopup: true },
+                                           data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
+                      %i.bi.bi-folder-plus
+                    .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
+                      = render 'songs/playlist_menu', song:, playlists: @dashboard.playlists
         - else
           .card-body.text-body-secondary
             No songs for your instruments yet.
