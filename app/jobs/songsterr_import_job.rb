@@ -23,7 +23,10 @@ class SongsterrImportJob < ApplicationJob
     # the log is only worth keeping on the card for its warnings
     log = [] unless log.any? { it.start_with?('Warning:') }
     broadcast_card(stream, match, state: :imported, song:, user:, playlists: user.playlists.order(:name), log:)
-  rescue ::Songsterr::Error, ActiveRecord::RecordInvalid => ex
+  rescue ::Songsterr::Error => ex # already logged by the import
+    broadcast_card(stream, match, state: :failed, user:, error: ex.message)
+  rescue ActiveRecord::RecordInvalid => ex
+    logger.error("Songsterr import #{match.url} failed to save: #{ex.message}")
     broadcast_card(stream, match, state: :failed, user:, error: ex.message)
   rescue StandardError
     broadcast_card(stream, match, state: :failed, user:, error: "Import failed unexpectedly") if stream

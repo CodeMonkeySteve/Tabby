@@ -74,10 +74,12 @@ RSpec.describe SongsterrImportJob do
     expect(Song.count).to eq 0
   end
 
-  it "broadcasts the failure of an invalid song" do
+  it "broadcasts and logs the failure of an invalid song" do
     allow(Song).to receive(:from_songsterr).and_return(Song.new(title: ""))
+    allow(Rails.logger).to receive(:error)
     broadcasts = capture_turbo_stream_broadcasts(stream) { perform }
     expect(broadcasts.last.at_css('.alert-danger').text).to include "Title can't be blank"
+    expect(Rails.logger).to have_received(:error).with(/\ASongsterr import #{match.url} failed to save: .*Title can't be blank/)
   end
 
   it "broadcasts unexpected errors before raising them, so the card doesn't spin forever" do

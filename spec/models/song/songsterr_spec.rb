@@ -65,6 +65,19 @@ RSpec.describe Song::Songsterr do
     expect(messages).to include(/Downloading audio/)
   end
 
+  it "logs its messages, and why it failed, to the Rails log" do
+    allow(Rails.logger).to receive_messages(info: nil, warn: nil, error: nil)
+    video_points.first['points'] = video_points.first['points'].first(148)
+    Song.from_songsterr(url)
+
+    expect(Rails.logger).to have_received(:info).with("Songsterr import #{url}: Converting score")
+    expect(Rails.logger).to have_received(:warn).with(/\ASongsterr import #{url}: Warning: Video has 148 sync points/)
+
+    page.metadata['videos'] = []
+    expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error)
+    expect(Rails.logger).to have_received(:error).with(/\ASongsterr import #{url} failed: .* has no original or alternative/)
+  end
+
   it "classifies tracks by Songsterr's flags before their names and programs" do
     page.metadata['tracks'][0].merge!('isVocalTrack' => true, 'title' => "Lead Vocals")
     page.metadata['tracks'][1].merge!('instrumentId' => 30, 'title' => "Distortion Guitar")

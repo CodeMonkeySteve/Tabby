@@ -9,9 +9,13 @@ module Song::Songsterr
   module ClassMethods
     # Builds (without saving) a Song from a Songsterr tab page URL, with score, audio, and sync points.  Audio and sync points come
     # from the original recording's video when possible, otherwise from an alternative upload of the recording.  Yields progress
-    # messages.  Raises Songsterr::Error, leaving the database untouched, if the score or a usable recording can't be imported.
-    def from_songsterr(url, &log)
-      log ||= proc { }
+    # messages, which are also logged.  Raises Songsterr::Error, leaving the database untouched, if the score or a usable recording
+    # can't be imported.
+    def from_songsterr(url, &block)
+      log = lambda do |message|
+        logger.public_send(message.start_with?('Warning:') ? :warn : :info, "Songsterr import #{url}: #{message}")
+        block&.call(message)
+      end
 
       page = ::Songsterr::Page.fetch(url)
       videos = page.recording_videos.presence or
@@ -53,6 +57,9 @@ module Song::Songsterr
         fetch_cover_art(song, log) unless song.cover
         song
       end
+    rescue ::Songsterr::Error => ex
+      logger.error("Songsterr import #{url} failed: #{ex.message}")
+      raise
     end
 
     # The library's songs for Song::SongsterrMatches, by Songsterr song ID: those imported from them, or else with the same title
