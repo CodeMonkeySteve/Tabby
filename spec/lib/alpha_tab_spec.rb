@@ -77,6 +77,13 @@ RSpec.describe AlphaTab do
         }));
       }
     JS
+
+    function :accidental_modes, <<~JS
+      async (base64) => {
+        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+        return score.tracks[0].staves[0].bars[0].voices[0].beats.map((beat) => beat.notes[0].accidentalMode);
+      }
+    JS
   end
 
   let(:alpha_tab) { described_class.new }
@@ -121,6 +128,28 @@ RSpec.describe AlphaTab do
         [0, 0], [1, 0], [2, 0], [3, 0], [1, 1], [2, 1], [3, 1], [1, 2], [2, 2], [3, 2], [1, 3], [2, 3], [4, 0], [5, 0]
       ]
       expect(AlphaTabInspector.new.effects(result['gp'])['repeatCounts']).to eq [0, 0, 0, 4, 0, 0]
+    end
+
+    it "spells notes as Songsterr does, warning about spellings that don't match the note's pitch" do
+      # spn is [step (C = 0), accidental, octave]; the high E string's frets 4 and 3 are G♯4/A♭4 and G4
+      spelled = lambda do |fret, spn|
+        { 'type' => 4, 'duration' => [1, 4], 'notes' => [{ 'fret' => fret, 'string' => 0, 'spn' => spn }] }
+      end
+      part = {
+        'instrumentId' => 54, 'strings' => 6, 'tuning' => [64, 59, 55, 50, 45, 40],
+        'measures' => [
+          { 'signature' => [5, 4], 'voices' => [{ 'beats' => [
+            spelled.(4, [4, 1, 4]), spelled.(4, [5, -1, 4]), spelled.(3, [4, 0, 4]), spelled.(3, [3, 2, 4]), spelled.(3, [0, 0, 4])
+          ] }] }
+        ]
+      }
+      result = alpha_tab.songsterr_to_gp({ 'title' => "Spelling", 'tracks' => [{ 'title' => "Voice" }] }, [part])
+      # AlphaTab NoteAccidentalMode values: Default, ForceSharp, ForceFlat, ForceDoubleSharp
+      model = { default: 0, sharp: 3, flat: 5, double_sharp: 4 }
+
+      expect(AlphaTabInspector.new.accidental_modes(result['gp']))
+        .to eq [model[:sharp], model[:flat], model[:default], model[:double_sharp], model[:default]]
+      expect(result['warnings']).to eq ["note.spn=[0,0,4] for pitch 67 (1×)"]
     end
 
     it "maps Songsterr notation effects" do
