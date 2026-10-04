@@ -14,11 +14,15 @@ class SongsterrImportJob < ApplicationJob
     match = Song::SongsterrMatch.new(**match_hash)
     stream = self.class.stream(user, match)
 
+    log = []
     song = Song.from_songsterr(match.url) do |message|
+      log << message
       Turbo::StreamsChannel.broadcast_append_to(stream, target: "#{match.frame_id}_log", html: tag.li(message))
     end
     song.save!
-    broadcast_card(stream, match, state: :imported, song:, user:, playlists: user.playlists.order(:name))
+    # the log is only worth keeping on the card for its warnings
+    log = [] unless log.any? { it.start_with?('Warning:') }
+    broadcast_card(stream, match, state: :imported, song:, user:, playlists: user.playlists.order(:name), log:)
   rescue ::Songsterr::Error, ActiveRecord::RecordInvalid => ex
     broadcast_card(stream, match, state: :failed, user:, error: ex.message)
   rescue StandardError

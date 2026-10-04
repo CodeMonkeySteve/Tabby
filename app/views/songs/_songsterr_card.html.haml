@@ -1,10 +1,12 @@
 -# A Songsterr search match, in its own frame so importing replaces just this card.  Links navigate the whole page, but the import
--# form targets this frame.  States: :available, :importing, :imported (with song and the user's playlists), :failed (with error).
+-# form targets this frame.  States: :available, :importing, :imported (with song, the user's playlists, and the import log if it
+-# has warnings), :failed (with error).
 -# The user is the current one, except in the import job's broadcasts.
 - user = local_assigns[:user] || Current.user
 - song = local_assigns[:song]
 - playlists = local_assigns[:playlists]
 - error = local_assigns[:error]
+- log = local_assigns[:log] || []
 = turbo_frame_tag match.frame_id, target: '_top' do
   .songsterr.card.h-100
     .card-body
@@ -34,6 +36,10 @@
                 Playlists
               .dropdown-menu.p-2{style: 'min-width: 220px'}
                 = render 'songs/playlist_menu', song:, playlists:
+          - if log.any?
+            %ul.songsterr-log.list-unstyled.small.text-body-secondary.mt-2.mb-0
+              - log.each do |message|
+                %li{class: ('text-warning-emphasis' if message.start_with?('Warning:'))}= message
         - when :importing
           = turbo_stream_from SongsterrImportJob.stream(user, match)
           .d-flex.align-items-center
