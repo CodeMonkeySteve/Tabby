@@ -48,9 +48,11 @@ export default class extends Controller {
     this.keyHandler = this.handleKeydown.bind(this)
     document.addEventListener("keydown", this.keyHandler)
 
+    const zoom = this.restoreZoom()
     this.api = new alphaTab.AlphaTabApi(this.canvasTarget, {
       file: `/s/${this.songValue.id}/score`,
       core: { includeNoteBounds: true },  // for selecting notes in the tab editor
+      display: { scale: zoom / 100 },
       // the saved tracks, else the user's instruments' tracks, or null for AlphaTab's default (the first track)
       tracks: this.note.tracks ?? this.songValue.tracks,
       player: {
@@ -318,6 +320,7 @@ export default class extends Controller {
     e.preventDefault()
     const value = Number.parseInt(e.target.value)
     this.zoomLabelTarget.innerText = `${value}%`
+    localStorage.setItem('playerScale', value)
     clearTimeout(this.zoomDebounce)
     this.zoomDebounce = setTimeout(() => {
       this.api.settings.display.scale = value / 100.0
@@ -481,6 +484,17 @@ export default class extends Controller {
     } else {
       icon.classList.add('fa-volume-off')
     }
+  }
+
+  // --- Zoom helpers ---
+
+  // Shows the last score scale used for any song on the slider, and returns it (as a percentage)
+  restoreZoom() {
+    const stored = localStorage.getItem('playerScale')
+    const zoom = stored !== null ? Number.parseInt(stored) : 100
+    this.zoomSliderTarget.value = zoom
+    this.zoomLabelTarget.innerText = `${zoom}%`
+    return zoom
   }
 
   // --- Song note (the user's player settings for this song) ---
