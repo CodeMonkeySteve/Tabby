@@ -40,6 +40,7 @@ Rails.application.routes.draw do
     resources :alternate_tabs, path: 'alt', only: %i[create update destroy]
   end
   get 'p/:id' => 'songs#player', as: 'player'
+  get 'p/:playlist_id/:id' => 'songs#player', as: 'playlist_player'
 
   root to: 'users#dashboard'
   mount ActionDispatch::Static.new(Rails.application, Rails.root.join('storage/files').to_s), at: '/files'

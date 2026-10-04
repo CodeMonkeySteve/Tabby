@@ -13,7 +13,7 @@
     - songs.each do |song|
       .list-group-item.d-flex.justify-content-between.align-items-center
         %div
-          = link_to player_path(song) do
+          = link_to playlist_player_path(@playlist, song) do
             %strong= song.title
           %small.text-muted= song.artist
 

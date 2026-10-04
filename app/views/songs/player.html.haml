@@ -34,7 +34,9 @@
                           trackTypes: @song.track_types, tracks: @song.track_indexes_for(current_user.instrument_types).presence,
                           note: @song.note&.playback,
                           alternateTabs: @song.alternate_tabs.where(user: current_user).map(&:for_player) }
-    .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json, sync_editor_outlet: '.sync-editor' } } }
+    - previous_url = playlist_player_path(@playlist, @previous_song) if @previous_song
+    .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json, previous_url_value: previous_url,
+                                                             sync_editor_outlet: '.sync-editor' } } }
       .at-overlay
         .at-overlay-content
           .spinner-border{role: 'status', style: 'width: 3rem; height: 3rem;'}
@@ -87,10 +89,17 @@
             .at-time-slider-value{data: { player: { target: 'timeSliderValue' } }}
           .at-player
             .at-player-left
-              %a.at-stop.disabled{href: '#', title: "Stop", data: { action: 'player#stopPlayback', player: { target: 'stop' } }}
-                %i.fas.fa-stop
+              %a.at-skip-back.disabled{href: '#', title: @previous_song ? "Back to Start, or Previous Song" : "Back to Start",
+                                       data: { action: 'player#skipBack' }}
+                %i.fas.fa-backward-step
               %a.at-play-pause.disabled{href: '#', title: "Play/Pause (Space)", data: { action: 'player#playPause', player: { target: 'playPause' } }}
                 %i.fas.fa-play
+              - if @next_song
+                = link_to playlist_player_path(@playlist, @next_song), class: 'at-skip-forward', title: "Next Song", data: { turbo: false } do
+                  %i.fas.fa-forward-step
+              - else
+                %a.at-skip-forward.unavailable{title: "Next Song", aria: { disabled: true }}
+                  %i.fas.fa-forward-step
               %a.at-tracks{href: '#', title: "Tracks", data: { action: 'player#toggleTracks' }}
                 %i.fas.fa-list-check
               .btn-group.dropup

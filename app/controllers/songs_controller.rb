@@ -2,6 +2,7 @@ require 'songsterr'
 
 class SongsController < ApplicationController
   before_action :find_song, except: %i[index new create songsterr_search songsterr_import]
+  before_action :find_playlist, only: :player
 
   def index
     @songs = Song.search(params[:q]).sorted(params[:sort], user: Current.user)
@@ -102,6 +103,7 @@ class SongsController < ApplicationController
 
   def player
     @playlists = Current.user.playlists.order(:name)
+    @previous_song, @next_song = @playlist&.neighbors_of(@song)
     render layout: false
   end
 
@@ -152,6 +154,16 @@ private
     @song = Song.friendly.find(params[:id])
     if request.get? && params[:id] != @song.to_param
       redirect_to url_for(id: @song, params: request.query_parameters), status: :moved_permanently
+    end
+  end
+
+  # Finds the playlist being played (if any) by its current or an old slug, or its ID, redirecting to its current URL
+  def find_playlist
+    params[:playlist_id] or return
+
+    @playlist = Current.user.playlists.friendly.find(params[:playlist_id])
+    if params[:playlist_id] != @playlist.to_param
+      redirect_to url_for(playlist_id: @playlist, params: request.query_parameters), status: :moved_permanently
     end
   end
 

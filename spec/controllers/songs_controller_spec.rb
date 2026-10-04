@@ -372,6 +372,54 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       get :player, params: { id: song }
       expect(player_song).to include('tracks' => nil)
     end
+
+    describe "skip buttons" do
+      let(:songs) { %w[One Two Three].map { create(:song, title: it) } }
+      let(:playlist) { create(:playlist, user:, name: "Practice", songs:) }
+
+      def page = Nokogiri::HTML(response.body)
+      def previous_url = page.at_css('[data-controller="player"]')['data-player-previous-url-value']
+      def next_link = page.at_css('.at-skip-forward')
+
+      it "skips to the previous and next songs in the playlist being played" do
+        get :player, params: { playlist_id: playlist, id: songs.second }
+        expect(response).to be_successful
+        expect(previous_url).to eq '/p/practice/one-tears-for-fears'
+        expect(next_link['href']).to eq '/p/practice/three-tears-for-fears'
+
+        get :player, params: { playlist_id: playlist, id: songs.third }
+        expect(previous_url).to eq '/p/practice/two-tears-for-fears'
+        expect(next_link['href']).to be_nil
+        expect(next_link['class']).to include 'unavailable'
+      end
+
+      it "only skips back to the start without a playlist, or a playlist without the song" do
+        get :player, params: { id: songs.second }
+        expect(previous_url).to be_nil
+        expect(next_link['href']).to be_nil
+
+        get :player, params: { playlist_id: create(:playlist, user:, songs: [songs.first]), id: songs.second }
+        expect(response).to be_successful
+        expect(previous_url).to be_nil
+        expect(next_link['href']).to be_nil
+      end
+
+      it "redirects an old playlist slug or ID to its current URL" do
+        old_slug = playlist.slug
+        playlist.update!(name: "Warmups")
+        get :player, params: { playlist_id: old_slug, id: songs.first, track: '1' }
+        expect(response).to redirect_to '/p/warmups/one-tears-for-fears?track=1'
+        expect(response).to have_http_status :moved_permanently
+
+        get :player, params: { playlist_id: playlist.id, id: songs.first }
+        expect(response).to redirect_to '/p/warmups/one-tears-for-fears'
+      end
+
+      it "only finds the user's playlists" do
+        expect { get :player, params: { playlist_id: create(:playlist, user: create(:user), songs:), id: songs.first } }
+          .to raise_error ActionController::RoutingError
+      end
+    end
   end
 
   it "#score" do

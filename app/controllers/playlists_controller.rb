@@ -1,6 +1,7 @@
 class PlaylistsController < ApplicationController
+  before_action :find_playlist, only: %i[show edit update destroy]
+
   def show
-    @playlist = Current.user.playlists.find(params[:id])
   end
 
   def new
@@ -17,11 +18,9 @@ class PlaylistsController < ApplicationController
   end
 
   def edit
-    @playlist = Current.user.playlists.find(params[:id])
   end
 
   def update
-    @playlist = Current.user.playlists.find(params[:id])
     if @playlist.update(playlist_params)
       redirect_to @playlist, notice: "Playlist was successfully updated.", status: :see_other
     else
@@ -30,12 +29,19 @@ class PlaylistsController < ApplicationController
   end
 
   def destroy
-    @playlist = Current.user.playlists.find(params[:id])
     @playlist.destroy
     redirect_to playlists_path, notice: "Playlist was successfully destroyed.", status: :see_other
   end
 
 private
+
+  # Finds the playlist by its current or an old slug, or its ID, redirecting pages to its current URL
+  def find_playlist
+    @playlist = Current.user.playlists.friendly.find(params[:id])
+    if request.get? && params[:id] != @playlist.to_param
+      redirect_to url_for(id: @playlist, params: request.query_parameters), status: :moved_permanently
+    end
+  end
 
   def playlist_params
     params.require(:playlist).permit(:name)

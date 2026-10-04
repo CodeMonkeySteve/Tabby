@@ -42,7 +42,8 @@ bin/bundler-audit            # Gem vulnerability scan
 - `Current` — `ActiveSupport::CurrentAttributes` for request-scoped state
 
 **Slug routing**: Songs use the `friendly_id` gem for URL-friendly slugs derived from title + artist, with history so old slugs
-keep working (redirecting to the current URL). Routes are mounted at `/s` (songs CRUD) and `/p/:id` (player view).
+keep working (redirecting to the current URL). Playlists have per-user slugs the same way. Routes are mounted at `/s` (songs
+CRUD), `/pl` (playlists), and `/p/:id` (player view), or `/p/:playlist_id/:id` for playing a playlist (for its skip buttons).
 
 **File uploads**: Shrine with local filesystem storage (`storage/files/`). Three uploaders: `ApplicationUploader` (scores, audio), `ImageUploader` (covers with dimension/type validation). Score and audio files are served via dedicated controller actions.
 

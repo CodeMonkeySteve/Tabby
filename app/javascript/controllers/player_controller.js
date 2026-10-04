@@ -9,6 +9,7 @@ import { noteNames, tuningGroups } from "lib/tunings"
 export default class extends Controller {
   static values = {
     song: Object,
+    previousUrl: String,  // the player of the previous song in the playlist being played, if any
   }
 
   static outlets = ["sync-editor"]
@@ -16,7 +17,7 @@ export default class extends Controller {
   static targets = [
     "canvas", "dock", "trackList", "trackPanel", "playerLoading",
     "songTitle", "songArtist", "timePosition", "timeSliderValue",
-    "playPause", "stop", "countIn", "metronome", "loop", "tabEdit",
+    "playPause", "countIn", "metronome", "loop", "tabEdit",
     "speedLabel", "speedSlider", "zoomLabel", "zoomSlider", "trackTemplate",
     "volumeLabel", "volumeSlider", "volumeIcon", "osd", "osdIcon", "osdText",
   ]
@@ -246,12 +247,31 @@ export default class extends Controller {
     }
   }
 
-  stopPlayback(e) {
+  // Stops playback, moving back to the start (of the playback range, if any) and scrolling it into view, or, when already
+  // stopped there, goes to the previous song in the playlist
+  skipBack(e) {
     e.preventDefault()
     e.stopPropagation()
-    if (!e.currentTarget.classList.contains("disabled")) {
-      this.api.stop()
+    if (e.currentTarget.classList.contains("disabled")) return
+
+    // (within a 64th note of AlphaTab's 960-tick quarter note, since with a backing track the stopped position is converted from
+    // its time, landing a tick or two off)
+    const atStart = this.api.tickPosition - (this.api.playbackRange?.startTick ?? 0) < 960 / 16
+    if (this.previousUrlValue && this.api.playerState === alphaTab.synth.PlayerState.Paused && atStart) {
+      window.location.href = this.previousUrlValue
+      return
     }
+
+    // The cursor moves asynchronously, two animation frames after the player reports its new position (one to find its beat, then
+    // one to move it there), which the player does just before reporting it stopped (but after any position it reported while
+    // still playing)
+    const scroll = ({ stopped }) => {
+      if (!stopped) return
+      this.api.playerStateChanged.off(scroll)
+      requestAnimationFrame(() => requestAnimationFrame(() => this.api.scrollToCursor()))
+    }
+    this.api.playerStateChanged.on(scroll)
+    this.api.stop()
   }
 
   toggleCountIn(e) {

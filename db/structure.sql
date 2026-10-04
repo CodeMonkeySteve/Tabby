@@ -151,7 +151,8 @@ CREATE TABLE public.playlists (
     name character varying NOT NULL,
     song_ids uuid[] DEFAULT '{}'::uuid[] NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    slug character varying
 );
 
 
@@ -453,6 +454,13 @@ CREATE INDEX index_playlists_on_user_id_and_name ON public.playlists USING btree
 
 
 --
+-- Name: index_playlists_on_user_id_and_slug; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_playlists_on_user_id_and_slug ON public.playlists USING btree (user_id, slug);
+
+
+--
 -- Name: index_solid_cable_messages_on_channel_hash; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -608,6 +616,7 @@ ALTER TABLE ONLY public.alternate_tabs
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261003120000'),
 ('20261003000000'),
 ('20261002000001'),
 ('20261002000000'),

@@ -46,7 +46,7 @@
                 .accordion-collapse.collapse{id: "playlist-#{playlist.id}", data: { bs: { parent: '#playlists' } }}
                   .list-group.list-group-flush
                     - songs.each do |song|
-                      = link_to player_path(song), class: 'list-group-item list-group-item-action' do
+                      = link_to playlist_player_path(playlist, song), class: 'list-group-item list-group-item-action' do
                         = song.title
                         %small.text-body-secondary= song.artist
                     = link_to playlist, class: 'list-group-item list-group-item-action small text-body-secondary' do
