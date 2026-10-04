@@ -31,16 +31,14 @@ module Songsterr
     def tracks = metadata['tracks'] || []
     def videos = metadata['videos'] || []
 
-    # The synced video of the original recording (as opposed to 'alternative', 'solo', or 'backing' videos)
-    def original_video_id
-      videos.find { it['feature'].nil? && it['status'] == 'done' }&.fetch('videoId')
+    # Synced videos of the song's recording, best first: the original, then alternatives (other uploads of the recording, as opposed
+    # to 'solo' or 'backing' videos).  The same YouTube video may be listed as both, each with its own sync points.
+    def recording_videos
+      done = videos.select { it['status'] == 'done' }
+      [*done.select { it['feature'].nil? }.first(1), *done.select { it['feature'] == 'alternative' }].uniq { it['id'] }
     end
 
-    # Synced videos of the song's recording, best first: the original, then alternatives (other uploads of the recording, as opposed
-    # to 'solo' or 'backing' videos)
-    def recording_video_ids
-      [original_video_id, *videos.select { it['feature'] == 'alternative' && it['status'] == 'done' }.pluck('videoId')].compact.uniq
-    end
+    def recording_video_ids = recording_videos.pluck('videoId').uniq
 
     def cloudfront_host
       hosts = @doc.css('link[rel="dns-prefetch"]').map { it['href'].to_s.delete_prefix('//').delete_suffix('/') }

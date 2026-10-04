@@ -37,8 +37,9 @@ RSpec.describe Songsterr::SyncPoints do
     end
   end
 
-  it "raises when the point count is far from the played bar count" do
-    expect { described_class.build([0, 1], played_bars) }.to raise_error(Songsterr::Error, /\(2\).*\(4\)/)
+  it "raises, with the time of the last point, when there are far too few points, or far too many" do
+    expect { described_class.build([0, 61.5], played_bars) }
+      .to raise_error(Songsterr::Error, "Video has 2 sync points for 4 played bars, ending at 1:01")
     expect { described_class.build((0...6).to_a, played_bars) }.to raise_error(Songsterr::Error, /\(6\).*\(4\)/)
   end
 end

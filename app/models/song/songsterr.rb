@@ -14,7 +14,7 @@ module Song::Songsterr
       log ||= proc { }
 
       page = ::Songsterr::Page.fetch(url)
-      video_ids = page.recording_video_ids.presence or
+      videos = page.recording_videos.presence or
         raise ::Songsterr::Error, "#{page.artist} - #{page.title} has no original or alternative recording video"
 
       log.("Downloading #{page.tracks.size} tracks")
@@ -29,7 +29,7 @@ module Song::Songsterr
       result['warnings'].each { log.("Warning: unmapped Songsterr data #{it}") }
 
       Dir.mktmpdir('songsterr') do |dir|
-        video_id, sync_points, audio_path = download_recording(client, video_ids, result['playedBars'], dir, log)
+        video_id, sync_points, audio_path = download_recording(client, videos, result['playedBars'], dir, log)
         score_path = Pathname(dir).join("#{page.artist} - #{page.title}.gp".tr('/', '-'))
         score_path.binwrite(result['gp'].unpack1('m'))
 
@@ -73,11 +73,12 @@ module Song::Songsterr
 
     # Returns the ID, sync points, and downloaded audio of the first video that has both, checking each video's sync points before
     # downloading its audio
-    def download_recording(client, video_ids, played_bars, dir, log)
-      failures = video_ids.map do |video_id|
+    def download_recording(client, videos, played_bars, dir, log)
+      failures = videos.map do |video|
+        video_id = video.fetch('videoId')
         log.("Fetching sync points for YouTube video #{video_id}")
         sync_warnings = []
-        sync_points = ::Songsterr::SyncPoints.build(client.video_points(video_id), played_bars) { sync_warnings << it }
+        sync_points = ::Songsterr::SyncPoints.build(client.video_points(video), played_bars) { sync_warnings << it }
 
         log.("Downloading audio from YouTube video #{video_id}")
         audio_path = ::Songsterr::YouTube.download_audio(video_id, dir)

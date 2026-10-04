@@ -11,10 +11,10 @@ RSpec.describe Songsterr::YouTube do
     ['', '', instance_double(Process::Status, success?: true)]
   end
 
-  it "downloads the video's original audio stream, preferring M4A (AAC), without converting it" do
+  it "downloads the video's original audio stream, preferring M4A (AAC), without converting it, using Node for YouTube's JavaScript" do
     expect(Open3).to receive(:capture3) do |*args|
       expect(args).to include('yt-dlp', 'https://www.youtube.com/watch?v=K1NcoxzNgbM')
-      expect(args.each_cons(2).to_a).to include(['--format', 'bestaudio[ext=m4a]/bestaudio'])
+      expect(args.each_cons(2).to_a).to include(['--format', 'bestaudio[ext=m4a]/bestaudio'], ['--js-runtimes', 'node'])
       expect(args).not_to include('--extract-audio', '--audio-format')
       succeed_with('K1NcoxzNgbM.m4a')
     end

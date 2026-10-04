@@ -20,14 +20,23 @@ module Songsterr
       @page.tracks.map { track(it.fetch('partId')) }
     end
 
-    def video_points(video_id)
-      url = format(VIDEO_POINTS_URL, song_id: @page.song_id, revision_id: @page.revision_id)
-      video = parse_json(Songsterr.get(url), url).find { it['videoId'] == video_id }
-      video or raise Error, "No sync points found for video #{video_id}"
-      video.fetch('points')
+    # The sync points of one of the page's videos, matched by Songsterr ID since a YouTube video can be listed more than once (e.g.
+    # as both the original and an alternative), synced separately
+    def video_points(video)
+      points = all_video_points.find { it['id'] == video.fetch('id') }
+      points or raise Error, "No sync points found for video #{video['videoId']}"
+      points.fetch('points')
     end
 
     private
+
+    # Every video's points come in one list, which an import may search for several videos
+    def all_video_points
+      @all_video_points ||= begin
+        url = format(VIDEO_POINTS_URL, song_id: @page.song_id, revision_id: @page.revision_id)
+        parse_json(Songsterr.get(url), url)
+      end
+    end
 
     # CloudFront serves track JSON gzip-compressed; depending on the HTTP adapter it may already be decoded
     def gunzip(body)

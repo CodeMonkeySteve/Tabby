@@ -102,6 +102,15 @@ RSpec.describe Song::Songsterr do
     expect(messages).to include("Warning: Video has 148 sync points for 150 played bars; bars after 148 will follow the score's tempo")
   end
 
+  it "uses the original video's sync points when the same YouTube video is also listed as an alternative" do
+    page.metadata['videos'].unshift({ 'id' => 1, 'status' => 'done', 'feature' => 'alternative', 'videoId' => 'K1NcoxzNgbM' })
+    video_points.unshift(video_points.first.merge('id' => 1, 'feature' => 'alternative', 'points' => (0...75).map { it * 4.24 }))
+
+    song = Song.from_songsterr(url)
+    expect(song.songsterr_song.recording_video_id).to eq 'K1NcoxzNgbM'
+    expect(song.sync_points).to have(150).items
+  end
+
   describe "when the original video can't be used" do
     let(:alternative_points) { video_points.find { it['videoId'] == 'U4-mKh4anJk' }['points'] }
 
@@ -136,7 +145,7 @@ RSpec.describe Song::Songsterr do
       existing = create(:song, title: "W.M.A.", artist: "Pearl Jam")
       video_points.each { it['points'] = [0, 1, 2] }
 
-      expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error, /Sync point count/)
+      expect { Song.from_songsterr(url) }.to raise_error(Songsterr::Error, /3 sync points for 150 played bars, ending at 0:02/)
       expect(existing.reload.songsterr_song).to be_nil
       expect(Songsterr::YouTube).not_to have_received(:download_audio)
     end

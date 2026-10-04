@@ -15,7 +15,13 @@ module Songsterr
     # Yields a warning message when the point and played bar counts differ
     def build(points, played_bars)
       points = points.first(played_bars.size) if points.size == played_bars.size + 1
-      if points.size < played_bars.size * MIN_COVERAGE || points.size > played_bars.size * (1 + MAX_OVERAGE)
+      if points.size < played_bars.size * MIN_COVERAGE
+        # The points end early when Songsterr's sync of a video was abandoned partway through the song, or are sparser when the video
+        # was synced to an earlier revision of the tab with a different bar layout
+        last = points.last.to_i
+        raise Error, "Video has #{points.size} sync points for #{played_bars.size} played bars, " \
+                     "ending at #{last / 60}:#{format('%02d', last % 60)}"
+      elsif points.size > played_bars.size * (1 + MAX_OVERAGE)
         raise Error, "Sync point count (#{points.size}) doesn't match the number of played bars (#{played_bars.size})"
       end
 

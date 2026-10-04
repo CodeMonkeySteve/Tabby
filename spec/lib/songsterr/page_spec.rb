@@ -15,7 +15,7 @@ RSpec.describe Songsterr::Page do
     page = described_class.new(html)
     expect(page).to have_attributes(
       song_id: 2687597, revision_id: 3537915, image: 'v4-6-3-EAi4zBWPBvY-23HR',
-      title: "W.M.A.", artist: "Pearl Jam", original_video_id: 'K1NcoxzNgbM',
+      title: "W.M.A.", artist: "Pearl Jam", recording_video_ids: %w[K1NcoxzNgbM U4-mKh4anJk],
       cloudfront_host: 'dqsljvtekg760.cloudfront.net',
     )
     expect(page.tracks.pluck('partId', 'title')).to eq [[0, "Distortion Guitar"], [1, "Electric Bass (finger)"], [2, "Drums"]]
@@ -25,19 +25,21 @@ RSpec.describe Songsterr::Page do
   it "ignores original videos that aren't done processing" do
     page = page_with_meta(videos: [{ videoId: 'pending', status: 'processing', feature: nil },
                                    { videoId: 'backing', status: 'done', feature: 'backing' }])
-    expect(page.original_video_id).to be_nil
+    expect(page.recording_videos).to be_empty
   end
 
   it "lists recording videos: the original, then alternatives, skipping backing, solo, unprocessed, and duplicate videos" do
     page = page_with_meta(videos: [
-      { videoId: 'alt1', status: 'done', feature: 'alternative' },
-      { videoId: 'backing', status: 'done', feature: 'backing' },
-      { videoId: 'original', status: 'done', feature: nil },
-      { videoId: 'solo', status: 'done', feature: 'solo' },
-      { videoId: 'pending', status: 'processing', feature: 'alternative' },
-      { videoId: 'alt2', status: 'done', feature: 'alternative' },
-      { videoId: 'alt1', status: 'done', feature: 'alternative' }
+      { id: 1, videoId: 'alt1', status: 'done', feature: 'alternative' },
+      { id: 2, videoId: 'backing', status: 'done', feature: 'backing' },
+      { id: 3, videoId: 'original', status: 'done', feature: nil },
+      { id: 4, videoId: 'solo', status: 'done', feature: 'solo' },
+      { id: 5, videoId: 'pending', status: 'processing', feature: 'alternative' },
+      { id: 6, videoId: 'alt2', status: 'done', feature: 'alternative' },
+      { id: 1, videoId: 'alt1', status: 'done', feature: 'alternative' },
+      { id: 7, videoId: 'original', status: 'done', feature: 'alternative' }
     ])
+    expect(page.recording_videos.pluck('id', 'videoId')).to eq [[3, 'original'], [1, 'alt1'], [6, 'alt2'], [7, 'original']]
     expect(page.recording_video_ids).to eq %w[original alt1 alt2]
   end
 
