@@ -53,7 +53,7 @@ RSpec.describe AlphaTab do
             dots: beat.dots, dynamics: beat.dynamics, vibrato: beat.notes[0]?.vibrato ?? null,
             harmonic: beat.notes[0]?.harmonicType ?? null, accent: beat.notes[0]?.accentuated ?? null,
             slideOut: beat.notes[0]?.slideOutType ?? null, tremoloMarks: beat.tremoloPicking?.marks ?? null,
-            grace: beat.graceType,
+            grace: beat.graceType, pickStroke: beat.pickStroke,
           })),
         };
       }
@@ -297,7 +297,7 @@ RSpec.describe AlphaTab do
             { 'type' => 8, 'dotted' => true, 'duration' => [3, 16], 'tempo' => { 'type' => 4, 'bpm' => 97 },
               'notes' => [note.merge('velocity' => 'mp', 'accentuated' => true, 'slide' => 'unknown')] },
             { 'type' => 16, 'duration' => [1, 16], 'notes' => [note.merge('grace' => true)] },
-            beat.([note], 'wideVibrato' => true),
+            beat.([note], 'wideVibrato' => true, 'pickStroke' => true),
             beat.([note], 'harmonic' => true),
             beat.([note.merge('tremolo' => true, 'trill' => true)])
           ] }] },
@@ -309,9 +309,9 @@ RSpec.describe AlphaTab do
       # AlphaTab enum values
       model = { mp: 3, wide: 2, natural: 1, normal: 1 }
       plain = { 'dots' => 0, 'dynamics' => model[:mp], 'vibrato' => 0, 'harmonic' => 0, 'accent' => 0, 'slideOut' => 0,
-                'tremoloMarks' => nil, 'grace' => 0 }
+                'tremoloMarks' => nil, 'grace' => 0, 'pickStroke' => 0 }
 
-      # trills have no trill fret in this format, so can't be converted
+      # trills have no trill fret in this format, so can't be converted, and pick strokes have no direction, so are ignored
       expect(result['warnings']).to eq ["note.trill (1×)"]
       expect(AlphaTabInspector.new.version5(result['gp'])).to eq(
         'tempos' => [[97], [120], []],
