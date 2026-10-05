@@ -58,11 +58,9 @@ end
 
 desc "Deploy the pushed Docker image for a git commit, branch, or tag to production"
 task :deploy, [:commit] => :push do |_task, args|
-  commit = args[:commit] or abort "Usage: bin/rake 'deploy[commit]'"
+  commit = args[:commit] || 'main'
   tag = Build.version_tag(commit)
 
-  print "Deploy #{commit} (#{tag}) to production? [y/N]: "
-  next puts("Cancelled") unless $stdin.gets.to_s.strip == 'y'
-
+  puts "Deploying #{commit} (#{tag}) to production ..."
   sh 'ssh', Build::DEPLOY_HOST, Build::DEPLOY_COMMAND, tag
 end
