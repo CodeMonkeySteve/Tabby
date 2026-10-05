@@ -1,6 +1,10 @@
 -# the results frame's URL replaces the page's as the search changes
-= form_with url: songs_path, method: :get, class: 'mb-3', role: 'search',
-  data: { controller: 'auto-submit', action: 'formdata->auto-submit#omitBlank', turbo_frame: 'songs', turbo_action: 'replace' } do |f|
+= form_with url: songs_path, method: :get, class: 'mb-3', html: { role: 'search' },
+  data: { controller: 'auto-submit', action: 'formdata->auto-submit#omitBlank submit->auto-submit#cancel', turbo_frame: 'songs',
+          turbo_action: 'replace' } do |f|
+  -# typing searches the library, and Enter submits with the form's first button, to search Songsterr; visually hidden rather
+  -# than not displayed, as some browsers don't submit with an undisplayed button
+  %button.visually-hidden{type: 'submit', formaction: songsterr_search_songs_path, tabindex: -1} Search Songsterr
   .input-group
     %span.input-group-text
       %i.bi.bi-search

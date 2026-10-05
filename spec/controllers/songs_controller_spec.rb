@@ -20,6 +20,9 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       expect(response).to be_successful
       expect(titles).to eq ["Schism"]
       expect(response.body).to include 'value="tool"'
+      # Enter submits with the form's first button, which searches Songsterr instead
+      submit = Nokogiri::HTML(response.body).at_css('form[role=search] [type=submit]')
+      expect(submit['formaction']).to eq songsterr_search_songs_path
     end
 
     it "renders just the page for the search box's Turbo Frame updates" do
@@ -129,7 +132,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       request.headers['Turbo-Frame'] = 'songs'
       get :songsterr_search, params: { q: "zzz" }
       expect(response.body).to include '<turbo-frame id="songs" target="_top">'
-      expect(response.body).to include "No Songsterr matches for “zzz”."
+      expect(response.body).to include "No Songsterr matches for zzz"
     end
 
     it "shows Songsterr errors" do

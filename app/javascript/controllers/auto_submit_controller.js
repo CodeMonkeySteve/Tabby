@@ -13,6 +13,12 @@ export default class extends Controller {
     this.timer = setTimeout(() => this.element.requestSubmit(), this.delayValue)
   }
 
+  // Drops a pending submission, e.g. when the form is submitted some other way, so it doesn't replace that submission's results;
+  // use as a `submit->` action
+  cancel() {
+    clearTimeout(this.timer)
+  }
+
   // Leaves blank fields out of the submission (e.g. no `?q=` for a cleared search); use as a `formdata->` action
   omitBlank(event) {
     const entries = [...event.formData]
