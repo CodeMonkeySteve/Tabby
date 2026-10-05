@@ -26,6 +26,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       request.headers['Turbo-Frame'] = 'songs'
       get :index, params: { q: 'muse' }
       expect(titles).to eq ["Hysteria"]
+      expect(Nokogiri::HTML(response.body).at_css('.song-count').text).to eq "1 song"
       expect(response.body).to include '<turbo-frame id="songs" target="_top">'
       expect(response.body).not_to include 'navbar' # turbo-rails' minimal frame layout, not the application layout
     end
@@ -59,6 +60,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
 
       get :index
       expect(titles).to eq ["Hysteria", "Schism"]
+      expect(Nokogiri::HTML(response.body).at_css('.song-count').text).to eq "2 songs"
       expect(Nokogiri::HTML(response.body).at_css('select[name=sort] option[selected]')).to be_nil
     end
 
