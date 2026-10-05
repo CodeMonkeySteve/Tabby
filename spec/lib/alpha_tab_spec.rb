@@ -261,7 +261,8 @@ RSpec.describe AlphaTab do
           beat.('tremolo' => [1, 32], 'tapping' => true, 'arpeggio' => { 'direction' => 'up', 'duration' => 60, 'shift' => 100 },
                 'notes' => [{ 'fret' => 5, 'string' => 2, 'trill' => { 'auxiliaryFret' => 7, 'speed' => 62 } }]),
           beat.('notes' => [{ 'string' => 2, 'dead' => true, 'pickScrape' => 'down' }]),
-          beat.('notes' => [{ 'fret' => 5, 'string' => 2, 'pickScrape' => 'up' }]),
+          beat.('arpeggio' => { 'direction' => 'down', 'duration' => 240, 'shift' => 100 }, 'downArpeggio' => 1,
+                'notes' => [{ 'fret' => 5, 'string' => 2, 'pickScrape' => 'up' }]),
           # slides in and then out are named by joining their in and out slides
           beat.('notes' => [{ 'fret' => 5, 'string' => 2, 'slide' => 'belowshift' }]),
           beat.('notes' => [{ 'fret' => 5, 'string' => 2, 'slide' => 'abovedownwards' }])
@@ -279,7 +280,7 @@ RSpec.describe AlphaTab do
         none.merge('brush' => [1, 60], 'pickStroke' => 2), # BrushUp, PickStroke.Down
         none.merge('tremoloMarks' => 3, 'tap' => true, 'brush' => [3, 60], 'trillFret' => 7), # ArpeggioUp
         none.merge('slide' => [0, 5]), # SlideOutType.PickSlideDown
-        none.merge('slide' => [0, 6]), # SlideOutType.PickSlideUp
+        none.merge('slide' => [0, 6], 'brush' => [4, 240]), # SlideOutType.PickSlideUp, ArpeggioDown
         none.merge('slide' => [1, 1]), # SlideInType.IntoFromBelow + SlideOutType.Shift
         none.merge('slide' => [2, 4]) # SlideInType.IntoFromAbove + SlideOutType.OutDown
       ]
