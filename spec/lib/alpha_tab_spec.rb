@@ -19,7 +19,7 @@ RSpec.describe AlphaTab do
           keySignatures: staff.bars.map((bar) => [bar.keySignature, bar.keySignatureType]),
           ghost: note(0).isGhost,
           letRing: note(0).isLetRing,
-          harmonic: [note(1).harmonicType, note(1).harmonicValue],
+          harmonics: beats[1].notes.map((note) => [note.harmonicType, note.harmonicValue]),
           noteVibrato: note(2).vibrato,
           beatVibrato: [beats[2].vibrato, beats[3].vibrato],
           chord: staff.chords?.get(beats[0].chordId)?.name ?? null,
@@ -197,7 +197,8 @@ RSpec.describe AlphaTab do
             'voices' => [{ 'beats' => [
             beat.([{ 'fret' => 5, 'string' => 2, 'ghost' => true }],
                   'letRing' => true, 'chord' => { 'text' => "Asus2", 'width' => 39 }),
-            beat.([{ 'fret' => 5, 'string' => 2, 'harmonic' => 'artificial', 'harmonicFret' => 12 }]),
+            beat.([{ 'fret' => 5, 'string' => 2, 'harmonic' => 'artificial', 'harmonicFret' => 12 },
+                   { 'fret' => 6, 'string' => 3, 'harmonic' => 'tapped', 'harmonicFret' => 12 }]),
             beat.([{ 'fret' => 5, 'string' => 2 }], 'vibrato' => true),
             beat.([{ 'fret' => 5, 'string' => 2 }], 'vibratoWithTremoloBar' => 'wide')
           ] }] },
@@ -218,14 +219,14 @@ RSpec.describe AlphaTab do
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Effects", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
       # AlphaTab enum values
-      model = { triplet16th: 1, artificial: 2, slight: 1, wide: 2, on_beat: 1, heavy: 2, crescendo: 1, from_below: 1,
+      model = { triplet16th: 1, artificial: 2, tap: 4, slight: 1, wide: 2, on_beat: 1, heavy: 2, crescendo: 1, from_below: 1,
                 light_light: 7, error: 4 }
 
       expect(result['warnings']).to eq []
       expect(AlphaTabInspector.new.effects(result['gp'])).to eq(
         'tripletFeels' => [model[:triplet16th]] * 4, 'repeatCounts' => [0, 3, 0, 0],
         'keySignatures' => [[-3, 0], [-3, 0], [1, 1], [1, 1]], # E♭ major, then E minor
-        'ghost' => true, 'letRing' => true, 'harmonic' => [model[:artificial], 12],
+        'ghost' => true, 'letRing' => true, 'harmonics' => [[model[:artificial], 12], [model[:tap], 12]],
         'noteVibrato' => model[:slight], 'beatVibrato' => [0, model[:wide]], 'chord' => "Asus2",
         'grace' => model[:on_beat], 'accent' => model[:heavy], 'leftHandVibrato' => model[:wide], 'text' => "w/ flanger",
         'crescendo' => model[:crescendo], 'whammy' => [true, -2], 'slideIn' => model[:from_below],
