@@ -41,6 +41,14 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       expect(checkboxes.map { it.next_element.text }).to eq ["Practice", "Practice"]
       expect(checkboxes.map { it['checked'] }).to eq [nil, 'checked']
       expect(checkboxes.map { it['id'] }).to eq ["playlist_#{hysteria.id}_#{practice.id}", "playlist_#{schism.id}_#{practice.id}"]
+      # in the success color for songs already in a playlist
+      # in the success color for songs already in a playlist, and with each icon and menu marked with its song, for updating its
+      # other copies on the page
+      icons = Nokogiri::HTML(response.body).css('.song .playlist-icon')
+      expect(icons.map { it['class'].split.include?('text-success') }).to eq [false, true]
+      expect(icons.map { it['data-song'] }).to eq [hysteria.id, schism.id]
+      forms = Nokogiri::HTML(response.body).css('.song .dropdown-menu form')
+      expect(forms.map { it['data-playlist-menu-song-value'] }).to eq [hysteria.id, schism.id]
     end
 
     it "sorts the songs, keeping the selected sort" do

@@ -1,6 +1,7 @@
 .text-center
   %span.fw-bold Playlists
-= form_with url: playlist_song_path(song), method: :post, data: { controller: 'playlist-menu', action: 'submit->playlist-menu#save' } do |f|
+= form_with url: playlist_song_path(song), method: :post,
+  data: { controller: 'playlist-menu', action: 'submit->playlist-menu#save', 'playlist-menu-song-value': song.id } do |f|
   - playlists.each do |playlist|
     - id = "playlist_#{song.id}_#{playlist.id}" # unique among the menus of a song list
     .form-check

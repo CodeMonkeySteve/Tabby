@@ -32,7 +32,7 @@
             .dropdown
               %button.btn.btn-sm.btn-outline-secondary{type: 'button', aria: { expanded: false, haspopup: true },
                                                        data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
-                %i.bi.bi-folder-plus
+                %i.bi.bi-folder-plus{playlist_icon_attributes(song, playlists)}
                 Playlists
               .dropdown-menu.p-2{style: 'min-width: 220px'}
                 = render 'songs/playlist_menu', song:, playlists:

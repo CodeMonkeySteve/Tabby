@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["newName"]
+  static values = { song: String }
 
   toggle(ev) {
     const el = ev.currentTarget
@@ -18,8 +19,23 @@ export default class extends Controller {
     })
       .then(response => response.text())
       .then(html => {
-        form.closest('.dropdown-menu').innerHTML = html
+        this.replaceMenus(html)
       })
+  }
+
+  // Replaces the song's menus with the updated one, including any other copies of the song on the page, and colors their
+  // toggles' icons by whether the song is in any playlist (see ApplicationHelper#playlist_icon_attributes)
+  replaceMenus(html) {
+    const song = CSS.escape(this.songValue)
+    for (const form of document.querySelectorAll(`form[data-playlist-menu-song-value="${song}"]`)) {
+      form.closest('.dropdown-menu').innerHTML = html
+    }
+    const menu = document.createElement('template')
+    menu.innerHTML = html
+    const inPlaylist = menu.content.querySelector('input[type=checkbox]:checked') !== null
+    for (const icon of document.querySelectorAll(`.playlist-icon[data-song="${song}"]`)) {
+      icon.classList.toggle('text-success', inPlaylist)
+    }
   }
 
   // Enter in the new playlist name creates it, instead of submitting the form and leaving the page
@@ -43,7 +59,7 @@ export default class extends Controller {
     })
       .then(response => response.text())
       .then(html => {
-        form.closest('.dropdown-menu').innerHTML = html
+        this.replaceMenus(html)
       })
   }
 }

@@ -143,7 +143,7 @@
                 %i.fas.fa-retweet
               .btn-group.dropup
                 %button.btn.dropdown-toggle{type: 'button', title: "Playlists", aria: { expanded: false, haspopup: true }, data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
-                  %i.fas.fa-folder-plus
+                  %i.fas.fa-folder-plus{playlist_icon_attributes(@song, @playlists)}
                 .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
                   = render 'songs/playlist_menu', song: @song, playlists: @playlists
               .btn-group.dropup

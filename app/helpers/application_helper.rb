@@ -15,6 +15,13 @@ module ApplicationHelper
     end
   end
 
+  # Attributes of a song's playlist menu icon, marking it with its song and in the success color if the song is in any of the
+  # playlists (see playlist_menu_controller.js)
+  def playlist_icon_attributes(song, playlists)
+    { class: playlists.any? { it.song_ids.include?(song.id) } ? 'playlist-icon text-success' : 'playlist-icon',
+      data: { song: song.id } }
+  end
+
   # e.g. "Today", "Yesterday", "3 days ago", or "Jun 4" for dates over a week ago
   def relative_date(date, today: Date.current)
     case (today - date).to_i
