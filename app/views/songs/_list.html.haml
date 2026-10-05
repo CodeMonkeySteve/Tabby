@@ -1,7 +1,7 @@
 .songs.container-fluid
   -# loads the songs (rather than counting them with a query), so the cards below reuse them
   - if @songs.length.zero?
-    %p.text-body-secondary= params[:q].present? ? "No songs match “#{params[:q]}”." : "No songs yet."
+    %p.text-body-secondary= params[:q].present? ? "No songs match #{params[:q]}" : "No songs yet"
   - else
     %p.song-count.text-body-secondary= pluralize(@songs.length, "song")
   - if params[:q].present?

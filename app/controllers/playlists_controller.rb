@@ -11,7 +11,7 @@ class PlaylistsController < ApplicationController
   def create
     @playlist = Playlist.new(playlist_params.merge(user: Current.user))
     if @playlist.save
-      redirect_to @playlist, notice: "Playlist was successfully created."
+      redirect_to @playlist, notice: "Playlist was successfully created"
     else
       render :new, status: :unprocessable_entity
     end
@@ -22,7 +22,7 @@ class PlaylistsController < ApplicationController
 
   def update
     if @playlist.update(playlist_params)
-      redirect_to @playlist, notice: "Playlist was successfully updated.", status: :see_other
+      redirect_to @playlist, notice: "Playlist was successfully updated", status: :see_other
     else
       render :edit, status: :unprocessable_entity
     end
@@ -30,7 +30,7 @@ class PlaylistsController < ApplicationController
 
   def destroy
     @playlist.destroy
-    redirect_to playlists_path, notice: "Playlist was successfully destroyed.", status: :see_other
+    redirect_to playlists_path, notice: "Playlist was successfully destroyed", status: :see_other
   end
 
 private

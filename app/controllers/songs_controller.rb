@@ -63,7 +63,7 @@ class SongsController < ApplicationController
     respond_to do |format|
       @song.assign_attributes(song_params)
       if @song.save
-        format.html { redirect_to url_from(params[:return_to]) || @song, notice: "Song was successfully updated.", status: :see_other }
+        format.html { redirect_to url_from(params[:return_to]) || @song, notice: "Song was successfully updated", status: :see_other }
         format.json { render :player, status: :ok, location: @song }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -89,7 +89,7 @@ class SongsController < ApplicationController
   # Redisplays the edit form (unsaved, with its other changes) without its cover
   def remove_cover
     @song.assign_attributes(song_params.merge(remove_cover: true))
-    flash.now[:notice] = "Save to delete the cover."
+    flash.now[:notice] = "Save to delete the cover"
     render :edit
   end
 

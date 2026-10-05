@@ -6,7 +6,7 @@
   - if @error
     .alert.alert-danger= @error
   - elsif @matches.empty?
-    %p.text-body-secondary= "No Songsterr matches for “#{params[:q]}”."
+    %p.text-body-secondary= "No Songsterr matches for #{params[:q]}"
   - else
     .row.row-cols-1.row-cols-md-3.g-3.mb-3
       - @matches.each do |match|
