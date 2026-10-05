@@ -51,7 +51,8 @@ RSpec.describe AlphaTab do
           tempos: score.masterBars.map((bar) => bar.tempoAutomations.map((automation) => automation.value)),
           beats: beats.map((beat) => ({
             dots: beat.dots, dynamics: beat.dynamics, vibrato: beat.notes[0]?.vibrato ?? null,
-            harmonic: beat.notes[0]?.harmonicType ?? null, accent: beat.notes[0]?.accentuated ?? null,
+            harmonic: beat.notes[0]?.harmonicType ?? null, harmonicValue: beat.notes[0]?.harmonicValue ?? null,
+            fade: beat.fade, accent: beat.notes[0]?.accentuated ?? null,
             slideOut: beat.notes[0]?.slideOutType ?? null, tremoloMarks: beat.tremoloPicking?.marks ?? null,
             grace: beat.graceType, pickStroke: beat.pickStroke,
           })),
@@ -297,7 +298,8 @@ RSpec.describe AlphaTab do
             { 'type' => 8, 'dotted' => true, 'duration' => [3, 16], 'tempo' => { 'type' => 4, 'bpm' => 97 },
               'notes' => [note.merge('velocity' => 'mp', 'accentuated' => true, 'slide' => 'unknown')] },
             { 'type' => 16, 'duration' => [1, 16], 'notes' => [note.merge('grace' => true)] },
-            beat.([note], 'wideVibrato' => true, 'pickStroke' => true),
+            beat.([note.merge('harmonic' => 'artificial', 'harmonicData' => { 'type' => 'ah', 'shift' => 19 })],
+                  'wideVibrato' => true, 'pickStroke' => true, 'fadeIn' => true),
             beat.([note], 'harmonic' => true),
             beat.([note.merge('tremolo' => true, 'trill' => true)])
           ] }] },
@@ -307,8 +309,9 @@ RSpec.describe AlphaTab do
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Version 5", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
       # AlphaTab enum values
-      model = { mp: 3, wide: 2, natural: 1, normal: 1 }
-      plain = { 'dots' => 0, 'dynamics' => model[:mp], 'vibrato' => 0, 'harmonic' => 0, 'accent' => 0, 'slideOut' => 0,
+      model = { mp: 3, wide: 2, natural: 1, artificial: 2, normal: 1, fade_in: 1 }
+      plain = { 'dots' => 0, 'dynamics' => model[:mp], 'vibrato' => 0, 'harmonic' => 0, 'harmonicValue' => 0, 'fade' => 0,
+                'accent' => 0, 'slideOut' => 0,
                 'tremoloMarks' => nil, 'grace' => 0, 'pickStroke' => 0 }
 
       # trills have no trill fret in this format, so can't be converted, and pick strokes have no direction, so are ignored
@@ -318,8 +321,8 @@ RSpec.describe AlphaTab do
         'beats' => [
           plain.merge('dots' => 1, 'accent' => model[:normal]),
           plain,
-          plain.merge('vibrato' => model[:wide]),
-          plain.merge('harmonic' => model[:natural]),
+          plain.merge('vibrato' => model[:wide], 'harmonic' => model[:artificial], 'harmonicValue' => 19, 'fade' => model[:fade_in]),
+          plain.merge('harmonic' => model[:natural], 'harmonicValue' => 5), # at the note's fret
           plain.merge('tremoloMarks' => 3)
         ]
       )
