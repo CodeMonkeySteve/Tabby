@@ -1,0 +1,10 @@
+# Solid Queue's processes (production only; see SolidQueueService in falcon.rb), run as threads in one process
+production:
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+  workers:
+    # Songsterr imports are heavy (yt-dlp, ffmpeg, AlphaTab), so two at once is plenty
+    - queues: '*'
+      threads: 2
+      polling_interval: 1

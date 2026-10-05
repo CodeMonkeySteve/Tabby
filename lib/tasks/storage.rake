@@ -27,19 +27,16 @@ namespace :storage do
 
   desc "Delete cached uploads older than DAYS (default 7) days (only lists them unless DELETE=1)"
   task clean_cache: :environment do
-    cache = Shrine.storages[:cache]
-    cutoff = ENV.fetch('DAYS', 7).to_i.days.ago
-
-    files = cache.directory.glob('**/*').select(&:file?)
-    expired = files.select { it.mtime < cutoff }.index_by { it.relative_path_from(cache.directory).to_s }
-    size = ActiveSupport::NumberHelper.number_to_human_size(expired.values.sum(&:size))
+    cache = UploadCache.new
+    older_than = ENV.fetch('DAYS', 7).to_i.days
+    count = cache.count
 
     delete = ENV['DELETE'].to_s.to_bool
-    expired.each_key do |id|
-      puts "#{delete ? "Deleting" : "Expired"} #{id}"
-      cache.delete(id) if delete
-    end
-    puts "#{expired.size} of #{files.size} cached files (#{size}) older than #{cutoff.to_date} " \
+    expired = delete ? cache.clean(older_than:) : cache.expired(older_than:)
+    expired.each_key { puts "#{delete ? "Deleted" : "Expired"} #{it}" }
+
+    size = ActiveSupport::NumberHelper.number_to_human_size(expired.values.sum)
+    puts "#{expired.size} of #{count} cached files (#{size}) older than #{older_than.ago.to_date} " \
       "#{delete ? "deleted" : "expired, run with DELETE=1 to delete"}"
   end
 end

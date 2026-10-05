@@ -36,6 +36,12 @@ bin/bundler-audit            # Gem vulnerability scan
 
 **Database**: PostgreSQL via ActiveRecord. Migrations are checked by `online_migrations`, so create indexes concurrently in a migration with `disable_ddl_transaction!`. `Playlist` stores its ordered songs in a `song_ids` array column (`belongs_to_many` from `torque-postgresql`). `rethinkdb:import` is a one-time task that copies the legacy RethinkDB data into an empty database.
 
+**Background jobs**: Production runs Active Job on Solid Queue, with its tables in the primary database (like Solid Cable's).
+`falcon.rb` runs it in a `jobs` service (`SolidQueueService`, production only) of one process, which Falcon forks, restarts,
+and stops like a web worker; `config/queue.yml` sets its threads and `config/recurring.yml` its recurring tasks (e.g. the daily
+`CleanUploadCacheJob`). Development keeps the `:async` adapter (jobs run in `rails server`'s process) and tests the `:test`
+adapter.
+
 **Models**:
 - `Song` — core entity with title, artist, instruments, tempo, score file (GPX/GTP), audio (MP3), cover image, and sync points (bar-to-millisecond mappings for playback sync)
 - `User` / `Credential` — OAuth-based users with provider credentials

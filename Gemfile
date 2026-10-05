@@ -12,6 +12,7 @@ gem 'falcon'
 gem 'bootsnap', require: false
 gem 'lograge'
 gem 'solid_cable'
+gem 'solid_queue'
 
 # database
 gem 'pg'
