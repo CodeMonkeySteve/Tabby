@@ -47,6 +47,7 @@ gem 'terser'
 # import
 gem 'nodo'
 gem 'faraday-follow_redirects'
+gem 'retriable'
 
 group :development, :test do
   gem 'awesome_print'

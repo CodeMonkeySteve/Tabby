@@ -124,6 +124,17 @@ RSpec.describe Song::Songsterr do
     expect(song.sync_points).to have(150).items
   end
 
+  it "logs retried audio downloads as warnings" do
+    allow(Songsterr::YouTube).to receive(:download_audio) do |video_id, dir, &block|
+      block.("YouTube refused the download of #{video_id} (HTTP 403), retrying in 2s (try 2 of 4)")
+      Pathname(dir).join("#{video_id}.m4a").tap { FileUtils.cp(file_fixture('empty.mp3'), it) }
+    end
+    messages = []
+    Song.from_songsterr(url) { messages << it }
+
+    expect(messages).to include("Warning: YouTube refused the download of K1NcoxzNgbM (HTTP 403), retrying in 2s (try 2 of 4)")
+  end
+
   describe "when the original video can't be used" do
     let(:alternative_points) { video_points.find { it['videoId'] == 'U4-mKh4anJk' }['points'] }
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'open3'
+require 'retriable'
 
 module Songsterr
   module YouTube
@@ -12,8 +13,25 @@ module Songsterr
     # yt-dlp needs a JavaScript runtime to extract YouTube's formats reliably, and only enables Deno by default
     JS_RUNTIME = 'node'
 
-    # Returns the Pathname of the downloaded audio file, in whatever format YouTube served it
+    # YouTube sometimes refuses a download (HTTP 403) that works when retried.  yt-dlp's own retries reuse the refused stream URL,
+    # so yt-dlp is rerun to extract fresh ones, backing off exponentially (about 2, 4, then 8 seconds).
+    TRIES = 4
+    RETRY_ON = { Error => /HTTP Error 403/ }.freeze
+
+    # Returns the Pathname of the downloaded audio file, in whatever format YouTube served it.  Yields a message before each retry.
     def download_audio(video_id, dir)
+      on_retry = lambda do |_exception, try, _elapsed_time, next_interval|
+        next unless next_interval # gave up
+
+        yield "YouTube refused the download of #{video_id} (HTTP 403), retrying in #{next_interval.round}s " \
+              "(try #{try + 1} of #{TRIES})" if block_given?
+      end
+      Retriable.retriable(on: RETRY_ON, tries: TRIES, base_interval: 2, multiplier: 2, on_retry:) { download(video_id, dir) }
+    end
+
+    private
+
+    def download(video_id, dir)
       url = "https://www.youtube.com/watch?v=#{video_id}"
       begin
         _out, err, status = Open3.capture3(

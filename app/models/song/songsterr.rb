@@ -88,7 +88,7 @@ module Song::Songsterr
         sync_points = ::Songsterr::SyncPoints.build(client.video_points(video), played_bars) { sync_warnings << it }
 
         log.("Downloading audio from YouTube video #{video_id}")
-        audio_path = ::Songsterr::YouTube.download_audio(video_id, dir)
+        audio_path = ::Songsterr::YouTube.download_audio(video_id, dir) { log.("Warning: #{it}") }
         sync_warnings.each { log.("Warning: #{it}") }
         return [video_id, sync_points, audio_path]
       rescue ::Songsterr::Error => ex
