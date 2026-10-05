@@ -86,6 +86,13 @@ RSpec.describe AlphaTab do
       }
     JS
 
+    function :clefs, <<~JS
+      async (base64) => {
+        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+        return score.tracks.map((track) => track.staves[0].bars.map((bar) => bar.clef));
+      }
+    JS
+
     function :accidental_modes, <<~JS
       async (base64) => {
         const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
@@ -315,6 +322,20 @@ RSpec.describe AlphaTab do
           plain.merge('tremoloMarks' => 3)
         ]
       )
+    end
+
+    it "changes clefs where measures do, defaulting to the instrument's clef" do
+      tracks = [{ 'title' => "Strings" }, { 'title' => "Bass", 'isBassGuitar' => true }]
+      strings = {
+        'instrumentId' => 50, 'strings' => 6, 'tuning' => [64, 59, 55, 50, 45, 40],
+        'measures' => [rest_measure('signature' => [4, 4], 'clef' => 'F4'), rest_measure, rest_measure('clef' => 'G2'), rest_measure]
+      }
+      bass = { 'instrumentId' => 33, 'strings' => 4, 'tuning' => [43, 38, 33, 28], 'measures' => Array.new(4) { rest_measure } }
+      result = alpha_tab.songsterr_to_gp({ 'title' => "Clefs", 'tracks' => tracks }, [strings, bass])
+
+      expect(result['warnings']).to eq []
+      # AlphaTab Clef values: F4 = 3, G2 = 4
+      expect(AlphaTabInspector.new.clefs(result['gp'])).to eq [[3, 3, 4, 4], [3, 3, 3, 3]]
     end
 
     it "converts tracks whose bars have different numbers of voices" do
