@@ -78,6 +78,14 @@ RSpec.describe AlphaTab do
       }
     JS
 
+    function :fermatas, <<~JS
+      async (base64) => {
+        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+        return score.masterBars.map((bar) =>
+          [...(bar.fermata ?? [])].map(([offset, fermata]) => [offset, fermata.type, fermata.length]));
+      }
+    JS
+
     function :accidental_modes, <<~JS
       async (base64) => {
         const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
@@ -128,6 +136,26 @@ RSpec.describe AlphaTab do
         [0, 0], [1, 0], [2, 0], [3, 0], [1, 1], [2, 1], [3, 1], [1, 2], [2, 2], [3, 2], [1, 3], [2, 3], [4, 0], [5, 0]
       ]
       expect(AlphaTabInspector.new.effects(result['gp'])['repeatCounts']).to eq [0, 0, 0, 4, 0, 0]
+    end
+
+    it "maps fermatas, on notes and rests" do
+      fermata = ->(type) { { 'fermata' => { 'type' => type, 'length' => 0.51 } } }
+      quarter = { 'type' => 4, 'duration' => [1, 4] }
+      part = {
+        'instrumentId' => 34, 'strings' => 4, 'tuning' => [43, 38, 33, 28],
+        'measures' => [
+          { 'signature' => [4, 4], 'voices' => [{ 'beats' => [
+            { 'type' => 2, 'duration' => [1, 2], 'notes' => [{ 'fret' => 5, 'string' => 2 }], **fermata.('short') },
+            quarter.merge('rest' => true, **fermata.('medium')),
+            quarter.merge('rest' => true, **fermata.('long'))
+          ] }] }
+        ]
+      }
+      result = alpha_tab.songsterr_to_gp({ 'title' => "Fermatas", 'tracks' => [{ 'title' => "Bass" }] }, [part])
+
+      expect(result['warnings']).to eq []
+      # by tick offset (960 per quarter note); AlphaTab FermataType values: Short, Medium, Long
+      expect(AlphaTabInspector.new.fermatas(result['gp'])).to eq [[[0, 0, 0.51], [1920, 1, 0.51], [2880, 2, 0.51]]]
     end
 
     it "spells notes as Songsterr does, warning about spellings that don't match the note's pitch" do
