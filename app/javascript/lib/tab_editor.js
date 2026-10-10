@@ -61,11 +61,17 @@ export default class TabEditor {
     this.position()
   }
 
-  // Selects the previous (-1) or next (1) note of the track
+  // Selects the previous (-1) or next (1) note of the track, scrolling it into view
   step(delta) {
     const { trackTab, index } = this.selection
     const next = index + delta
-    if (next >= 0 && next < trackTab.notes.length) this.select({ trackTab, index: next })
+    if (next < 0 || next >= trackTab.notes.length) return
+    this.select({ trackTab, index: next })
+    // in each staff, ending with the tab number's (the first, since they're prepended) beside the buttons, so it wins if they
+    // don't all fit; their scroll margin clears the buttons and the dock
+    for (const box of [...this.overlay.querySelectorAll('.at-tab-note.selected')].reverse()) {
+      box.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' })
+    }
   }
 
   // Moves the selected note's chain to the next string up (1) or down (-1) it can be played on, or flashes if there's none

@@ -81,7 +81,7 @@ export default class extends Controller {
       attributeFilter: ["data-bs-theme"],
     })
 
-    // the track panel ends above the footer controls, whose height changes with the sync editor
+    // the wrap's bottom padding and the track panel make room for the footer controls, whose height changes with the sync editor
     this.dockObserver = new ResizeObserver(([entry]) => {
       this.element.style.setProperty("--dock-height", `${entry.borderBoxSize[0].blockSize}px`)
     })
@@ -366,6 +366,8 @@ export default class extends Controller {
         settings.player.scrollMode = alphaTab.ScrollMode.OffScreen
         break
     }
+    // the page scrolls sideways along a horizontal score, and the header stays in the window (see player.sass)
+    this.element.classList.toggle('horizontal-layout', settings.display.layoutMode === alphaTab.LayoutMode.Horizontal)
     this.api.updateSettings()
     this.api.render()
   }

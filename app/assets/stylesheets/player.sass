@@ -28,6 +28,20 @@ body
   display: flex
   flex-direction: column
 
+// when a horizontal layout scrolls the page sideways, the body spans the score so the header can stick to the window's left
+// edge, as wide as the window (less its scrollbar, the root's width); not in the page layout, where AlphaTab fits the score to
+// the body's width, so it couldn't shrink with the window
+html:has(.at-wrap.horizontal-layout)
+  container-type: inline-size
+
+body:has(.at-wrap.horizontal-layout)
+  min-width: fit-content
+
+  > .navbar
+    position: sticky
+    left: 0
+    width: 100cqi
+
 .at-wrap
   position: relative
   flex: 1 0 auto
@@ -36,14 +50,16 @@ body
   background: #fff
   display: flex
   flex-direction: column
+  padding-bottom: var(--dock-height, 0)  // so the end of the score scrolls above the dock
 
 .at-content
   flex: 1 0 auto
   position: relative
 
+// fixed (rather than sticky in the wrap) so it stays in the window when a horizontal layout scrolls the page sideways
 .at-dock
-  position: sticky
-  bottom: 0
+  position: fixed
+  inset: auto 0 0 0
   z-index: 1000
 
 .at-footer
@@ -72,6 +88,8 @@ body
 
     &.selected
       outline: 2px solid #0d6efd
+      // keeps the buttons beside it, and the sticky dock, clear of it when the tab editor scrolls it into view
+      scroll-margin: 20px 40px calc(var(--dock-height, 0px) + 20px) 20px
 
     &.chained
       outline: 1px dashed rgba(13, 110, 253, 0.6)

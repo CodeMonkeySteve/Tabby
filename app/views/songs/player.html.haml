@@ -51,7 +51,7 @@
             %i.fas.fa-close
           %h4 Tracks
           .at-track-list{data: { player: { target: 'trackList' } }}
-      -# stays at the bottom of the window as the page scrolls
+      -# stays at the bottom of the window as the page scrolls, either way
       .at-dock{data: { player: { target: 'dock' } }}
         - if @song.audio.present?
           .sync-editor{data: { controller: 'sync-editor', sync_editor: { song_id_value: @song.to_param } }}
