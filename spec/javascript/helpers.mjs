@@ -20,7 +20,7 @@ export function fingeringProblem(tuning, beats, { maxFret = 24, free = [] } = {}
         const fret = pitch - tuning[tuning.length - string]
         if (fret >= 0 && fret <= maxFret) positions.push({ string, fret })
       }
-      notes.push({ positions, chain, beat: b, free: free.includes(notes.length) })
+      notes.push({ positions, pitch, chain, beat: b, free: free.includes(notes.length) })
       return notes.length - 1
     })
     return { start, end: start + 960, notes: indexes }

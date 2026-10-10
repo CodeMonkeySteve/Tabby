@@ -11,6 +11,9 @@ export const DEFAULTS = {
   stretch: 3,          // cost per fret stretched beyond the hand span
   ringCut: 1,          // cost of playing a string while another note on it rings
   positionBias: 0.01,  // cost per fret of a new hand position, preferring lower positions when otherwise equal
+  repeatMove: 3,       // cost of playing a note on another string than the previous beat's note of the same pitch
+  octaveReach: 2,      // strings an octave may be played above (or below) the previous beat's note without cost
+  octaveMove: 3,       // cost of playing an octave beyond the reach of the previous beat's note
 }
 
 // Resolves to the string of each note of a fingering problem (see TrackTab#problem) by index, or null if they can't all be played
@@ -19,6 +22,8 @@ export default async function beam(problem, options = {}) {
   const { notes, beats } = problem
   const chainEnds = new Map()  // the last beat of each chain
   for (const note of notes) chainEnds.set(note.chain, Math.max(chainEnds.get(note.chain) ?? -1, note.beat))
+  const links = beats.map((beat, b) => beatLinks(b > 0 ? beats[b - 1] : null, beat, notes, o))
+  const linked = beats.map((_, b) => linkedNotes(links[b + 1]))
 
   let states = [{ hand: null, locks: new Map(), ringing: new Map(), cost: 0, parent: null, strings: [] }]
   for (const [b, beat] of beats.entries()) {
@@ -27,9 +32,9 @@ export default async function beam(problem, options = {}) {
     const next = new Map()  // the cheapest state by key
     for (const state of states) {
       for (const choice of choices) {
-        for (const extended of extend(state, beat, beatNotes, choice, o)) {
+        for (const extended of extend(state, beat, beatNotes, choice, links[b], o)) {
           updateLocks(extended.locks, beatNotes, choice, chainEnds, b)
-          const key = stateKey(extended)
+          const key = stateKey(extended, linked[b])
           if (!(next.get(key)?.cost <= extended.cost)) next.set(key, extended)
         }
       }
@@ -65,9 +70,32 @@ function frettedFrets(beatNotes, choice) {
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 
+// How each of a beat's notes is biased by the previous beat's (by index in the beat), or null if not: toward the strings of
+// notes of the same pitch, or else within reach of the strings of notes an octave away, as the offsets (from the previous
+// note's string) allowed without cost
+function beatLinks(previous, beat, notes, o) {
+  if (!previous) return []
+  const others = previous.notes.map(i => notes[i])
+  return beat.notes.map(i => {
+    const { pitch, free } = notes[i]
+    if (free) return null
+    const links = (interval, min, max) => others
+      .flatMap((other, k) => (!other.free && other.pitch + interval === pitch ? [{ k, min, max }] : []))
+    const same = links(0, 0, 0)
+    if (same.length > 0) return { targets: same, cost: o.repeatMove }
+    const octaves = [...links(12, -Infinity, o.octaveReach), ...links(-12, -o.octaveReach, Infinity)]
+    return octaves.length > 0 ? { targets: octaves, cost: o.octaveMove } : null
+  })
+}
+
+// The indexes (in the previous beat) of the notes a beat's links are biased by
+function linkedNotes(links = []) {
+  return [...new Set(links.flatMap(link => link?.targets.map(target => target.k) ?? []))].sort((a, b) => a - b)
+}
+
 // The states after playing a beat's choice of positions: none if it breaks a chain's string, else one per hand position
 // covering it
-function extend(state, beat, beatNotes, choice, o) {
+function extend(state, beat, beatNotes, choice, links, o) {
   let cost = state.cost
   const ringing = new Map([...state.ringing].filter(([, ring]) => ring.end > beat.start))
   for (const [j, { string }] of choice.entries()) {
@@ -76,6 +104,10 @@ function extend(state, beat, beatNotes, choice, o) {
     if (lock !== undefined && lock !== string) return []
     if ((ringing.get(string)?.chain ?? chain) !== chain) cost += o.ringCut
     ringing.set(string, { end: beat.end, chain })
+    const link = links[j]
+    if (link && !link.targets.some(({ k, min, max }) => string - state.strings[k] >= min && string - state.strings[k] <= max)) {
+      cost += link.cost
+    }
   }
 
   const frets = frettedFrets(beatNotes, choice)
@@ -108,11 +140,12 @@ function updateLocks(locks, beatNotes, choice, chainEnds, b) {
   }
 }
 
-// States with the same hand position and locked strings play the rest of the beats alike (but for any ringing notes they'd cut
-// off, a small cost, ignored here so ringing chords don't keep every state apart), so only the cheapest is kept
-function stateKey(state) {
+// States with the same hand position, locked strings, and strings of the notes the next beat's are biased by play the rest of
+// the beats alike (but for any ringing notes they'd cut off, a small cost, ignored here so ringing chords don't keep every state
+// apart), so only the cheapest is kept
+function stateKey(state, linked) {
   const locks = [...state.locks].map(([chain, string]) => `${chain}=${string}`).sort()
-  return `${state.hand}|${locks}`
+  return `${state.hand}|${locks}|${linked.map(k => state.strings[k])}`
 }
 
 // The strings by note index, following the final state's parents back through the beats

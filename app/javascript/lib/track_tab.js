@@ -138,7 +138,7 @@ export default class TrackTab {
     return {
       stringCount: tuning.length,
       notes: this.original.map((o, i) => ({
-        positions: this.positions(i, tuning), chain: this.chains[i], beat: this.beatOf[i], free: o.dead,
+        positions: this.positions(i, tuning), pitch: o.pitch, chain: this.chains[i], beat: this.beatOf[i], free: o.dead,
       })),
       beats: this.beats,
     }

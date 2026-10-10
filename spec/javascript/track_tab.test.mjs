@@ -109,7 +109,9 @@ test('describes the fingering problem, and keeps an optimizer\'s changed strings
   const problem = tab.problem(FIVE_STRING)
   assert.equal(problem.stringCount, 5)
   assert.equal(problem.notes.length, 477)
-  assert.deepEqual(problem.notes[0], { positions: tab.positions(0, FIVE_STRING), chain: tab.chains[0], beat: 0, free: false })
+  assert.deepEqual(problem.notes[0], {
+    positions: tab.positions(0, FIVE_STRING), pitch: tab.original[0].pitch, chain: tab.chains[0], beat: 0, free: false,
+  })
   assert.equal(problem.beats, tab.beats)
   assert.deepEqual(tab.stringsFor(tab.original.map(o => o.string).with(0, 3)), { 0: 3 })
 })

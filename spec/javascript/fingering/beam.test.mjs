@@ -50,6 +50,22 @@ test('avoids cutting off a ringing note', async () => {
   assert.notEqual(strings[1], 2)
 })
 
+test('plays a repeated pitch on the same string, even cutting it off', async () => {
+  const problem = fingeringProblem(GUITAR, [[49], [45], [45], [58]])
+  for (const beat of problem.beats) beat.end = beat.start + 2 * 960  // each note rings through the next
+  assert.deepEqual(await beam(problem, { repeatMove: 0 }), [2, 1, 2, 4])
+  assert.deepEqual(await beam(problem), [2, 1, 1, 4])
+})
+
+test('plays an octave within two strings of the previous note', async () => {
+  const up = fingeringProblem(GUITAR, [[52], [64], [52], [64]])
+  assert.deepEqual(await beam(up, { octaveMove: 0 }), [3, 6, 3, 6])  // the high E on the open string
+  assert.deepEqual(await beam(up), [3, 5, 3, 5])
+  const down = fingeringProblem(GUITAR, [[59], [47], [59]])
+  assert.deepEqual(await beam(down, { octaveMove: 0 }), [5, 2, 4])
+  assert.deepEqual(await beam(down), [4, 2, 4])
+})
+
 test('ignores free notes for the hand position', async () => {
   const problem = fingeringProblem(GUITAR, [[47], [64], [47]], { free: [1] })  // a dead note between two B's
   problem.notes[1].positions = problem.notes[1].positions.map(p => ({ ...p, fret: 12 }))
