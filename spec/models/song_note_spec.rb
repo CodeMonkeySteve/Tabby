@@ -13,14 +13,14 @@ RSpec.describe SongNote do
 
     note = song.build_note
     expect(note).to have_attributes(user:, song:)
-    note.update!(speed: 0.8, volume: 70, looping: true, range_start_tick: 0, range_end_tick: 3840, tracks: [0, 2], muted_tracks: [1],
-                 solo_tracks: [], track_volumes: { 0 => 12, 1 => 8 }, track_tunings: { 1 => [43, 38, 33, 28, 23] })
+    note.update!(speed: 0.8, volume: 70, looping: true, synth: true, range_start_tick: 0, range_end_tick: 3840, tracks: [0, 2],
+                 muted_tracks: [1], solo_tracks: [], track_volumes: { 0 => 12, 1 => 8 }, track_tunings: { 1 => [43, 38, 33, 28, 23] })
     expect(song.reload.note).to eq note
     expect(song.notes).to contain_exactly note, other_note
     expect(note.playback).to eq(
-      'speed' => 0.8, 'volume' => 70, 'looping' => true, 'count_in' => nil, 'metronome' => nil, 'range_start_tick' => 0,
-      'range_end_tick' => 3840, 'tracks' => [0, 2], 'muted_tracks' => [1], 'solo_tracks' => [], 'track_volumes' => { '0' => 12, '1' => 8 },
-      'track_tunings' => { '1' => [43, 38, 33, 28, 23] },
+      'speed' => 0.8, 'volume' => 70, 'looping' => true, 'count_in' => nil, 'metronome' => nil, 'synth' => true,
+      'range_start_tick' => 0, 'range_end_tick' => 3840, 'tracks' => [0, 2], 'muted_tracks' => [1], 'solo_tracks' => [],
+      'track_volumes' => { '0' => 12, '1' => 8 }, 'track_tunings' => { '1' => [43, 38, 33, 28, 23] },
     )
   ensure
     Current.reset

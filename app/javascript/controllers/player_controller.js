@@ -47,6 +47,9 @@ export default class extends Controller {
     }
     window.addEventListener('beforeunload', this.unloadHandler)
 
+    // before the score loads, which plays it with the audio unless this is on
+    if (this.hasSynthTarget) this.synthTarget.classList.toggle("active", !!this.note.synth)
+
     this.keyHandler = this.handleKeydown.bind(this)
     document.addEventListener("keydown", this.keyHandler)
 
@@ -178,7 +181,9 @@ export default class extends Controller {
       score.backingTrack = new alphaTab.model.BackingTrack()
       score.backingTrack.rawAudioFile = new Uint8Array(arrayBuffer)
 
-      this.api.settings.player.playerMode = alphaTab.PlayerMode.EnabledBackingTrack
+      // (the backing track stays on the score for switching to the audio later, see setSynth)
+      this.api.settings.player.playerMode =
+        this.synthOn ? alphaTab.PlayerMode.EnabledSynthesizer : alphaTab.PlayerMode.EnabledBackingTrack
       this.api.updateSettings()
 
       if (this.hasSyncEditorOutlet) {
@@ -326,6 +331,11 @@ export default class extends Controller {
 
     this.api.settings.player.playerMode = on ? alphaTab.PlayerMode.EnabledSynthesizer : alphaTab.PlayerMode.EnabledBackingTrack
     this.api.updateSettings()
+  }
+
+  // Whether the score plays with the synthesizer instead of the song's audio
+  get synthOn() {
+    return this.hasSynthTarget && this.synthTarget.classList.contains("active")
   }
 
   setCountIn(on) {
@@ -604,6 +614,7 @@ export default class extends Controller {
       looping: this.api.isLooping,
       count_in: this.api.countInVolume > 0,
       metronome: this.api.metronomeVolume > 0,
+      synth: this.synthOn,
       range_start_tick: range?.startTick ?? null,
       range_end_tick: range?.endTick ?? null,
       tracks: isDefault ? null : tracks,  // null follows the user's instruments if they change

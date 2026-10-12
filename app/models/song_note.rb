@@ -3,7 +3,7 @@
 # A user's own data for a song, starting with their player settings
 class SongNote < ApplicationRecord
   PLAYBACK_ATTRIBUTES = %i[
-    speed volume looping count_in metronome range_start_tick range_end_tick tracks muted_tracks solo_tracks track_volumes
+    speed volume looping count_in metronome synth range_start_tick range_end_tick tracks muted_tracks solo_tracks track_volumes
     track_tunings
   ].freeze
   TRACK_LISTS = %i[tracks muted_tracks solo_tracks].freeze

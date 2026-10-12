@@ -661,7 +661,8 @@ CREATE TABLE public.song_notes (
     muted_tracks integer[],
     solo_tracks integer[],
     track_volumes jsonb,
-    track_tunings jsonb
+    track_tunings jsonb,
+    synth boolean
 );
 
 
@@ -1542,6 +1543,7 @@ ALTER TABLE ONLY public.alternate_tabs
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261012000000'),
 ('20261004000000'),
 ('20261003120000'),
 ('20261003000000'),
