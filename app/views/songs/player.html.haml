@@ -135,6 +135,10 @@
                 %span.at-song-artist{data: { player: { target: 'songArtist' } }}
 
             .at-player-right
+              - if @song.audio.present?
+                %a.at-synth.disabled{href: '#', title: "Synthesizer (instead of the Audio)",
+                                     data: { action: 'player#toggleSynth', player: { target: 'synth' } }}
+                  %i.fas.fa-keyboard
               %a.at-count-in.disabled{href: '#', title: "Count-In", data: { action: 'player#toggleCountIn', player: { target: 'countIn' } }}
                 %i.fas.fa-hourglass-half
               %a.at-metronome.disabled{href: '#', title: "Metronome", data: { action: 'player#toggleMetronome', player: { target: 'metronome' } }}

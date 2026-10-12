@@ -381,6 +381,14 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       ]
     end
 
+    it "offers the synthesizer instead of the audio only for a song with audio" do
+      get :player, params: { id: create(:song, :with_audio) }
+      expect(Nokogiri::HTML(response.body).at_css('.at-synth[data-action="player#toggleSynth"]')).to be_present
+
+      get :player, params: { id: song }
+      expect(Nokogiri::HTML(response.body).at_css('.at-synth')).to be_nil
+    end
+
     it "shows the default track when the user's instruments aren't in the song" do
       user.update!(instrument_types: %w[keys])
       get :player, params: { id: song }

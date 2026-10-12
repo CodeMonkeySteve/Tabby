@@ -17,7 +17,7 @@ export default class extends Controller {
   static targets = [
     "canvas", "dock", "trackList", "trackPanel", "playerLoading",
     "songTitle", "songArtist", "timePosition", "timeSliderValue",
-    "playPause", "countIn", "metronome", "loop", "tabEdit",
+    "playPause", "countIn", "metronome", "loop", "tabEdit", "synth",
     "speedLabel", "speedSlider", "zoomLabel", "zoomSlider", "trackTemplate",
     "volumeLabel", "volumeSlider", "volumeIcon", "osd", "osdIcon", "osdText",
   ]
@@ -39,6 +39,7 @@ export default class extends Controller {
     this.savedNote = null          // JSON of the last saved (or restored) note, null until the saved note is applied
     this.noteTimer = null          // debounce timer handle
     this.rangeRestored = false
+    this.switchTick = null         // the playback position to resume at once the player switches playback source
     this.unloadHandler = () => {
       this.flushHistory()
       this.flushNote()
@@ -139,6 +140,7 @@ export default class extends Controller {
   }
 
   handleSoundFontLoad(args) {
+    this.playerLoadingTarget.classList.remove("d-none")  // shown again when switching to the synth (see setSynth)
     this.updateProgress(this.playerLoadingTarget, args.loaded / args.total)
   }
 
@@ -207,6 +209,10 @@ export default class extends Controller {
     }
     this.restoreRange()
     this.applyNote()
+    if (this.switchTick !== null) {
+      this.api.tickPosition = this.switchTick
+      this.switchTick = null
+    }
   }
 
   handlePlayerStateChanged(args) {
@@ -293,6 +299,33 @@ export default class extends Controller {
     e.stopPropagation()
     this.setLoop(!this.loopTarget.classList.contains("active"))
     this.scheduleNoteSave()
+  }
+
+  toggleSynth(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!e.currentTarget.classList.contains("disabled")) {
+      this.setSynth(!this.synthTarget.classList.contains("active"))
+    }
+  }
+
+  // Plays the score with the synthesizer instead of the song's audio, or back again.  AlphaTab replaces its player, which starts
+  // stopped, at the beginning, without a playback range (but keeps the volume, speed, and toggles), so this saves the note for
+  // handlePlayerReady to restore the range and mixer from, and resumes at the current position.
+  setSynth(on) {
+    this.synthTarget.classList.toggle("active", on)
+    if (this.api.playerState !== alphaTab.synth.PlayerState.Paused) {
+      this.api.pause()
+      this.handlePlayerStateChanged({ state: 0 })  // the old player may be gone before it reports pausing
+    }
+    this.flushNote()
+    this.switchTick = this.api.tickPosition
+    for (const c of this.element.querySelectorAll(".at-skip-back, .at-play-pause, .at-synth")) {
+      c.classList.add("disabled")  // until the new player is ready
+    }
+
+    this.api.settings.player.playerMode = on ? alphaTab.PlayerMode.EnabledSynthesizer : alphaTab.PlayerMode.EnabledBackingTrack
+    this.api.updateSettings()
   }
 
   setCountIn(on) {
