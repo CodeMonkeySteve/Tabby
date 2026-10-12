@@ -49,7 +49,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       # in the success color for songs already in a playlist, and with each icon and menu marked with its song, for updating its
       # other copies on the page
       icons = Nokogiri::HTML(response.body).css('.song .playlist-icon')
-      expect(icons.map { it['class'].split.include?('text-success') }).to eq [false, true]
+      expect(icons.map { it['class'].split.include?('in-playlist') }).to eq [false, true]
       expect(icons.map { it['data-song'] }).to eq [hysteria.id, schism.id]
       forms = Nokogiri::HTML(response.body).css('.song .dropdown-menu form')
       expect(forms.map { it['data-playlist-menu-song-value'] }).to eq [hysteria.id, schism.id]

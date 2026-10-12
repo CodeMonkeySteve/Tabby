@@ -23,8 +23,8 @@ export default class extends Controller {
       })
   }
 
-  // Replaces the song's menus with the updated one, including any other copies of the song on the page, and colors their
-  // toggles' icons by whether the song is in any playlist (see ApplicationHelper#playlist_icon_attributes)
+  // Replaces the song's menus with the updated one, including any other copies of the song on the page, and marks their
+  // toggles' icons (highlighting the toggles) by whether the song is in any playlist (see ApplicationHelper#playlist_icon_attributes)
   replaceMenus(html) {
     const song = CSS.escape(this.songValue)
     for (const form of document.querySelectorAll(`form[data-playlist-menu-song-value="${song}"]`)) {
@@ -34,7 +34,7 @@ export default class extends Controller {
     menu.innerHTML = html
     const inPlaylist = menu.content.querySelector('input[type=checkbox]:checked') !== null
     for (const icon of document.querySelectorAll(`.playlist-icon[data-song="${song}"]`)) {
-      icon.classList.toggle('text-success', inPlaylist)
+      icon.classList.toggle('in-playlist', inPlaylist)
     }
   }
 

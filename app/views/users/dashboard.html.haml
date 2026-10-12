@@ -99,8 +99,8 @@
                 .d-flex.flex-column.align-items-end.justify-content-between
                   %small.text-nowrap.text-body-secondary= relative_date(song.created_at.to_date)
                   .dropdown
-                    %button.btn.btn-sm.p-0{type: 'button', title: "Playlists", aria: { expanded: false, haspopup: true },
-                                           data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
+                    %button.btn.btn-sm.px-1.py-0{type: 'button', title: "Playlists", aria: { expanded: false, haspopup: true },
+                                                 data: { bs: { toggle: 'dropdown', 'auto-close': 'outside' } }}
                       %i.bi.bi-folder-plus{playlist_icon_attributes(song, @dashboard.playlists)}
                     .dropdown-menu.dropdown-menu-end.p-2{style: 'min-width: 220px'}
                       = render 'songs/playlist_menu', song:, playlists: @dashboard.playlists

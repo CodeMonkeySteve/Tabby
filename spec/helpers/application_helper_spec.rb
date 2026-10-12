@@ -10,7 +10,7 @@ RSpec.describe ApplicationHelper do
   it "#playlist_icon_attributes" do
     song = create(:song)
     playlists = [build(:playlist, songs: []), build(:playlist, songs: [song])]
-    expect(helper.playlist_icon_attributes(song, playlists)).to eq(class: 'playlist-icon text-success', data: { song: song.id })
+    expect(helper.playlist_icon_attributes(song, playlists)).to eq(class: 'playlist-icon in-playlist', data: { song: song.id })
     expect(helper.playlist_icon_attributes(song, playlists.first(1))).to eq(class: 'playlist-icon', data: { song: song.id })
   end
 
