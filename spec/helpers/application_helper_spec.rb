@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe ApplicationHelper do
   it "#practice_time" do
-    expect([45, 12 * 60 + 30, 65 * 60].map { helper.practice_time(it) }).to eq ["45s", "12m", "1h 5m"]
+    expect([45, (12 * 60) + 30, 65 * 60].map { helper.practice_time(it) }).to eq ["45s", "12m", "1h 5m"]
   end
 
   it "#playlist_icon_attributes" do

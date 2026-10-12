@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'songsterr'
 
 class SongsController < ApplicationController
@@ -16,8 +18,8 @@ class SongsController < ApplicationController
     @matches = Songsterr::Search.call(params[:q]).map { Song::SongsterrMatch.from_result(it) }
     @imported = Song.for_songsterr_matches(@matches)
     @playlists = Current.user.playlists.order(:name)
-  rescue Songsterr::Error => ex
-    @error = "Can't search Songsterr: #{ex.message}"
+  rescue Songsterr::Error => e
+    @error = "Can't search Songsterr: #{e.message}"
   end
 
   # Starts importing a Songsterr song, showing its card's progress
@@ -35,15 +37,13 @@ class SongsController < ApplicationController
     head :bad_request
   end
 
-  def show
-  end
+  def show; end
 
   def new
     @song = Song.new
   end
 
-  def edit
-  end
+  def edit; end
 
   def create
     @song = Song.new(song_params)
@@ -53,8 +53,8 @@ class SongsController < ApplicationController
         format.html { redirect_to @song, notice: "Song was successfully created." }
         format.json { render :player, status: :created, location: @song }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @song.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @song.errors, status: :unprocessable_content }
       end
     end
   end
@@ -66,8 +66,8 @@ class SongsController < ApplicationController
         format.html { redirect_to url_from(params[:return_to]) || @song, notice: "Song was successfully updated", status: :see_other }
         format.json { render :player, status: :ok, location: @song }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @song.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @song.errors, status: :unprocessable_content }
       end
     end
   end
@@ -81,8 +81,8 @@ class SongsController < ApplicationController
       flash.now[:error] = "No cover art found for #{@song.artist} - #{@song.title}."
     end
     render :edit
-  rescue CoverArt::Error => ex
-    flash.now[:error] = "Can't search for cover art: #{ex.message}"
+  rescue CoverArt::Error => e
+    flash.now[:error] = "Can't search for cover art: #{e.message}"
     render :edit
   end
 
@@ -124,7 +124,7 @@ class SongsController < ApplicationController
     if @song.update(sync_points: points)
       head :ok
     else
-      render json: @song.errors, status: :unprocessable_entity
+      render json: @song.errors, status: :unprocessable_content
     end
   end
 
@@ -132,7 +132,7 @@ class SongsController < ApplicationController
     if params[:new_playlist_name].present?
       Playlist.create!(name: params[:new_playlist_name], user: Current.user, songs: [@song])
     else
-      Current.user.playlists.find(params[:playlist]).include_song!(@song, params[:checked].to_bool)
+      Current.user.playlists.find(params.expect(:playlist)).include_song!(@song, params.expect(:checked).to_bool)
     end
 
     playlists = Current.user.playlists.order(:name)
@@ -151,7 +151,7 @@ private
 
   # Finds the song by its current or an old slug, or its ID, redirecting pages to its current URL
   def find_song
-    @song = Song.friendly.find(params[:id])
+    @song = Song.friendly.find(params.expect(:id))
     if request.get? && params[:id] != @song.to_param
       redirect_to url_for(id: @song, params: request.query_parameters), status: :moved_permanently
     end
@@ -161,7 +161,7 @@ private
   def find_playlist
     params[:playlist_id] or return
 
-    @playlist = Current.user.playlists.friendly.find(params[:playlist_id])
+    @playlist = Current.user.playlists.friendly.find(params.expect(:playlist_id))
     if params[:playlist_id] != @playlist.to_param
       redirect_to url_for(playlist_id: @playlist, params: request.query_parameters), status: :moved_permanently
     end
@@ -169,10 +169,10 @@ private
 
   def song_params
     sync_points = JSON.parse(params[:song][:sync_points].presence || '[]')
-    params.require(:song)
+    params
       # files are uploads or cached file JSON from a form, or cached file hashes from JSON requests
       # remove_cover first, since attributes are assigned in this order, so a removed cover can be replaced
-      .permit(:title, :artist, :sync_points, :remove_cover, :cover, :cover_data, :score, :audio, score: {}, audio: {}, track_types: [])
+      .expect(song: [:title, :artist, :sync_points, :remove_cover, :cover, :cover_data, :score, :audio, { score: {}, audio: {}, track_types: [] }])
       .merge(sync_points:)
       .tap { it.delete(:track_types) if params[:song][:score].present? } # a new score's tracks are detected instead
   end

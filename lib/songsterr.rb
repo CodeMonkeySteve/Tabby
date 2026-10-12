@@ -13,8 +13,8 @@ module Songsterr
 
   def self.get(url)
     http.get(url).body
-  rescue Faraday::Error => ex
-    raise Error, "Failed to fetch #{url}: #{ex.message}"
+  rescue Faraday::Error => e
+    raise Error, "Failed to fetch #{url}: #{e.message}"
   end
 
   def self.http

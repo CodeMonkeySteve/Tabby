@@ -6,6 +6,7 @@ RSpec.describe AlternateTabsController do
   let(:user) { create(:user) }
   let(:song) { create(:song, track_types: %w[bass]) }
   let(:five_string) { [43, 38, 33, 28, 23] }
+
   before { sign_in user }
 
   def create_params(**attributes) = { track_index: 0, tuning: five_string, note_count: 477, **attributes }
@@ -25,7 +26,7 @@ RSpec.describe AlternateTabsController do
 
   it "rejects an invalid alternate tab" do
     post :create, params: { song_id: song, alternate_tab: create_params(strings: { '0' => 6 }) }, as: :json
-    expect(response).to have_http_status :unprocessable_entity
+    expect(response).to have_http_status :unprocessable_content
     expect(response.parsed_body).to include 'strings'
     expect(AlternateTab.count).to eq 0
   end
@@ -34,7 +35,7 @@ RSpec.describe AlternateTabsController do
     create(:alternate_tab, user:, song:, tuning: [43, 38, 33, 28])
     [[43.5, 38, 33, 28], ['abc'], [nil]].each do |tuning|
       post :create, params: { song_id: song, alternate_tab: create_params(tuning:) }, as: :json
-      expect(response).to have_http_status :unprocessable_entity
+      expect(response).to have_http_status :unprocessable_content
       expect(response.parsed_body).to include 'tuning'
     end
     expect(AlternateTab.count).to eq 1
@@ -47,7 +48,7 @@ RSpec.describe AlternateTabsController do
     expect(tab.reload.strings).to eq('1' => 2, '7' => 4)
 
     patch :update, params: { song_id: song, id: tab, alternate_tab: { strings: { '7' => 9 } } }, as: :json
-    expect(response).to have_http_status :unprocessable_entity
+    expect(response).to have_http_status :unprocessable_content
     expect(response.parsed_body).to include 'strings'
     expect(tab.reload.strings).to eq('1' => 2, '7' => 4)
   end
@@ -68,9 +69,9 @@ RSpec.describe AlternateTabsController do
 
   it "doesn't reach another user's alternate tabs" do
     tab = create(:alternate_tab, song:)
-    expect {
+    expect do
       patch :update, params: { song_id: song, id: tab, alternate_tab: { strings: { '1' => 2 } } }, as: :json
-    }.to raise_error ActionController::RoutingError
+    end.to raise_error ActionController::RoutingError
     expect { delete :destroy, params: { song_id: song, id: tab } }.to raise_error ActionController::RoutingError
 
     post :create, params: { song_id: song, alternate_tab: create_params(tuning: tab.tuning) }, as: :json

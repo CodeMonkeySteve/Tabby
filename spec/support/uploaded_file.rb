@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # in some place that gets loaded for specs like spec/support/helpers/uploaded_file_helper.rb
 module UploadedFileSpecHelper
   # Mimics a file upload parameter. Use like so:
@@ -17,7 +19,6 @@ module UploadedFileSpecHelper
       )
     end
   end
-
 end
 
 RSpec.configure do |config|

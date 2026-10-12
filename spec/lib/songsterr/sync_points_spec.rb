@@ -32,7 +32,7 @@ RSpec.describe Songsterr::SyncPoints do
     it "ignores extra points, with a warning" do
       warnings = []
       sync_points = described_class.build((0...22).to_a, played_bars) { warnings << it }
-      expect(sync_points.pluck(:millisecondOffset)).to eq (0...20).map { it * 1000 }
+      expect(sync_points.pluck(:millisecondOffset)).to eq((0...20).map { it * 1000 })
       expect(warnings).to eq ["Video has 22 sync points for 20 played bars; ignoring the last 2"]
     end
   end

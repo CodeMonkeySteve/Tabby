@@ -103,13 +103,13 @@ RSpec.describe AlphaTab do
   end
 
   let(:alpha_tab) { described_class.new }
+  let(:page) { Songsterr::Page.new(file_fixture('songsterr/page.html').read) }
+  let(:parts) { (0..2).map { JSON.parse(Zlib.gunzip(file_fixture("songsterr/#{it}.json.gz").binread)) } }
 
   def rest_measure(**options)
     whole_rest = { 'type' => 1, 'duration' => [1, 1], 'rest' => true, 'notes' => [{ 'rest' => true }] }
     { 'voices' => [{ 'beats' => [whole_rest] }], **options }
   end
-  let(:page) { Songsterr::Page.new(file_fixture('songsterr/page.html').read) }
-  let(:parts) { (0..2).map { JSON.parse(Zlib.gunzip(file_fixture("songsterr/#{it}.json.gz").binread)) } }
 
   describe '#songsterr_to_gp' do
     it "converts Songsterr tracks into a Guitar Pro 7 score" do
@@ -196,25 +196,25 @@ RSpec.describe AlphaTab do
           { 'signature' => [4, 4], 'tripletFeel' => '16th',
             'keySignature' => { 'accidentalCount' => -3, 'mode' => 'major', 'transposeAs' => 'b' },
             'voices' => [{ 'beats' => [
-            beat.([{ 'fret' => 5, 'string' => 2, 'ghost' => true }],
-                  'letRing' => true, 'chord' => { 'text' => "Asus2", 'width' => 39 }),
-            beat.([{ 'fret' => 5, 'string' => 2, 'harmonic' => 'artificial', 'harmonicFret' => 12 },
-                   { 'fret' => 6, 'string' => 3, 'harmonic' => 'tapped', 'harmonicFret' => 12 }]),
-            beat.([{ 'fret' => 5, 'string' => 2 }], 'vibrato' => true),
-            beat.([{ 'fret' => 5, 'string' => 2 }], 'vibratoWithTremoloBar' => 'wide')
-          ] }] },
+              beat.([{ 'fret' => 5, 'string' => 2, 'ghost' => true }],
+                    'letRing' => true, 'chord' => { 'text' => "Asus2", 'width' => 39 }),
+              beat.([{ 'fret' => 5, 'string' => 2, 'harmonic' => 'artificial', 'harmonicFret' => 12 },
+                     { 'fret' => 6, 'string' => 3, 'harmonic' => 'tapped', 'harmonicFret' => 12 }]),
+              beat.([{ 'fret' => 5, 'string' => 2 }], 'vibrato' => true),
+              beat.([{ 'fret' => 5, 'string' => 2 }], 'vibratoWithTremoloBar' => 'wide')
+            ] }] },
           rest_measure('repeat' => 3),
           { 'doubleBarline' => true, 'keySignature' => { 'accidentalCount' => 1, 'mode' => 'minor', 'transposeAs' => '#' },
             'voices' => [{ 'beats' => [
-            { 'type' => 64, 'duration' => [1, 64], 'graceNote' => 'onBeat', 'notes' => [{ 'fret' => 3, 'string' => 2 }] },
-            beat.([{ 'fret' => 5, 'string' => 2, 'accentuated' => 2, 'leftHandVibrato' => 'wide' }],
-                  'text' => { 'text' => "w/ flanger", 'width' => 60 }, 'gradualVelocity' => 'crescendo'),
-            beat.([{ 'fret' => 5, 'string' => 2 }],
-                  'tremoloBar' => { 'tone' => 0,
-                                    'points' => [{ 'position' => 0, 'tone' => 0 }, { 'position' => 60, 'tone' => -50 }] }),
-            beat.([{ 'fret' => 5, 'string' => 2, 'slide' => 'below' }]),
-            beat.([{ 'fret' => 5, 'string' => 2 }])
-          ] }] },
+              { 'type' => 64, 'duration' => [1, 64], 'graceNote' => 'onBeat', 'notes' => [{ 'fret' => 3, 'string' => 2 }] },
+              beat.([{ 'fret' => 5, 'string' => 2, 'accentuated' => 2, 'leftHandVibrato' => 'wide' }],
+                    'text' => { 'text' => "w/ flanger", 'width' => 60 }, 'gradualVelocity' => 'crescendo'),
+              beat.([{ 'fret' => 5, 'string' => 2 }],
+                    'tremoloBar' => { 'tone' => 0,
+                                      'points' => [{ 'position' => 0, 'tone' => 0 }, { 'position' => 60, 'tone' => -50 }] }),
+              beat.([{ 'fret' => 5, 'string' => 2, 'slide' => 'below' }]),
+              beat.([{ 'fret' => 5, 'string' => 2 }])
+            ] }] },
           rest_measure
         ]
       }

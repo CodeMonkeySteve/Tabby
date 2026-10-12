@@ -2,19 +2,23 @@
 
 class SongNotesController < ApplicationController
   def update
-    song = Song.friendly.find(params[:song_id])
+    song = Song.friendly.find(params.expect(:song_id))
     note = song.note || song.build_note
     if note.update(note_params)
       head :no_content
     else
-      render json: note.errors, status: :unprocessable_entity
+      render json: note.errors, status: :unprocessable_content
     end
   end
 
 private
 
   def note_params
-    params.require(:song_note)
-      .permit(*SongNote::PLAYBACK_ATTRIBUTES, tracks: [], muted_tracks: [], solo_tracks: [], track_volumes: {}, track_tunings: {})
+    params.expect(
+      song_note: [
+        *SongNote::PLAYBACK_ATTRIBUTES,
+        { tracks: [], muted_tracks: [], solo_tracks: [], track_volumes: {}, track_tunings: {} }
+      ]
+    )
   end
 end

@@ -2,9 +2,10 @@
 
 require 'rails_helper'
 
-RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
+RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
   let(:user) { create(:user) }
   let(:song) { create(:song) }
+
   before { sign_in user }
 
   describe "#index" do
@@ -35,14 +36,15 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     end
 
     it "has a menu on each song for adding it to the user's playlists" do
-      hysteria, schism = Song.find_by(title: "Hysteria"), Song.find_by(title: "Schism")
+      hysteria = Song.find_by(title: "Hysteria")
+      schism = Song.find_by(title: "Schism")
       practice = create(:playlist, name: "Practice", user:, songs: [schism])
       create(:playlist, name: "Other user's", user: create(:user))
       get :index
 
       # listed by title, with checkbox IDs unique to each song's menu
       checkboxes = Nokogiri::HTML(response.body).css('.song .dropdown-menu input[type=checkbox]')
-      expect(checkboxes.map { it.next_element.text }).to eq ["Practice", "Practice"]
+      expect(checkboxes.map { it.next_element.text }).to eq %w[Practice Practice]
       expect(checkboxes.map { it['checked'] }).to eq [nil, 'checked']
       expect(checkboxes.map { it['id'] }).to eq ["playlist_#{hysteria.id}_#{practice.id}", "playlist_#{schism.id}_#{practice.id}"]
       # in the success color for songs already in a playlist
@@ -58,11 +60,11 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     it "sorts the songs, keeping the selected sort" do
       Song.find_by(title: "Schism").update!(created_at: 1.hour.from_now)
       get :index, params: { sort: 'newest' }
-      expect(titles).to eq ["Schism", "Hysteria"]
+      expect(titles).to eq %w[Schism Hysteria]
       expect(Nokogiri::HTML(response.body).at_css('select[name=sort] option[selected]')['value']).to eq 'newest'
 
       get :index
-      expect(titles).to eq ["Hysteria", "Schism"]
+      expect(titles).to eq %w[Hysteria Schism]
       expect(Nokogiri::HTML(response.body).at_css('.song-count').text).to eq "2 songs"
       expect(Nokogiri::HTML(response.body).at_css('select[name=sort] option[selected]')).to be_nil
     end
@@ -187,17 +189,18 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
 
     # parsed as a browser does, which merges a nested form's fields (like its `_method`) into the outer form
     doc = Nokogiri::HTML5(response.body)
-    edit_form, delete_form = doc.at_css("form[action=\"#{song_path(song)}\"]:not(#delete_song)"), doc.at_css('form#delete_song')
+    edit_form = doc.at_css("form[action=\"#{song_path(song)}\"]:not(#delete_song)")
+    delete_form = doc.at_css('form#delete_song')
     expect(edit_form.css('input[name=_method]').map { it['value'] }).to eq %w[patch]
     expect(delete_form.css('input[name=_method]').map { it['value'] }).to eq %w[delete]
     expect(doc.at_css('button[form=delete_song]').text.squish).to eq "Delete"
   end
 
   it "#create" do
-    expect {
+    expect do
       attrs = attributes_for(:song).except(:jellyfin_id).as_json
       post :create, params: { song: attrs }
-    }.to change(Song, :count).by(1)
+    end.to change(Song, :count).by(1)
     expect(response).to redirect_to song_path(assigns(:song))
   end
 
@@ -219,9 +222,9 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     it "saves an uploaded score" do
       score = Rack::Test::UploadedFile.new(file_fixture('Tears for Fears - Head Over Heels.gpx'), 'application/octet-stream')
       audio = Rack::Test::UploadedFile.new(file_fixture('empty.mp3'), 'audio/mpeg')
-      expect {
+      expect do
         patch :update, params: { id: song, song: { score:, audio: } }
-      }.to change { song.reload.score_data['id'] }.and change { song.reload.audio_data }.from(nil)
+      end.to change { song.reload.score_data['id'] }.and change { song.reload.audio_data }.from(nil)
     end
 
     it "detects a new score's track types instead of the submitted ones" do
@@ -259,7 +262,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
 
   it "redisplays the edit form for the saved slug when changing the title fails" do
     patch :update, params: { id: song, song: { title: '', artist: "Sigur Rós" } }
-    expect(response).to have_http_status(:unprocessable_entity)
+    expect(response).to have_http_status :unprocessable_content
     expect(Nokogiri::HTML(response.body).at_css("form[action=\"#{song_path(song)}\"]")).to be_present
   end
 
@@ -280,6 +283,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
       CoverArt::Match.new(source: :deezer, artist: "Tears for Fears", title: "Shout", album: "Songs from the Big Chair",
                           image_url: 'https://cdn.example/big-chair.jpg')
     end
+
     def cover = Rack::Test::UploadedFile.new(file_fixture('cover.jpg'), 'image/jpeg')
 
     before { stub_request(:get, match.image_url).to_return(body: file_fixture('cover.jpg').binread) }
@@ -343,9 +347,9 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
 
   it "#destroy" do
     song
-    expect {
+    expect do
       delete :destroy, params: { id: song }
-    }.to change(Song, :count).by(-1)
+    end.to change(Song, :count).by(-1)
     expect(response).to have_http_status(:see_other)
   end
 
@@ -459,10 +463,10 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' }  do
     let(:play_date) { '2026-01-15' }
 
     it "creates a new play history record" do
-      expect {
+      expect do
         post :track_history, params: { id: song, date: play_date, duration: '120.5' }
         expect(response).to be_successful
-      }.to change(PlayHistory, :count).by(1)
+      end.to change(PlayHistory, :count).by(1)
     end
 
     it "accumulates duration for existing record on same day" do

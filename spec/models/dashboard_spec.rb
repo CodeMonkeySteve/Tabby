@@ -18,7 +18,7 @@ RSpec.describe Dashboard do
     create(:playlist, user:, name: "Gig")
     create(:playlist, name: "Someone else's", user: create(:user))
 
-    expect(dashboard.playlists.map(&:name)).to eq ["Gig", "Warmups"]
+    expect(dashboard.playlists.map(&:name)).to eq %w[Gig Warmups]
     expect(dashboard.playlist_songs(dashboard.playlists.second)).to eq [keys_song, bass_song]
   end
 

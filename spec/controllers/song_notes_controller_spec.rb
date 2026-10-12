@@ -10,6 +10,7 @@ RSpec.describe SongNotesController do
       tracks: [1, 2], muted_tracks: [2], solo_tracks: [], track_volumes: { '1' => 10, '2' => 8 },
       track_tunings: { '1' => [43, 38, 33, 28, 23] } }
   end
+
   before { sign_in user }
 
   def note_for(user) = SongNote.find_by(user:, song:)
@@ -32,7 +33,7 @@ RSpec.describe SongNotesController do
 
   it "rejects invalid settings" do
     patch :update, params: { song_id: song, song_note: { speed: 10 } }, as: :json
-    expect(response).to have_http_status :unprocessable_entity
+    expect(response).to have_http_status :unprocessable_content
     expect(response.parsed_body).to include 'speed'
     expect(note_for(user)).to be_nil
   end

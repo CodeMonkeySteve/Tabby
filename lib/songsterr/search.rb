@@ -17,8 +17,8 @@ module Songsterr
       url = "#{URL}?#{URI.encode_www_form(pattern: query, size:)}"
       songs = begin
         JSON.parse(Songsterr.get(url))
-      rescue JSON::ParserError => ex
-        raise Error, "Invalid JSON from #{url}: #{ex.message}"
+      rescue JSON::ParserError => e
+        raise Error, "Invalid JSON from #{url}: #{e.message}"
       end
 
       songs.reject { it['isJunk'] }.map do |song|

@@ -15,6 +15,7 @@ RSpec.describe UsersController do
 
   describe "with a logged-in user" do
     let(:user) { create(:user) }
+
     before { sign_in user }
 
     it "#new" do
@@ -47,7 +48,7 @@ RSpec.describe UsersController do
 
       it "redisplays the form with errors" do
         patch :update, params: { user: { email: 'not an email', instrument_types: %w[other] } }
-        expect(response).to have_http_status :unprocessable_entity
+        expect(response).to have_http_status :unprocessable_content
         expect(response).to render_template :edit
         expect(assigns(:user).errors.attribute_names).to contain_exactly :email, :instrument_types
       end

@@ -23,13 +23,15 @@ module Songsterr
       on_retry = lambda do |_exception, try, _elapsed_time, next_interval|
         next unless next_interval # gave up
 
-        yield "YouTube refused the download of #{video_id} (HTTP 403), retrying in #{next_interval.round}s " \
-              "(try #{try + 1} of #{TRIES})" if block_given?
+        if block_given?
+          yield "YouTube refused the download of #{video_id} (HTTP 403), retrying in #{next_interval.round}s " \
+                "(try #{try + 1} of #{TRIES})"
+        end
       end
       Retriable.retriable(on: RETRY_ON, tries: TRIES, base_interval: 2, multiplier: 2, on_retry:) { download(video_id, dir) }
     end
 
-    private
+  private
 
     def download(video_id, dir)
       url = "https://www.youtube.com/watch?v=#{video_id}"

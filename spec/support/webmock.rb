@@ -3,7 +3,7 @@
 require 'webmock/rspec'
 
 RSpec.configure do |config|
-  config.before(:each) { |example| WebMock.reset! }
+  config.before { |_example| WebMock.reset! }
 end
 
 # https://github.com/vcr/vcr/issues/615

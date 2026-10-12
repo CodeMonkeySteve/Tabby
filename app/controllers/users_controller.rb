@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 class UsersController < ApplicationController
-  skip_before_action :authenticate_user!, only: %w(new login)
+  skip_before_action :authenticate_user!, only: %w[new login]
 
   def new
-    redirect_to(root_url)  if current_user
+    redirect_to(root_url) if current_user
   end
 
   def login
@@ -34,7 +34,7 @@ class UsersController < ApplicationController
     if @user.update(user_params)
       redirect_to settings_path, notice: "Settings were successfully saved.", status: :see_other
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -46,7 +46,7 @@ private
 
   def user_params
     # drops the blank value collection_check_boxes submits so that every instrument can be unchecked
-    params.require(:user).permit(:name, :email, instrument_types: [])
+    params.expect(user: [:name, :email, { instrument_types: [] }])
       .tap { it[:instrument_types]&.compact_blank! }
   end
 end

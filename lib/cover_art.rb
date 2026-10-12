@@ -62,19 +62,23 @@ module CoverArt
 
   # Lower for more likely original recordings: live recordings rank after compilations, which rank after studio albums
   def self.penalty(match)
-    [match.title, match.album].any?(LIVE) ? 2 : match.album.match?(COMPILATION) ? 1 : 0
+    if [match.title, match.album].any?(LIVE)
+      2
+    else
+      match.album.match?(COMPILATION) ? 1 : 0
+    end
   end
 
   def self.get_json(url, params = {})
     JSON.parse(get(url, params))
-  rescue JSON::ParserError => ex
-    raise Error, "Invalid response from #{url}: #{ex.message}"
+  rescue JSON::ParserError => e
+    raise Error, "Invalid response from #{url}: #{e.message}"
   end
 
   def self.get(url, params = {})
     http.get(url, params).body
-  rescue Faraday::Error => ex
-    raise Error, "Failed to fetch #{url}: #{ex.message}"
+  rescue Faraday::Error => e
+    raise Error, "Failed to fetch #{url}: #{e.message}"
   end
 
   def self.http

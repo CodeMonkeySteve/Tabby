@@ -30,5 +30,3 @@ ARGV.each do |path|
     import_score!(path)
   end
 end
-
-

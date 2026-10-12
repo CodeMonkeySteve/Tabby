@@ -30,7 +30,7 @@ class UploadCache
     deleted
   end
 
-  private
+private
 
   def files = @storage.directory.glob('**/*').select(&:file?)
 

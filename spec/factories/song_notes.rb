@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :song_note do
-    association :user
-    association :song
+    user
+    song
   end
 end

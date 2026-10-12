@@ -5,7 +5,7 @@ module AuthenticationTestHelpers
     controller.send(:sign_in, user)
   end
 
-  def sign_out(*args)
+  def sign_out
     controller.send(:sign_in, nil)
   end
 end

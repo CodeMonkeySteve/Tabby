@@ -9,6 +9,7 @@ development:
 
 test:
   <<: *default
+  url: postgres://postgres@localhost/tabby_test
 
 production:
   <<: *default

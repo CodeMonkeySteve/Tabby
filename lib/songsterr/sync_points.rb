@@ -27,11 +27,15 @@ module Songsterr
 
       if points.size < played_bars.size
         last_bar_number = played_bars[points.size - 1].first + 1
-        yield "Video has #{points.size} sync points for #{played_bars.size} played bars; " \
-              "bars after #{last_bar_number} will follow the score's tempo" if block_given?
+        if block_given?
+          yield "Video has #{points.size} sync points for #{played_bars.size} played bars; " \
+                "bars after #{last_bar_number} will follow the score's tempo"
+        end
       elsif points.size > played_bars.size
-        yield "Video has #{points.size} sync points for #{played_bars.size} played bars; " \
-              "ignoring the last #{points.size - played_bars.size}" if block_given?
+        if block_given?
+          yield "Video has #{points.size} sync points for #{played_bars.size} played bars; " \
+                "ignoring the last #{points.size - played_bars.size}"
+        end
       end
 
       played_bars.zip(points).take(points.size).map do |(bar_index, occurrence), seconds|

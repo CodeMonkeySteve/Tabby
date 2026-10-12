@@ -1,8 +1,127 @@
-# Omakase Ruby styling for Rails
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+plugins:
+  - 'rubocop-rake'
+  - 'rubocop-rails'
+  - 'rubocop-rspec'
+  - 'rubocop-rspec_rails'
+  - 'rubocop-factory_bot'
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+AllCops:
+  NewCops: enable
+  Exclude:
+    - 'db/**/*'
+    - 'config/**/*'
+    - 'bin/{rails,rake,bundle}'
+    - 'vendor/**/*'
+    - 'spec/fixtures/**/*'
+    - 'tmp/**/*'
+    - 'sandbox/**/*'
+    - 'Gemfile.lock'
+
+Bundler/OrderedGems:
+  Enabled: false
+
+Layout/AccessModifierIndentation:
+  EnforcedStyle: 'outdent'
+Layout/CaseIndentation:
+  EnforcedStyle: end
+  IndentOneStep: true
+#Layout/EmptyLineAfterGuardClause:
+#  Enabled: false
+#Layout/EmptyLinesAroundExceptionHandlingKeywords:
+#  Enabled: false
+Layout/ExtraSpacing:
+#  Enabled: false
+  Exclude:
+    - 'Gemfile'
+Layout/FirstArrayElementIndentation:
+  EnforcedStyle: 'consistent'
+Layout/HashAlignment:
+  Enabled: false
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented_relative_to_receiver
+Layout/LineEndStringConcatenationIndentation:
+  Enabled: false
+Layout/LineLength:
+  Max: 194
+#Layout/SpaceBeforeSemicolon:
+#  Enabled: false
+#Layout/SpaceInsideArrayLiteralBrackets:
+#  Enabled: false
+#Layout/SpaceInsideHashLiteralBraces:
+#  Enabled: false
+#Layout/SpaceInsideRangeLiteral:
+#  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+#Metrics/ClassLength:
+#  Max: 720
+#Metrics/ModuleLength:
+#  Max: 720
+Metrics/MethodLength:
+  Max: 250
+#Metrics/ParameterLists:
+#  Max: 8
+
+#Rails/DynamicFindBy:
+#  AllowedMethods:
+#    - find_by_id_or_slug
+#Rails/HasAndBelongsToMany:
+#  Enabled: false
+#Rails/SkipsModelValidations:
+#  Enabled: false
+#Rails/SquishedSQLHeredocs:
+#  Enabled: false
+#Rails/TimeZone:
+#  Enabled: false
+#Rails/UnknownEnv:
+#  Environments: ['test', 'development', 'staging', 'production']
+#Rails/WhereNotWithMultipleConditions:
+#  Enabled: false
+
+RSpec/AnyInstance:
+  Enabled: false
+RSpec/DescribedClass:
+  Enabled: false
+RSpec/ExampleLength:
+  Max: 50
+RSpec/InstanceVariable:
+  Exclude:
+    - 'spec/models/upload_cache_spec.rb'
+#RSpec/MessageSpies:
+#  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/MultipleMemoizedHelpers:
+  Max: 10
+
+#Style/AccessorGrouping:
+#  Enabled: false
+Style/FrozenStringLiteralComment:
+  Exclude:
+    - 'Gemfile'
+    - 'Rakefile'
+#Style/GuardClause:
+#  MinBodyLength: 3
+#Style/IfUnlessModifier:
+#  Enabled: false
+#Style/Lambda:
+#  Enabled: false
+Style/LambdaCall:
+  Enabled: false
+Style/NumericLiterals:
+  MinDigits: 8
+#Style/RedundantSelf:
+#  Enabled: false
+Style/RescueStandardError:
+  EnforcedStyle: implicit
+#Style/SafeNavigationChainLength:
+#  Max: 3
+Style/StringLiterals:
+  Enabled: false
+Style/TrailingCommaInArguments:
+  Enabled: false
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+Style/TrailingCommaInHashLiteral:
+  Enabled: false

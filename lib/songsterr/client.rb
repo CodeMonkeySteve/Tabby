@@ -28,7 +28,7 @@ module Songsterr
       points.fetch('points')
     end
 
-    private
+  private
 
     # Every video's points come in one list, which an import may search for several videos
     def all_video_points
@@ -45,8 +45,8 @@ module Songsterr
 
     def parse_json(body, url)
       JSON.parse(body)
-    rescue JSON::ParserError => ex
-      raise Error, "Invalid JSON from #{url}: #{ex.message}"
+    rescue JSON::ParserError => e
+      raise Error, "Invalid JSON from #{url}: #{e.message}"
     end
   end
 end

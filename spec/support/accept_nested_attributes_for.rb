@@ -2,7 +2,7 @@
 
 RSpec::Matchers.define :accept_nested_attributes_for do |attribute_name|
   match do |actual|
-    expect(actual.class.instance_methods.include?("#{attribute_name}_attributes=".to_sym)).to be true
+    expect(actual.class.method_defined?(:"#{attribute_name}_attributes=")).to be true
   end
 
   failure_message_for_should do |actual|

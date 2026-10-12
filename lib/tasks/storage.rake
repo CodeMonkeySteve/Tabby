@@ -19,10 +19,10 @@ namespace :storage do
 
     delete = ENV['DELETE'].to_s.to_bool
     unreferenced.each_key do |id|
-      puts "#{delete ? "Deleting" : "Unreferenced"} #{id}"
+      puts "#{delete ? 'Deleting' : 'Unreferenced'} #{id}"
       store.delete(id) if delete
     end
-    puts "#{unreferenced.size} of #{files.size} stored files (#{size}) #{delete ? "deleted" : "unreferenced, run with DELETE=1 to delete"}"
+    puts "#{unreferenced.size} of #{files.size} stored files (#{size}) #{delete ? 'deleted' : 'unreferenced, run with DELETE=1 to delete'}"
   end
 
   desc "Delete cached uploads older than DAYS (default 7) days (only lists them unless DELETE=1)"
@@ -33,10 +33,10 @@ namespace :storage do
 
     delete = ENV['DELETE'].to_s.to_bool
     expired = delete ? cache.clean(older_than:) : cache.expired(older_than:)
-    expired.each_key { puts "#{delete ? "Deleted" : "Expired"} #{it}" }
+    expired.each_key { puts "#{delete ? 'Deleted' : 'Expired'} #{it}" }
 
     size = ActiveSupport::NumberHelper.number_to_human_size(expired.values.sum)
     puts "#{expired.size} of #{count} cached files (#{size}) older than #{older_than.ago.to_date} " \
-      "#{delete ? "deleted" : "expired, run with DELETE=1 to delete"}"
+         "#{delete ? 'deleted' : 'expired, run with DELETE=1 to delete'}"
   end
 end

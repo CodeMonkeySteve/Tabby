@@ -31,8 +31,8 @@ namespace :songs do
       else
         warn "#{song.artist} - #{song.title}: not found"
       end
-    rescue CoverArt::Error, ActiveRecord::RecordInvalid => ex
-      warn "#{song.artist} - #{song.title}: #{ex.message}"
+    rescue CoverArt::Error, ActiveRecord::RecordInvalid => e
+      warn "#{song.artist} - #{song.title}: #{e.message}"
     end
     puts "Found covers for #{found} of #{songs.size} songs"
   end

@@ -9,8 +9,8 @@ namespace :songsterr do
     song = Song.from_songsterr(url) { puts it }
     song.save!
     puts "Imported #{song.artist} - #{song.title}: /p/#{song.slug}"
-  rescue Songsterr::Error, ActiveRecord::RecordInvalid => ex
-    abort "Import failed: #{ex.message}"
+  rescue Songsterr::Error, ActiveRecord::RecordInvalid => e
+    abort "Import failed: #{e.message}"
   end
 
   desc "Fill in the Songsterr metadata of songs imported before it was recorded, without downloading their scores or audio"
@@ -25,8 +25,8 @@ namespace :songsterr do
       source.song.save!
       backfilled += 1
       puts "#{name}: #{source.revision_id ? "revision #{source.revision_id}" : 'newer revision on Songsterr'}"
-    rescue Songsterr::Error, ActiveRecord::RecordInvalid => ex
-      warn "#{name}: #{ex.message}"
+    rescue Songsterr::Error, ActiveRecord::RecordInvalid => e
+      warn "#{name}: #{e.message}"
     end
     puts "Backfilled #{backfilled} of #{sources.size} Songsterr songs"
   end

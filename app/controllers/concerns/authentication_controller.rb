@@ -31,9 +31,9 @@ module AuthenticationController
   end
 
   def authenticate_user!
-    unless current_user
-      session[:return_to] = url_for(only_path: true)
-      redirect_to :login
-    end
+    return if current_user
+
+    session[:return_to] = url_for(only_path: true)
+    redirect_to :login
   end
 end

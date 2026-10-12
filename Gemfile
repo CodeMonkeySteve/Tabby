@@ -62,8 +62,11 @@ group :test do
   gem 'rails-controller-testing'
   gem 'rspec-collection_matchers'
   gem 'rspec-rails'
-
-  # gem 'timecop'
-  gem 'webmock', require: nil
+  gem 'rubocop-factory_bot'
+  gem 'rubocop-rails'
+  gem 'rubocop-rake'
+  gem 'rubocop-rspec'
+  gem 'rubocop-rspec_rails'
   gem 'vcr'
+  gem 'webmock', require: nil
 end

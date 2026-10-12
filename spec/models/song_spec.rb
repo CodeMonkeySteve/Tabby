@@ -7,11 +7,11 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
     song = Song.create!(
       title: "Title",
       artist: "Artist",
-      score: File.open(file_fixture_path + '/Tears for Fears - Head Over Heels.gpx'),
-      audio: File.open(file_fixture_path + '/empty.mp3'),
+      score: File.open("#{file_fixture_path}/Tears for Fears - Head Over Heels.gpx"),
+      audio: File.open("#{file_fixture_path}/empty.mp3"),
       sync_points: [
-        {"barIndex":0,"barOccurence":0,"barPosition":0,"millisecondOffset":356},
-        {"barIndex":90,"barOccurence":0,"barPosition":1,"millisecondOffset":308297}
+        { barIndex: 0, barOccurence: 0, barPosition: 0, millisecondOffset: 356 },
+        { barIndex: 90, barOccurence: 0, barPosition: 1, millisecondOffset: 308297 }
       ],
     )
 
@@ -92,6 +92,7 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
     end
 
     it "rejects a score AlphaTab can't read" do
+      allow(Nodo.logger).to receive(:error)
       song = build(:song, score: unreadable_score)
       expect(song).not_to be_valid
       expect(song.errors[:score].sole).to start_with "can't be read"

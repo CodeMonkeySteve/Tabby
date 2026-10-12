@@ -66,7 +66,7 @@ class SongsterrSong < ApplicationRecord
     song.genres = tags if song.genres.empty?
   end
 
-  private
+private
 
   # The video of the song's audio, named after its YouTube video ID by the import, if it's one of the page's recording videos
   def recording_video_id_from(page)

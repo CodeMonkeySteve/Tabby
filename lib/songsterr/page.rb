@@ -18,8 +18,8 @@ module Songsterr
       state = @doc.at_css(STATE_SELECTOR)
       @metadata = state && JSON.parse(state.content).dig('meta', 'current')
       @metadata or raise Error, "No song data found on Songsterr page #{url}"
-    rescue JSON::ParserError => ex
-      raise Error, "Invalid song data on Songsterr page #{url}: #{ex.message}"
+    rescue JSON::ParserError => e
+      raise Error, "Invalid song data on Songsterr page #{url}: #{e.message}"
     end
 
     def song_id = metadata.fetch('songId')

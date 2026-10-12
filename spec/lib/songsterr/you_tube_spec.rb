@@ -4,7 +4,12 @@ require 'rails_helper'
 require 'songsterr'
 
 RSpec.describe Songsterr::YouTube do
-  around { |example| Dir.mktmpdir { |dir| @dir = dir; example.run } }
+  around do |example|
+    Dir.mktmpdir do |dir|
+      @dir = dir
+      example.run
+    end
+  end
 
   def succeed_with(filename)
     FileUtils.touch(File.join(@dir, filename))

@@ -20,6 +20,8 @@ RSpec.describe Song::Songsterr do
       Pathname(dir).join("#{video_id}.m4a").tap { FileUtils.cp(file_fixture('empty.mp3'), it) }
     end
     allow(CoverArt).to receive(:search).and_return(nil)
+    # imports log their warnings and failures (and Nodo its JavaScript errors), tested below
+    allow(Rails.logger).to receive_messages(warn: nil, error: nil)
   end
 
   it "attaches cover art when it can be found, and imports without it when it can't" do

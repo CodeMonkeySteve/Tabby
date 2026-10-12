@@ -2,8 +2,8 @@
 
 FactoryBot.define do
   factory :play_history do
-    association :user
-    association :song
+    user
+    song
     date { Date.current }
     duration { 0.0 }
   end

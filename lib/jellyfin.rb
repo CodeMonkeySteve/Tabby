@@ -5,6 +5,7 @@ module Jellyfin
 
   class Item
     attr_reader :id, :attributes
+
     delegate_missing_to :attributes
 
     def initialize(attributes = {})
@@ -14,7 +15,7 @@ module Jellyfin
 
     def get(sub_path, params = {})
       path = "/Items/#{id}"
-      path += "/#{sub_path}"  if sub_path
+      path += "/#{sub_path}" if sub_path
       Jellyfin.api.get(path, params)
     end
   end
@@ -37,4 +38,3 @@ module Jellyfin
     end
   end
 end
-

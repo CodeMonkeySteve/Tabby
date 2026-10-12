@@ -81,7 +81,7 @@ class Song::Track < Data.define(:name, :program, :percussion, :strings)
     named_type || program_type
   end
 
-  private
+private
 
   def named_type
     NAMED_TYPES.find { |_type, pattern| role_name.match?(pattern) }&.first

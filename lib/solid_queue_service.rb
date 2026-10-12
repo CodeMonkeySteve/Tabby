@@ -14,7 +14,7 @@ class SolidQueueService < Async::Service::Managed::Service
       begin
         release_abandoned_jobs
         supervisor = SolidQueue::Supervisor.start(mode: :async, standalone: false)
-      rescue StandardError
+      rescue
         sleep START_FAILURE_DELAY
         raise
       end
@@ -25,7 +25,7 @@ class SolidQueueService < Async::Service::Managed::Service
     end
   end
 
-  private
+private
 
   # Only this process runs jobs, so any Solid Queue processes still registered are gone: killed, or stopped before their worker
   # released its jobs (the supervisor and worker wait out the same shutdown timeout, and the supervisor can exit first).

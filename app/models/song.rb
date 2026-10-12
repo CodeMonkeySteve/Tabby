@@ -123,8 +123,8 @@ class Song < ApplicationRecord
     score && score_attacher.errors.empty? or return
 
     self.track_types = score_tracks.map(&:instrument_type)
-  rescue Nodo::Error, Shrine::FileNotFound => ex
-    errors.add(:score, "can't be read (#{ex.message})")
+  rescue Nodo::Error, Shrine::FileNotFound => e
+    errors.add(:score, "can't be read (#{e.message})")
   end
 
 private

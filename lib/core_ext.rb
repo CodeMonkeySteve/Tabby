@@ -4,8 +4,8 @@ module CoreExtensions
   module Possessive
     module String
       def possessive
-        str = self + "'"
-        str += 's' unless %r{(s|se|z|ze|ce|x|xe)$}i.match(self)
+        str = "#{self}'"
+        str += 's' unless /(s|se|z|ze|ce|x|xe)$/i.match(self)
         str
       end
     end
@@ -45,14 +45,17 @@ module CoreExtensions
   module ArrayInequality
     module Array
       def  <(other)
-        (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}"))  < 0
+        (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}")) < 0
       end
+
       def <=(other)
         (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}")) <= 0
       end
-      def  >(other)
-        (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}"))  > 0
+
+      def >(other)
+        (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}")) > 0
       end
+
       def >=(other)
         (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}")) >= 0
       end

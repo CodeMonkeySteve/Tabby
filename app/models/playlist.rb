@@ -34,7 +34,7 @@ class Playlist < ApplicationRecord
       else
         'array_remove(song_ids, :id)'
       end
-    self.class.where(id:).update_all([ "song_ids = #{ids}, updated_at = :now", { id: song.id, now: Time.current } ])
+    self.class.where(id:).update_all(["song_ids = #{ids}, updated_at = :now", { id: song.id, now: Time.current }])
     reload
   end
 

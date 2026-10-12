@@ -27,8 +27,8 @@ module Song::Songsterr
       log.("Converting score")
       result = begin
         AlphaTab.new.songsterr_to_gp(page.metadata, parts)
-      rescue Nodo::Error => ex
-        raise ::Songsterr::Error, "Failed to convert score: #{ex.message}"
+      rescue Nodo::Error => e
+        raise ::Songsterr::Error, "Failed to convert score: #{e.message}"
       end
       result['warnings'].each { log.("Warning: unmapped Songsterr data #{it}") }
 
@@ -57,8 +57,8 @@ module Song::Songsterr
         fetch_cover_art(song, log) unless song.cover
         song
       end
-    rescue ::Songsterr::Error => ex
-      logger.error("Songsterr import #{url} failed: #{ex.message}")
+    rescue ::Songsterr::Error => e
+      logger.error("Songsterr import #{url} failed: #{e.message}")
       raise
     end
 
@@ -76,7 +76,7 @@ module Song::Songsterr
       end.compact
     end
 
-    private
+  private
 
     # Returns the ID, sync points, and downloaded audio of the first video that has both, checking each video's sync points before
     # downloading its audio
@@ -91,9 +91,9 @@ module Song::Songsterr
         audio_path = ::Songsterr::YouTube.download_audio(video_id, dir) { log.("Warning: #{it}") }
         sync_warnings.each { log.("Warning: #{it}") }
         return [video_id, sync_points, audio_path]
-      rescue ::Songsterr::Error => ex
-        log.("Warning: Can't use YouTube video #{video_id}: #{ex.message}")
-        "#{video_id}: #{ex.message}"
+      rescue ::Songsterr::Error => e
+        log.("Warning: Can't use YouTube video #{video_id}: #{e.message}")
+        "#{video_id}: #{e.message}"
       end
 
       raise ::Songsterr::Error, "No usable recording video:\n#{failures.join("\n")}"
@@ -107,8 +107,8 @@ module Song::Songsterr
       else
         log.("Warning: No cover art found")
       end
-    rescue ::CoverArt::Error => ex
-      log.("Warning: Can't fetch cover art: #{ex.message}")
+    rescue ::CoverArt::Error => e
+      log.("Warning: Can't fetch cover art: #{e.message}")
     end
   end
 end

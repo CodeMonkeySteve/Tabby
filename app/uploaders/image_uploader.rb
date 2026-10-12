@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ImageUploader < ApplicationUploader
   ALLOWED_TYPES  = %w[image/jpeg image/png image/webp].freeze
   MAX_SIZE       = 10.megabytes
@@ -8,8 +10,6 @@ class ImageUploader < ApplicationUploader
 
   Attacher.validate do
     validate_size 0..MAX_SIZE
-    if validate_mime_type ALLOWED_TYPES
-      validate_max_dimensions MAX_DIMENSIONS
-    end
+    validate_max_dimensions MAX_DIMENSIONS if validate_mime_type ALLOWED_TYPES
   end
 end
