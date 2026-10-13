@@ -87,11 +87,14 @@ RSpec.describe UsersController do
       end
     end
 
-    xit "#logout" do
+    it "#logout" do
+      expect(session[:user]).not_to be_nil
+
       delete :logout
-      expect(controller.current_user).to be_nil
-      expect(session['user_id']).to be_nil
+
+      expect(session[:user]).to be_nil
       expect(response).to redirect_to root_url
+      expect(flash[:notice]).to eq "Logged out"
     end
   end
 end

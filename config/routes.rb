@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   # authentication
   get 'signin' => 'users#new', as: 'login'
   get 'auth/:provider/callback' => 'users#login'
-  get 'signout' => 'users#logout', as: 'logout'
+  delete 'signout' => 'users#logout', as: 'logout'
   get 'settings' => 'users#edit', as: 'settings'
   patch 'settings' => 'users#update'
   get 'dashboard' => 'users#dashboard', as: 'dashboard'

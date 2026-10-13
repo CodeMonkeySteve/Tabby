@@ -22,7 +22,7 @@
               %span.d-lg-none.me-2 Settings
               %i.bi.bi-gear
           %li.nav-item
-            %a.nav-link{href: logout_path, title: "Logout"}
+            = button_to logout_path, method: :delete, class: 'nav-link', form_class: 'd-inline', title: "Logout" do
               %span.d-lg-none.me-2 Logout
               %i.bi.bi-box-arrow-right
 
