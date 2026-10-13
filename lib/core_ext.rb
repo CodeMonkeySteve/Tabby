@@ -45,7 +45,7 @@ module CoreExtensions
   module ArrayInequality
     module Array
       def  <(other)
-        (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}")) < 0
+        (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}")).negative?
       end
 
       def <=(other)
@@ -53,7 +53,7 @@ module CoreExtensions
       end
 
       def >(other)
-        (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}")) > 0
+        (self <=> other or raise(ArgumentError, "#{inspect} < #{other.inspect}")).positive?
       end
 
       def >=(other)

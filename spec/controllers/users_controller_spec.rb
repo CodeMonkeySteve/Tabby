@@ -28,7 +28,7 @@ RSpec.describe UsersController do
       get :edit
       expect(response).to be_successful
       expect(response.body).to include 'action="/settings"'
-      page = Nokogiri::HTML(response.body)
+      page = response.parsed_body
       expect(page.css('input[name="user[instrument_types][]"][type="checkbox"]').pluck('value')).to eq User::INSTRUMENT_TYPES.map(&:to_s)
       expect(page.css('input[name="user[instrument_types][]"][checked]').pluck('value')).to eq %w[bass]
     end
@@ -64,7 +64,7 @@ RSpec.describe UsersController do
         get :dashboard
         expect(response).to be_successful
 
-        page = Nokogiri::HTML(response.body)
+        page = response.parsed_body
         expect(page.at_css('#playlists .accordion-button').text).to include "Warmups"
         expect(page.css('.activity-week')).to have(Dashboard::ACTIVITY_WEEKS).items
         expect(page.css('.activity-grid .activity-day.level-2')).to have(1).item
@@ -82,8 +82,8 @@ RSpec.describe UsersController do
         expect(response).to be_successful
 
         expect(response.body).to include "No playlists yet"
-        expect(Nokogiri::HTML(response.body).css('.practice-summary-title').map { it.text.squish }).to eq ["This week", "Today"]
-        expect(Nokogiri::HTML(response.body).at_css('a:contains("Choose your instruments")')['href']).to eq settings_path
+        expect(response.parsed_body.css('.practice-summary-title').map { it.text.squish }).to eq ["This week", "Today"]
+        expect(response.parsed_body.at_css('a:contains("Choose your instruments")')['href']).to eq settings_path
       end
     end
 

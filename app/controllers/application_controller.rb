@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
   rescue_from(ActiveRecord::RecordNotFound) do
-    raise ActionController::RoutingError.new('Not Found')
+    raise ActionController::RoutingError, 'Not Found'
   end
 
   # rescue_from(CanCan::AccessDenied) { render_access_denied, status: 401 }

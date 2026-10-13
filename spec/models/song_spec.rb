@@ -7,8 +7,8 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
     song = Song.create!(
       title: "Title",
       artist: "Artist",
-      score: File.open("#{file_fixture_path}/Tears for Fears - Head Over Heels.gpx"),
-      audio: File.open("#{file_fixture_path}/empty.mp3"),
+      score: file_fixture('Tears for Fears - Head Over Heels.gpx').open,
+      audio: file_fixture('empty.mp3').open,
       sync_points: [
         { barIndex: 0, barOccurence: 0, barPosition: 0, millisecondOffset: 356 },
         { barIndex: 90, barOccurence: 0, barPosition: 1, millisecondOffset: 308297 }
@@ -61,8 +61,8 @@ RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
 
   describe "track classification" do
     let(:unreadable_score) do
-      Shrine.upload(StringIO.new('not a score'), :cache, metadata: false).tap do
-        it.metadata.update('filename' => 'bad.gp', 'size' => 11, 'mime_type' => 'application/octet-stream')
+      Shrine.upload(StringIO.new('not a score'), :cache, metadata: false).tap do |file|
+        file.metadata.update('filename' => 'bad.gp', 'size' => 11, 'mime_type' => 'application/octet-stream')
       end
     end
 

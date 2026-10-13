@@ -9,7 +9,7 @@ module UploadedFileSpecHelper
   # end
 
   def upload_fixture(path, mime_type = 'application/octet-stream')
-    path = Rails.root.join('spec', 'fixtures', path)
+    path = Pathname(RSpec.configuration.file_fixture_path).join(path)
     file = path.open(binmode: true)
     Shrine.upload(file, :cache, metadata: false).tap do |uploaded_file|
       uploaded_file.metadata.update(

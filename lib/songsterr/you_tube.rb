@@ -20,7 +20,7 @@ module Songsterr
 
     # Returns the Pathname of the downloaded audio file, in whatever format YouTube served it.  Yields a message before each retry.
     def download_audio(video_id, dir)
-      on_retry = lambda do |_exception, try, _elapsed_time, next_interval|
+      on_retry = ->(_exception, try, _elapsed_time, next_interval) do
         next unless next_interval # gave up
 
         if block_given?

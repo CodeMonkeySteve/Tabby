@@ -13,7 +13,7 @@ RSpec.describe Playlist, vcr: { cassette_name: 'Jellyfin' } do
     expect(playlist.song_ids).to eq songs.map(&:id)
     expect(playlist.ordered_songs).to eq songs
 
-    playlist.include_song!(songs.second, false)
+    playlist.include_song!(songs.second, included: false)
     expect(playlist.ordered_songs).to eq [songs.first, songs.third]
   end
 

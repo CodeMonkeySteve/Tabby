@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 require 'etc'
 require 'shellwords'
 require 'tmpdir'
@@ -15,7 +16,7 @@ module Build
   # Short version tag (the first 8 characters of the commit SHA) for a git commit, branch, or tag
   def version_tag(commit)
     sha = `git rev-parse --verify --quiet #{"#{commit}^{commit}".shellescape}`.strip
-    $?.success? or abort "Unknown git commit, branch, or tag: #{commit}"
+    $CHILD_STATUS.success? or abort "Unknown git commit, branch, or tag: #{commit}"
     sha[0, 8]
   end
 
@@ -29,7 +30,7 @@ module Build
 end
 
 desc "Build the Docker image for a git commit, branch, or tag (default: main)"
-task :build, [:commit] do |_task, args|
+task :build, [:commit] => :environment do |_task, args|
   commit = args[:commit] || 'main'
   tag = Build.version_tag(commit)
   jobs = (Etc.nprocessors - 1).clamp(1..)

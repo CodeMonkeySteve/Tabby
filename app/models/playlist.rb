@@ -27,7 +27,7 @@ class Playlist < ApplicationRecord
   end
 
   # Atomically adds or removes a song, without disturbing concurrent changes to the rest of the playlist
-  def include_song!(song, included = true)
+  def include_song!(song, included: true)
     ids =
       if included
         'CASE WHEN :id = ANY(song_ids) THEN song_ids ELSE array_append(song_ids, :id) END'
@@ -41,7 +41,7 @@ class Playlist < ApplicationRecord
   # The songs before and after the given one, either of which is nil at the ends (or both, if it isn't in the playlist)
   def neighbors_of(song)
     index = song_ids.index(song.id) or return [nil, nil]
-    previous_id = song_ids[index - 1] if index > 0
+    previous_id = song_ids[index - 1] if index.positive?
     next_id = song_ids[index + 1]
     neighbors = Song.where(id: [previous_id, next_id].compact).index_by(&:id)
     neighbors.values_at(previous_id, next_id)

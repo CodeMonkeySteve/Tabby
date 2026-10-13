@@ -132,7 +132,7 @@ class SongsController < ApplicationController
     if params[:new_playlist_name].present?
       Playlist.create!(name: params[:new_playlist_name], user: Current.user, songs: [@song])
     else
-      Current.user.playlists.find(params.expect(:playlist)).include_song!(@song, params.expect(:checked).to_bool)
+      Current.user.playlists.find(params.expect(:playlist)).include_song!(@song, included: params.expect(:checked).to_bool)
     end
 
     playlists = Current.user.playlists.order(:name)
@@ -152,7 +152,7 @@ private
   # Finds the song by its current or an old slug, or its ID, redirecting pages to its current URL
   def find_song
     @song = Song.friendly.find(params.expect(:id))
-    if request.get? && params[:id] != @song.to_param
+    if request.get? && (params[:id] != @song.to_param)
       redirect_to url_for(id: @song, params: request.query_parameters), status: :moved_permanently
     end
   end

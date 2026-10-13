@@ -4,104 +4,104 @@ require 'rails_helper'
 require 'alpha_tab'
 require 'songsterr'
 
+# Reads back the effects the converter maps, from an exported Guitar Pro file
+class AlphaTabInspector < AlphaTab
+  function :effects, <<~JS
+    async (base64) => {
+      const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+      const staff = score.tracks[0].staves[0];
+      const beats = staff.bars.flatMap((bar) => bar.voices[0].beats);
+      const note = (index) => beats[index].notes[0];
+      return {
+        tripletFeels: score.masterBars.map((bar) => bar.tripletFeel),
+        repeatCounts: score.masterBars.map((bar) => bar.repeatCount),
+        keySignatures: staff.bars.map((bar) => [bar.keySignature, bar.keySignatureType]),
+        ghost: note(0).isGhost,
+        letRing: note(0).isLetRing,
+        harmonics: beats[1].notes.map((note) => [note.harmonicType, note.harmonicValue]),
+        noteVibrato: note(2).vibrato,
+        beatVibrato: [beats[2].vibrato, beats[3].vibrato],
+        chord: staff.chords?.get(beats[0].chordId)?.name ?? null,
+        ...(() => {
+          const bar = staff.bars[2];
+          const [grace, accented, whammy, slide] = bar?.voices[0].beats ?? [];
+          if (!bar) return {};
+          return {
+            grace: grace.graceType,
+            accent: accented.notes[0].accentuated,
+            leftHandVibrato: accented.notes[0].vibrato,
+            text: accented.text,
+            crescendo: accented.crescendo,
+            whammy: [whammy.hasWhammyBar, whammy.minWhammyPoint?.value],
+            slideIn: slide.notes[0].slideInType,
+            barLineRight: bar.barLineRight,
+          };
+        })(),
+        logLevel: alphaTab.Logger.logLevel,
+      };
+    }
+  JS
+
+  function :version5, <<~JS
+    async (base64) => {
+      const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+      const beats = score.tracks[0].staves[0].bars[0].voices[0].beats;
+      return {
+        tempos: score.masterBars.map((bar) => bar.tempoAutomations.map((automation) => automation.value)),
+        beats: beats.map((beat) => ({
+          dots: beat.dots, dynamics: beat.dynamics, vibrato: beat.notes[0]?.vibrato ?? null,
+          harmonic: beat.notes[0]?.harmonicType ?? null, harmonicValue: beat.notes[0]?.harmonicValue ?? null,
+          fade: beat.fade, accent: beat.notes[0]?.accentuated ?? null,
+          slideOut: beat.notes[0]?.slideOutType ?? null, tremoloMarks: beat.tremoloPicking?.marks ?? null,
+          grace: beat.graceType, pickStroke: beat.pickStroke,
+        })),
+      };
+    }
+  JS
+
+  function :voices, <<~JS
+    async (base64) => {
+      const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+      return score.tracks[0].staves[0].bars.map((bar) => bar.voices.map((voice) => voice.isEmpty ? 'empty' : voice.beats.length));
+    }
+  JS
+
+  function :techniques, <<~JS
+    async (base64) => {
+      const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+      return score.tracks[0].staves[0].bars[0].voices[0].beats.map((beat) => ({
+        slap: beat.slap, pop: beat.pop, tap: beat.tap, brush: [beat.brushType, beat.brushDuration], pickStroke: beat.pickStroke,
+        rasgueado: beat.rasgueado, tremoloMarks: beat.tremoloPicking?.marks ?? null, vibrato: beat.notes[0].vibrato,
+        trillFret: beat.notes[0].isTrill ? beat.notes[0].trillFret : null,
+        slide: [beat.notes[0].slideInType, beat.notes[0].slideOutType],
+      }));
+    }
+  JS
+
+  function :fermatas, <<~JS
+    async (base64) => {
+      const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+      return score.masterBars.map((bar) =>
+        [...(bar.fermata ?? [])].map(([offset, fermata]) => [offset, fermata.type, fermata.length]));
+    }
+  JS
+
+  function :clefs, <<~JS
+    async (base64) => {
+      const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+      return score.tracks.map((track) => track.staves[0].bars.map((bar) => bar.clef));
+    }
+  JS
+
+  function :accidental_modes, <<~JS
+    async (base64) => {
+      const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
+      return score.tracks[0].staves[0].bars[0].voices[0].beats.map((beat) => beat.notes[0].accidentalMode);
+    }
+  JS
+end
+
 RSpec.describe AlphaTab do
-  # Reads back the effects the converter maps, from an exported Guitar Pro file
-  class AlphaTabInspector < AlphaTab
-    function :effects, <<~JS
-      async (base64) => {
-        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
-        const staff = score.tracks[0].staves[0];
-        const beats = staff.bars.flatMap((bar) => bar.voices[0].beats);
-        const note = (index) => beats[index].notes[0];
-        return {
-          tripletFeels: score.masterBars.map((bar) => bar.tripletFeel),
-          repeatCounts: score.masterBars.map((bar) => bar.repeatCount),
-          keySignatures: staff.bars.map((bar) => [bar.keySignature, bar.keySignatureType]),
-          ghost: note(0).isGhost,
-          letRing: note(0).isLetRing,
-          harmonics: beats[1].notes.map((note) => [note.harmonicType, note.harmonicValue]),
-          noteVibrato: note(2).vibrato,
-          beatVibrato: [beats[2].vibrato, beats[3].vibrato],
-          chord: staff.chords?.get(beats[0].chordId)?.name ?? null,
-          ...(() => {
-            const bar = staff.bars[2];
-            const [grace, accented, whammy, slide] = bar?.voices[0].beats ?? [];
-            if (!bar) return {};
-            return {
-              grace: grace.graceType,
-              accent: accented.notes[0].accentuated,
-              leftHandVibrato: accented.notes[0].vibrato,
-              text: accented.text,
-              crescendo: accented.crescendo,
-              whammy: [whammy.hasWhammyBar, whammy.minWhammyPoint?.value],
-              slideIn: slide.notes[0].slideInType,
-              barLineRight: bar.barLineRight,
-            };
-          })(),
-          logLevel: alphaTab.Logger.logLevel,
-        };
-      }
-    JS
-
-    function :version5, <<~JS
-      async (base64) => {
-        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
-        const beats = score.tracks[0].staves[0].bars[0].voices[0].beats;
-        return {
-          tempos: score.masterBars.map((bar) => bar.tempoAutomations.map((automation) => automation.value)),
-          beats: beats.map((beat) => ({
-            dots: beat.dots, dynamics: beat.dynamics, vibrato: beat.notes[0]?.vibrato ?? null,
-            harmonic: beat.notes[0]?.harmonicType ?? null, harmonicValue: beat.notes[0]?.harmonicValue ?? null,
-            fade: beat.fade, accent: beat.notes[0]?.accentuated ?? null,
-            slideOut: beat.notes[0]?.slideOutType ?? null, tremoloMarks: beat.tremoloPicking?.marks ?? null,
-            grace: beat.graceType, pickStroke: beat.pickStroke,
-          })),
-        };
-      }
-    JS
-
-    function :voices, <<~JS
-      async (base64) => {
-        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
-        return score.tracks[0].staves[0].bars.map((bar) => bar.voices.map((voice) => voice.isEmpty ? 'empty' : voice.beats.length));
-      }
-    JS
-
-    function :techniques, <<~JS
-      async (base64) => {
-        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
-        return score.tracks[0].staves[0].bars[0].voices[0].beats.map((beat) => ({
-          slap: beat.slap, pop: beat.pop, tap: beat.tap, brush: [beat.brushType, beat.brushDuration], pickStroke: beat.pickStroke,
-          rasgueado: beat.rasgueado, tremoloMarks: beat.tremoloPicking?.marks ?? null, vibrato: beat.notes[0].vibrato,
-          trillFret: beat.notes[0].isTrill ? beat.notes[0].trillFret : null,
-          slide: [beat.notes[0].slideInType, beat.notes[0].slideOutType],
-        }));
-      }
-    JS
-
-    function :fermatas, <<~JS
-      async (base64) => {
-        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
-        return score.masterBars.map((bar) =>
-          [...(bar.fermata ?? [])].map(([offset, fermata]) => [offset, fermata.type, fermata.length]));
-      }
-    JS
-
-    function :clefs, <<~JS
-      async (base64) => {
-        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
-        return score.tracks.map((track) => track.staves[0].bars.map((bar) => bar.clef));
-      }
-    JS
-
-    function :accidental_modes, <<~JS
-      async (base64) => {
-        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
-        return score.tracks[0].staves[0].bars[0].voices[0].beats.map((beat) => beat.notes[0].accidentalMode);
-      }
-    JS
-  end
-
   let(:alpha_tab) { described_class.new }
   let(:page) { Songsterr::Page.new(file_fixture('songsterr/page.html').read) }
   let(:parts) { (0..2).map { JSON.parse(Zlib.gunzip(file_fixture("songsterr/#{it}.json.gz").binread)) } }
@@ -168,7 +168,7 @@ RSpec.describe AlphaTab do
 
     it "spells notes as Songsterr does, warning about spellings that don't match the note's pitch" do
       # spn is [step (C = 0), accidental, octave]; the high E string's frets 4 and 3 are G♯4/A♭4 and G4
-      spelled = lambda do |fret, spn|
+      spelled = ->(fret, spn) do
         { 'type' => 4, 'duration' => [1, 4], 'notes' => [{ 'fret' => fret, 'string' => 0, 'spn' => spn }] }
       end
       part = {

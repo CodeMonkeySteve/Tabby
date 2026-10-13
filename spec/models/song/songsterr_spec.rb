@@ -142,7 +142,7 @@ RSpec.describe Song::Songsterr do
 
     it "falls back to an alternative recording video, with its own sync points" do
       allow(Songsterr::YouTube).to receive(:download_audio).with('K1NcoxzNgbM', anything)
-        .and_raise(Songsterr::Error, "ERROR: [youtube] K1NcoxzNgbM: Video unavailable")
+                                     .and_raise(Songsterr::Error, "ERROR: [youtube] K1NcoxzNgbM: Video unavailable")
       messages = []
       song = Song.from_songsterr(url) { messages << it }
 

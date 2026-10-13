@@ -20,11 +20,13 @@ class Song < ApplicationRecord
     :other      # harmonica, sitar, theramin, etc. (only on Song)
   ].freeze
 
+  SCORE_NOTE_SETTINGS = %i[range_start_tick range_end_tick tracks muted_tracks solo_tracks track_volumes track_tunings].freeze
+
   # replaced by SongsterrSong, until it's dropped
   self.ignored_columns += %w[songsterr_id]
 
   # The instrument type of each score track, in track order (so not a torque-postgresql EnumSet, which is unordered and unique)
-  attribute :track_types, :string, array: true, default: []
+  attribute :track_types, :string, array: true, default: ->{ [] }
 
   validates :title, presence: true
   validates :score_data, presence: true
@@ -35,13 +37,13 @@ class Song < ApplicationRecord
   # only needed by the player
   passive_columns :sync_points
 
-  has_many :play_histories
-  has_one :songsterr_song, autosave: true
-  has_many :notes, class_name: 'SongNote'
+  has_many :play_histories, dependent: nil
+  has_many :notes, class_name: 'SongNote', dependent: nil
+  has_many :alternate_tabs, dependent: nil
+  has_one  :songsterr_song, autosave: true, dependent: nil
 
   # The current user's note, e.g. `song.note || song.build_note`
-  has_one :note, -> { where(user: Current.user) }, class_name: 'SongNote'
-  has_many :alternate_tabs
+  has_one :note, ->{ where(user: Current.user) }, class_name: 'SongNote', inverse_of: :song, dependent: nil
 
   # Songs whose title or artist contains each word of the query (or all songs, for a blank query)
   scope :search, ->(query) do
@@ -54,13 +56,14 @@ class Song < ApplicationRecord
   # Songs sorted by 'artist', 'newest' (added), or 'played' (most recently by the user), or by title for any other sort
   scope :sorted, ->(sort, user: Current.user) do
     case sort
-    when 'artist' then order(:artist, :title)
-    when 'newest' then order(created_at: :desc)
-    when 'played'
-      last_played = PlayHistory.where(user:).group(:song_id).select(:song_id, 'MAX(date) AS last_played_on')
-      joins("LEFT JOIN (#{last_played.to_sql}) plays ON plays.song_id = songs.id")
-        .order(Arel.sql('plays.last_played_on DESC NULLS LAST'), :title, :artist)
-    else order(:title, :artist)
+      when 'artist' then order(:artist, :title)
+      when 'newest' then order(created_at: :desc)
+      when 'played'
+        last_played = PlayHistory.where(user:).group(:song_id).select(:song_id, 'MAX(date) AS last_played_on')
+        joins("LEFT JOIN (#{last_played.to_sql}) plays ON plays.song_id = songs.id")
+          .order(Arel.sql('plays.last_played_on DESC NULLS LAST'), :title, :artist)
+      else
+        order(:title, :artist)
     end
   end
 
@@ -74,7 +77,7 @@ class Song < ApplicationRecord
   include ImageUploader::Attachment(:cover)
 
   # (Re)classify the tracks of a new score, unless their types were given with it
-  before_validation :classify_tracks, if: -> { will_save_change_to_score_data? && !will_save_change_to_track_types? }
+  before_validation :classify_tracks, if: ->{ will_save_change_to_score_data? && !will_save_change_to_track_types? }
 
   # Saved playback ranges (score ticks) and track settings (by score track index) may not fit a new score
   after_update :clear_note_score_settings, if: :saved_change_to_score_data?
@@ -120,16 +123,14 @@ class Song < ApplicationRecord
 
   # Sets the instrument type of each score track (see Song::Track), or adds an error if the score is missing or unreadable
   def classify_tracks
-    score && score_attacher.errors.empty? or return
-
+    (score && score_attacher.errors.empty?) or return
     self.track_types = score_tracks.map(&:instrument_type)
+
   rescue Nodo::Error, Shrine::FileNotFound => e
     errors.add(:score, "can't be read (#{e.message})")
   end
 
 private
-
-  SCORE_NOTE_SETTINGS = %i[range_start_tick range_end_tick tracks muted_tracks solo_tracks track_volumes track_tunings].freeze
 
   # Clears the saved ranges and track settings, which are specific to the old score
   def clear_note_score_settings

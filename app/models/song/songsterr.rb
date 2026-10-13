@@ -12,7 +12,7 @@ module Song::Songsterr
     # messages, which are also logged.  Raises Songsterr::Error, leaving the database untouched, if the score or a usable recording
     # can't be imported.
     def from_songsterr(url, &block)
-      log = lambda do |message|
+      log = ->(message) do
         logger.public_send(message.start_with?('Warning:') ? :warn : :info, "Songsterr import #{url}: #{message}")
         block&.call(message)
       end
@@ -67,8 +67,8 @@ module Song::Songsterr
     def for_songsterr_matches(matches)
       songs = left_joins(:songsterr_song).preload(:songsterr_song)
       songs = songs.where(songsterr_song: { id: matches.map(&:song_id) })
-        .or(songs.where('LOWER(title) IN (?)', matches.map { it.title.downcase }))
-        .to_a
+                .or(songs.where('LOWER(title) IN (?)', matches.map { it.title.downcase }))
+                .to_a
       matches.to_h do |match|
         song = songs.find { it.songsterr_song&.id == match.song_id } ||
                songs.find { it.title.casecmp?(match.title) && it.artist.to_s.casecmp?(match.artist) }

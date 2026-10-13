@@ -14,7 +14,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       create(:song, title: "Hysteria", artist: "Muse", track_types: %w[bass])
     end
 
-    def titles = Nokogiri::HTML(response.body).css('.song .card-title').map(&:text)
+    def titles = response.parsed_body.css('.song .card-title').map(&:text)
 
     it "shows songs matching the search" do
       get :index, params: { q: 'tool' }
@@ -22,7 +22,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       expect(titles).to eq ["Schism"]
       expect(response.body).to include 'value="tool"'
       # Enter submits with the form's first button, which searches Songsterr instead
-      submit = Nokogiri::HTML(response.body).at_css('form[role=search] [type=submit]')
+      submit = response.parsed_body.at_css('form[role=search] [type=submit]')
       expect(submit['formaction']).to eq songsterr_search_songs_path
     end
 
@@ -30,7 +30,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       request.headers['Turbo-Frame'] = 'songs'
       get :index, params: { q: 'muse' }
       expect(titles).to eq ["Hysteria"]
-      expect(Nokogiri::HTML(response.body).at_css('.song-count').text).to eq "1 song"
+      expect(response.parsed_body.at_css('.song-count').text).to eq "1 song"
       expect(response.body).to include '<turbo-frame id="songs" target="_top">'
       expect(response.body).not_to include 'navbar' # turbo-rails' minimal frame layout, not the application layout
     end
@@ -43,30 +43,30 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       get :index
 
       # listed by title, with checkbox IDs unique to each song's menu
-      checkboxes = Nokogiri::HTML(response.body).css('.song .dropdown-menu input[type=checkbox]')
+      checkboxes = response.parsed_body.css('.song .dropdown-menu input[type=checkbox]')
       expect(checkboxes.map { it.next_element.text }).to eq %w[Practice Practice]
-      expect(checkboxes.map { it['checked'] }).to eq [nil, 'checked']
-      expect(checkboxes.map { it['id'] }).to eq ["playlist_#{hysteria.id}_#{practice.id}", "playlist_#{schism.id}_#{practice.id}"]
+      expect(checkboxes.pluck('checked')).to eq [nil, 'checked']
+      expect(checkboxes.pluck('id')).to eq ["playlist_#{hysteria.id}_#{practice.id}", "playlist_#{schism.id}_#{practice.id}"]
       # in the success color for songs already in a playlist
       # in the success color for songs already in a playlist, and with each icon and menu marked with its song, for updating its
       # other copies on the page
-      icons = Nokogiri::HTML(response.body).css('.song .playlist-icon')
+      icons = response.parsed_body.css('.song .playlist-icon')
       expect(icons.map { it['class'].split.include?('in-playlist') }).to eq [false, true]
-      expect(icons.map { it['data-song'] }).to eq [hysteria.id, schism.id]
-      forms = Nokogiri::HTML(response.body).css('.song .dropdown-menu form')
-      expect(forms.map { it['data-playlist-menu-song-value'] }).to eq [hysteria.id, schism.id]
+      expect(icons.pluck('data-song')).to eq [hysteria.id, schism.id]
+      forms = response.parsed_body.css('.song .dropdown-menu form')
+      expect(forms.pluck('data-playlist-menu-song-value')).to eq [hysteria.id, schism.id]
     end
 
     it "sorts the songs, keeping the selected sort" do
       Song.find_by(title: "Schism").update!(created_at: 1.hour.from_now)
       get :index, params: { sort: 'newest' }
       expect(titles).to eq %w[Schism Hysteria]
-      expect(Nokogiri::HTML(response.body).at_css('select[name=sort] option[selected]')['value']).to eq 'newest'
+      expect(response.parsed_body.at_css('select[name=sort] option[selected]')['value']).to eq 'newest'
 
       get :index
       expect(titles).to eq %w[Hysteria Schism]
-      expect(Nokogiri::HTML(response.body).at_css('.song-count').text).to eq "2 songs"
-      expect(Nokogiri::HTML(response.body).at_css('select[name=sort] option[selected]')).to be_nil
+      expect(response.parsed_body.at_css('.song-count').text).to eq "2 songs"
+      expect(response.parsed_body.at_css('select[name=sort] option[selected]')).to be_nil
     end
 
     it "says when nothing matches" do
@@ -76,13 +76,13 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
 
     it "offers a Songsterr search for any search, with or without local results" do
       get :index, params: { q: 'nothing' }
-      button = Nokogiri::HTML(response.body).at_css('a.songsterr-search')
+      button = response.parsed_body.at_css('a.songsterr-search')
       expect(button['href']).to eq '/s/songsterr_search?q=nothing'
       expect(button['data-turbo-frame']).to eq 'songs'
 
       get :index, params: { q: 'tool' }
       expect(titles).to be_present
-      expect(Nokogiri::HTML(response.body).at_css('a.songsterr-search')['href']).to eq '/s/songsterr_search?q=tool'
+      expect(response.parsed_body.at_css('a.songsterr-search')['href']).to eq '/s/songsterr_search?q=tool'
       get :index
       expect(response.body).not_to include 'songsterr-search'
     end
@@ -90,8 +90,8 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
 
   describe "#songsterr_search" do
     let(:results) do
-      JSON.parse(file_fixture('songsterr/search.json').read).reject { it['isJunk'] }.map do
-        Songsterr::Result.new(song_id: it['songId'], artist: it['artist'], title: it['title'], tracks: it['tracks'])
+      JSON.parse(file_fixture('songsterr/search.json').read).reject { it['isJunk'] }.map do |result|
+        Songsterr::Result.new(song_id: result['songId'], artist: result['artist'], title: result['title'], tracks: result['tracks'])
       end
     end
 
@@ -101,7 +101,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       allow(Songsterr::Search).to receive(:call).with("head over heels").and_return(results)
       get :songsterr_search, params: { q: "head over heels" }
 
-      doc = Nokogiri::HTML(response.body)
+      doc = response.parsed_body
       cards = doc.css('turbo-frame .songsterr.card')
       expect(cards.map { it.at_css('.card-title').text }).to eq ["Head Over Heels", "Head Over Heels"]
       expect(cards.first.css('.badge.text-bg-secondary').map(&:text)).to eq %w[drums bass guitar keys vocals]
@@ -111,7 +111,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
         .to eq 'https://www.songsterr.com/a/wsa/tears-for-fears-head-over-heels-tab-s20361t1' # the user's main instrument, guitar
       expect(tff.at_css('form[action="/s/songsterr_import"] button').text).to include "Import"
       expect(tff.at_css('input[name=song_id]')['value']).to eq '20361'
-      expect(tff.css('input[name="track_types[]"]').map { it['value'] }).to eq %w[vocals guitar bass keys drums]
+      expect(tff.css('input[name="track_types[]"]').pluck('value')).to eq %w[vocals guitar bass keys drums]
 
       accept = doc.at_css('turbo-frame#songsterr_1041')
       expect(accept.at_css('form[action="/s/songsterr_import"]')).to be_nil
@@ -124,7 +124,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       allow(Songsterr::Search).to receive(:call).and_return(results)
       get :songsterr_search, params: { q: "head over heels" }
 
-      tff = Nokogiri::HTML(response.body).at_css('turbo-frame#songsterr_20361')
+      tff = response.parsed_body.at_css('turbo-frame#songsterr_20361')
       expect(tff.at_css('form[action="/s/songsterr_import"]')).to be_nil
       expect(tff.at_css("a[href='#{player_path(manual)}']")).to be_present
     end
@@ -141,7 +141,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       allow(Songsterr::Search).to receive(:call).and_raise(Songsterr::Error, "Failed to fetch")
       get :songsterr_search, params: { q: "x" }
       expect(response).to be_successful
-      expect(Nokogiri::HTML(response.body).at_css('.alert-danger').text).to include "Can't search Songsterr: Failed to fetch"
+      expect(response.parsed_body.at_css('.alert-danger').text).to include "Can't search Songsterr: Failed to fetch"
     end
 
     it "goes back to the song search without a query" do
@@ -165,7 +165,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
           .to have_enqueued_job(SongsterrImportJob).with(user, match.to_h).at(SongsterrImportJob::START_DELAY.from_now)
       end
 
-      frame = Nokogiri::HTML(response.body).at_css('turbo-frame#songsterr_20361')
+      frame = response.parsed_body.at_css('turbo-frame#songsterr_20361')
       expect(frame.text).to include "Importing…"
       expect(frame.at_css('turbo-cable-stream-source')).to be_present
       expect(frame.at_css('ul#songsterr_20361_log')).to be_present
@@ -188,11 +188,11 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
     expect(response).to be_successful
 
     # parsed as a browser does, which merges a nested form's fields (like its `_method`) into the outer form
-    doc = Nokogiri::HTML5(response.body)
+    doc = response.parsed_body
     edit_form = doc.at_css("form[action=\"#{song_path(song)}\"]:not(#delete_song)")
     delete_form = doc.at_css('form#delete_song')
-    expect(edit_form.css('input[name=_method]').map { it['value'] }).to eq %w[patch]
-    expect(delete_form.css('input[name=_method]').map { it['value'] }).to eq %w[delete]
+    expect(edit_form.css('input[name=_method]').pluck('value')).to eq %w[patch]
+    expect(delete_form.css('input[name=_method]').pluck('value')).to eq %w[delete]
     expect(doc.at_css('button[form=delete_song]').text.squish).to eq "Delete"
   end
 
@@ -208,7 +208,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
     it "shows each track's instrument, noting overrides" do
       song.update!(track_types: %w[keys])
       get :edit, params: { id: song }
-      row = Nokogiri::HTML(response.body).at_css('table[aria-labelledby="tracks-label"] tr')
+      row = response.parsed_body.at_css('table[aria-labelledby="tracks-label"] tr')
       expect(row.at_css('td').text).to eq "Electric Bass"
       expect(row.at_css('select[name="song[track_types][]"] option[selected]')['value']).to eq 'keys'
       expect(row.text).to include "Detected as Bass"
@@ -263,13 +263,13 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
   it "redisplays the edit form for the saved slug when changing the title fails" do
     patch :update, params: { id: song, song: { title: '', artist: "Sigur Rós" } }
     expect(response).to have_http_status :unprocessable_content
-    expect(Nokogiri::HTML(response.body).at_css("form[action=\"#{song_path(song)}\"]")).to be_present
+    expect(response.parsed_body.at_css("form[action=\"#{song_path(song)}\"]")).to be_present
   end
 
   it "returns to the page that linked to the edit page after saving, but only on this site" do
     request.env['HTTP_REFERER'] = player_url(song)
     get :edit, params: { id: song }
-    expect(Nokogiri::HTML(response.body).at_css('input[name="return_to"]')['value']).to eq player_url(song)
+    expect(response.parsed_body.at_css('input[name="return_to"]')['value']).to eq player_url(song)
 
     patch :update, params: { id: song, song: { title: "New title" }, return_to: player_url(song) }
     expect(response).to redirect_to player_url(song)
@@ -297,7 +297,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       expect(response.body).to include 'value="Shout"'
       expect(song.reload).to have_attributes(title: "Head Over Heels", cover: nil)
 
-      cover_data = Nokogiri::HTML(response.body).at_css('input[type=hidden][name="song[cover]"]')['value']
+      cover_data = response.parsed_body.at_css('input[type=hidden][name="song[cover]"]')['value']
       patch :update, params: { id: song, song: { title: "Shout", cover: cover_data } }
       expect(song.reload.cover).to have_attributes(original_filename: "Tears for Fears - Songs from the Big Chair.jpg")
     end
@@ -305,7 +305,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
     it "accepts the edit form's CSRF token from each of its buttons, which submit it to different actions" do
       ActionController::Base.allow_forgery_protection = true
       get :edit, params: { id: song }
-      token = Nokogiri::HTML5(response.body).at_css("form[action=\"#{song_path(song)}\"] input[name=authenticity_token]")['value']
+      token = response.parsed_body.at_css("form[action=\"#{song_path(song)}\"] input[name=authenticity_token]")['value']
       allow(CoverArt).to receive(:search).and_return(nil)
 
       statuses = %i[find_cover remove_cover update].map do |action|
@@ -330,10 +330,10 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
     it "deletes the cover when the form is saved, unless it's replaced" do
       song.update!(cover:)
       get :edit, params: { id: song }
-      expect(Nokogiri::HTML(response.body).css('button[formaction]').map(&:text).map(&:squish)).to eq ["Find Cover", "Delete Cover"]
+      expect(response.parsed_body.css('button[formaction]').map(&:text).map(&:squish)).to eq ["Find Cover", "Delete Cover"]
 
       patch :remove_cover, params: { id: song, song: { title: song.title } }
-      expect(Nokogiri::HTML(response.body).at_css('input[name="song[remove_cover]"]')['value']).to eq 'true'
+      expect(response.parsed_body.at_css('input[name="song[remove_cover]"]')['value']).to eq 'true'
       expect(response.body).not_to include 'Delete Cover'
       expect(song.reload.cover).to be_present
 
@@ -357,7 +357,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
     let(:song) { create(:song, track_types: %w[guitar bass drums]) }
 
     def player_song
-      JSON.parse(Nokogiri::HTML(response.body).at_css('[data-controller="player"]')['data-player-song-value'])
+      JSON.parse(response.parsed_body.at_css('[data-controller="player"]')['data-player-song-value'])
     end
 
     it "shows the tracks of the user's instruments" do
@@ -387,10 +387,10 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
 
     it "offers the synthesizer instead of the audio only for a song with audio" do
       get :player, params: { id: create(:song, :with_audio) }
-      expect(Nokogiri::HTML(response.body).at_css('.at-synth[data-action="player#toggleSynth"]')).to be_present
+      expect(response.parsed_body.at_css('.at-synth[data-action="player#toggleSynth"]')).to be_present
 
       get :player, params: { id: song }
-      expect(Nokogiri::HTML(response.body).at_css('.at-synth')).to be_nil
+      expect(response.parsed_body.at_css('.at-synth')).to be_nil
     end
 
     it "shows the default track when the user's instruments aren't in the song" do
@@ -403,7 +403,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
       let(:songs) { %w[One Two Three].map { create(:song, title: it) } }
       let(:playlist) { create(:playlist, user:, name: "Practice", songs:) }
 
-      def page = Nokogiri::HTML(response.body)
+      def page = response.parsed_body
       def previous_url = page.at_css('[data-controller="player"]')['data-player-previous-url-value']
       def next_link = page.at_css('.at-skip-forward')
 

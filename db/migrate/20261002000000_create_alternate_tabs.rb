@@ -3,7 +3,7 @@ class CreateAlternateTabs < ActiveRecord::Migration[8.1]
     # the foreign keys only briefly block writes to users and songs, since the table is new (and so empty)
     safety_assured do
       # a user's own fingering of a score track, in a tuning
-      create_table :alternate_tabs, id: :uuid, default: -> { 'uuidv7()' } do |t|
+      create_table :alternate_tabs, id: :uuid, default: ->{ 'uuidv7()' } do |t|
         t.references :user, type: :uuid, null: false, foreign_key: { on_delete: :cascade }, index: false
         t.references :song, type: :uuid, null: false, foreign_key: { on_delete: :cascade }
         t.integer :track_index, null: false # score track index

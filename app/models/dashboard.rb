@@ -14,7 +14,6 @@ class Dashboard
   Day = Data.define(:date, :seconds) do
     def level
       return 0 unless seconds.positive?
-
       1 + ACTIVITY_LEVEL_MINUTES.count { seconds >= it.minutes }
     end
   end
@@ -45,9 +44,9 @@ class Dashboard
   def recent_plays
     @recent_plays ||= begin
       rows = user.play_histories.group(:song_id)
-        .order(Arel.sql('MAX(date) DESC, SUM(duration) DESC'))
-        .limit(RECENT_LIMIT)
-        .pluck(:song_id, Arel.sql('MAX(date)'), Arel.sql('SUM(duration)'))
+               .order(Arel.sql('MAX(date) DESC, SUM(duration) DESC'))
+               .limit(RECENT_LIMIT)
+               .pluck(:song_id, Arel.sql('MAX(date)'), Arel.sql('SUM(duration)'))
       songs = Song.where(id: rows.map(&:first)).index_by(&:id)
       rows.filter_map { |song_id, date, seconds| RecentPlay.new(songs[song_id], date, seconds) if songs[song_id] }
     end

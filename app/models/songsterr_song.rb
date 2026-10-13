@@ -18,7 +18,7 @@ class SongsterrSong < ApplicationRecord
   belongs_to :song
 
   # Songs imported before their data was recorded
-  scope :without_data, -> { where(data: {}) }
+  scope :without_data, ->{ where(data: {}) }
 
   # Builds the data from a Songsterr page, its tracks' parts, and the video used for the recording
   def self.data_from(page, parts, recording_video_id)

@@ -33,7 +33,7 @@ RSpec.describe SongsterrSong do
 
     before do
       allow(Songsterr::Page).to receive(:fetch).with('https://www.songsterr.com/a/wsa/pearl-jam-w-m-a-tab-s2687597')
-        .and_return(page)
+                                  .and_return(page)
       (0..2).each do |part_id|
         stub_request(:get, format(track_url, part_id)).to_return(body: file_fixture("songsterr/#{part_id}.json.gz").binread)
       end

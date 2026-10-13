@@ -60,7 +60,7 @@ RSpec.describe CoverArt do
       expect { match }.to raise_error(CoverArt::Error, "Deezer search failed: Quota limit exceeded")
 
       stub_request(:get, CoverArt::Deezer::SEARCH_URL).with(query: hash_including({})).to_timeout
-      expect { match }.to raise_error(CoverArt::Error, /Failed to fetch/)
+      expect { described_class.search(artist: "Tears for Fears", title: "Head Over Heels") }.to raise_error(CoverArt::Error, /Failed to fetch/)
     end
   end
 

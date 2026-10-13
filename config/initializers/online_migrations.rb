@@ -84,12 +84,12 @@ OnlineMigrations.configure do |config|
 
   # Decide whether background data and schema migrations should be run inline.
   # Convenient for development and test environments.
-  config.run_background_migrations_inline = -> { Rails.env.local? }
+  config.run_background_migrations_inline = ->{ Rails.env.local? }
 
   # Configure custom throttler for background data and schema migrations.
   # It will be called before each run.
   # If throttled, the current run will be retried next time.
-  # config.throttler = -> { DatabaseStatus.unhealthy? }
+  # config.throttler = ->{ DatabaseStatus.unhealthy? }
 
   # The Active Support backtrace cleaner that will be used to clean the
   # backtrace of a background data or schema migration that errors.

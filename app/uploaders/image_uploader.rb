@@ -3,7 +3,7 @@
 class ImageUploader < ApplicationUploader
   ALLOWED_TYPES  = %w[image/jpeg image/png image/webp].freeze
   MAX_SIZE       = 10.megabytes
-  MAX_DIMENSIONS = [5_000, 5_000]
+  MAX_DIMENSIONS = [5_000, 5_000].freeze
 
   plugin :store_dimensions, analyzer: :fastimage
   plugin :remove_attachment

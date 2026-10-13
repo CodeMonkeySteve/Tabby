@@ -1,7 +1,7 @@
 class CreateFriendlyIdSlugs < ActiveRecord::Migration[8.1]
   def change
     # friendly_id's history of each record's slugs, so old URLs still find it
-    create_table :friendly_id_slugs, id: :uuid, default: -> { 'uuidv7()' } do |t|
+    create_table :friendly_id_slugs, id: :uuid, default: ->{ 'uuidv7()' } do |t|
       t.string :slug, null: false
       t.references :sluggable, type: :uuid, polymorphic: true, null: false
       t.string :scope

@@ -16,21 +16,26 @@ AllCops:
     - 'tmp/**/*'
     - 'sandbox/**/*'
     - 'Gemfile.lock'
+    - 'bin/*'
+    - 'lib/tasks/debug.rake'
 
 Bundler/OrderedGems:
   Enabled: false
+
+FactoryBot/IdSequence:
+  Exclude:
+    - 'spec/factories/songsterr_songs.rb'
 
 Layout/AccessModifierIndentation:
   EnforcedStyle: 'outdent'
 Layout/CaseIndentation:
   EnforcedStyle: end
   IndentOneStep: true
-#Layout/EmptyLineAfterGuardClause:
-#  Enabled: false
-#Layout/EmptyLinesAroundExceptionHandlingKeywords:
-#  Enabled: false
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+Layout/EmptyLinesAroundExceptionHandlingKeywords:
+  Enabled: false
 Layout/ExtraSpacing:
-#  Enabled: false
   Exclude:
     - 'Gemfile'
 Layout/FirstArrayElementIndentation:
@@ -39,10 +44,16 @@ Layout/HashAlignment:
   Enabled: false
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented_relative_to_receiver
+  IndentationWidth: 2
+Layout/LineContinuationLeadingSpace:
+  Exclude:
+    - 'spec/matchers.rb'
 Layout/LineEndStringConcatenationIndentation:
   Enabled: false
 Layout/LineLength:
   Max: 194
+Layout/SpaceBeforeBlockBraces:
+  Enabled: false
 #Layout/SpaceBeforeSemicolon:
 #  Enabled: false
 #Layout/SpaceInsideArrayLiteralBrackets:
@@ -52,24 +63,39 @@ Layout/LineLength:
 #Layout/SpaceInsideRangeLiteral:
 #  Enabled: false
 
+Lint/DuplicateBranch:
+  Exclude:
+    - 'app/models/song/track.rb'
+
 Metrics/AbcSize:
   Enabled: false
-#Metrics/ClassLength:
-#  Max: 720
+Metrics/BlockLength:
+  Max: 35
+Metrics/ClassLength:
+  Max: 140
+Metrics/CyclomaticComplexity:
+  Max: 20
 #Metrics/ModuleLength:
 #  Max: 720
 Metrics/MethodLength:
   Max: 250
 #Metrics/ParameterLists:
 #  Max: 8
+Metrics/PerceivedComplexity:
+  Max: 12
+
+Naming/PredicateMethod:
+  Enabled: false
 
 #Rails/DynamicFindBy:
 #  AllowedMethods:
 #    - find_by_id_or_slug
 #Rails/HasAndBelongsToMany:
 #  Enabled: false
-#Rails/SkipsModelValidations:
-#  Enabled: false
+Rails/I18nLocaleTexts:
+  Enabled: false
+Rails/SkipsModelValidations:
+  Enabled: false
 #Rails/SquishedSQLHeredocs:
 #  Enabled: false
 #Rails/TimeZone:
@@ -81,6 +107,11 @@ Metrics/MethodLength:
 
 RSpec/AnyInstance:
   Enabled: false
+RSpec/DescribeClass:
+  Exclude:  [
+    '**/spec/features/**/*', '**/spec/requests/**/*', '**/spec/routing/**/*', '**/spec/system/**/*', '**/spec/views/**/*',
+    '**/spec/config/**/*'
+  ]
 RSpec/DescribedClass:
   Enabled: false
 RSpec/ExampleLength:
@@ -88,8 +119,8 @@ RSpec/ExampleLength:
 RSpec/InstanceVariable:
   Exclude:
     - 'spec/models/upload_cache_spec.rb'
-#RSpec/MessageSpies:
-#  Enabled: false
+RSpec/MessageSpies:
+  Enabled: false
 RSpec/MultipleExpectations:
   Enabled: false
 RSpec/MultipleMemoizedHelpers:
@@ -97,17 +128,19 @@ RSpec/MultipleMemoizedHelpers:
 
 #Style/AccessorGrouping:
 #  Enabled: false
-Style/FrozenStringLiteralComment:
-  Exclude:
-    - 'Gemfile'
-    - 'Rakefile'
-#Style/GuardClause:
-#  MinBodyLength: 3
-#Style/IfUnlessModifier:
-#  Enabled: false
-#Style/Lambda:
-#  Enabled: false
+Style/ClassAndModuleChildren:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/GuardClause:
+  MinBodyLength: 3
+Style/IfUnlessModifier:
+  Enabled: false
+Style/Lambda:
+  EnforcedStyle: literal
 Style/LambdaCall:
+  Enabled: false
+Style/ModuleFunction:
   Enabled: false
 Style/NumericLiterals:
   MinDigits: 8

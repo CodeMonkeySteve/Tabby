@@ -24,15 +24,15 @@ module Song::Jellyfin
 
     if (songs.length > 1) && artist
       alts =
-        songs.select { _1['Artists'].map(&:downcase).include?(artist.downcase) }.presence ||
-        songs.select { _1['Artists'].map(&:downcase).any? { |a| a.include?(artist.downcase) } }
+        songs.select { it['Artists'].map(&:downcase).include?(artist.downcase) }.presence ||
+        songs.select { it['Artists'].map(&:downcase).any? { |a| a.include?(artist.downcase) } }
       songs = alts if alts.any?
     end
 
     if songs.length > 1
-      alts = songs.select { _1['ProductionYear'].present? }
+      alts = songs.select { it['ProductionYear'].present? }
       if alts.length >= 1
-        songs = alts.sort_by! { _1['ProductionYear'] }
+        songs = alts.sort_by! { it['ProductionYear'] }
       end
     end
 
@@ -74,8 +74,8 @@ module Song::Jellyfin
     def from_score(path)
       begin
         info = AlphaTab.new.score_info(path)
-      rescue Nodo::JavaScriptError => ex
-        puts ex.message
+      rescue Nodo::JavaScriptError => e
+        puts e.message
         return nil
       end
 
