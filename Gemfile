@@ -69,6 +69,5 @@ group :test do
   gem 'rubocop-rake'
   gem 'rubocop-rspec'
   gem 'rubocop-rspec_rails'
-  gem 'vcr'
   gem 'webmock', require: nil
 end

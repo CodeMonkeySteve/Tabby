@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Playlist, vcr: { cassette_name: 'Jellyfin' } do
+RSpec.describe Playlist do
   let(:user) { create(:user) }
   let(:songs) { %w[One Two Three].map { create(:song, title: it) } }
   let!(:playlist) { create(:playlist, user:, songs: songs.first(2)) }

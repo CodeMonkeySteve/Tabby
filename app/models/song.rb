@@ -22,8 +22,8 @@ class Song < ApplicationRecord
 
   SCORE_NOTE_SETTINGS = %i[range_start_tick range_end_tick tracks muted_tracks solo_tracks track_volumes track_tunings].freeze
 
-  # replaced by SongsterrSong, until it's dropped
-  self.ignored_columns += %w[songsterr_id]
+  # songsterr_id is replaced by SongsterrSong, and jellyfin_id is unused, until they're dropped
+  self.ignored_columns += %w[songsterr_id jellyfin_id]
 
   # The instrument type of each score track, in track order (so not a torque-postgresql EnumSet, which is unordered and unique)
   attribute :track_types, :string, array: true, default: ->{ [] }

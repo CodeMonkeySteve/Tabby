@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Song, vcr: { cassette_name: 'Jellyfin' } do
+RSpec.describe Song do
   it "creates Song" do
     song = Song.create!(
       title: "Title",

@@ -49,7 +49,7 @@ RSpec.describe Song::Songsterr do
     song.save!
 
     expect(song.reload).to have_attributes(
-      title: "W.M.A.", artist: "Pearl Jam", tempo: 108, track_types: %w[guitar bass drums], jellyfin_id: nil,
+      title: "W.M.A.", artist: "Pearl Jam", tempo: 108, track_types: %w[guitar bass drums],
       genres: ['alternative', 'alternative pop/rock', 'alternative rock', 'alternative/indie rock', 'grunge', 'hard rock',
                'hardnheavy', 'pop/rock', 'rock'],
     )

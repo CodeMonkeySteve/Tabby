@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
+RSpec.describe SongsController do
   let(:user) { create(:user) }
   let(:song) { create(:song) }
 
@@ -198,7 +198,7 @@ RSpec.describe SongsController, vcr: { cassette_name: 'Jellyfin' } do
 
   it "#create" do
     expect do
-      attrs = attributes_for(:song).except(:jellyfin_id).as_json
+      attrs = attributes_for(:song).as_json
       post :create, params: { song: attrs }
     end.to change(Song, :count).by(1)
     expect(response).to redirect_to song_path(assigns(:song))
