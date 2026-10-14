@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'omniauth/builder'
 require 'omniauth-google-oauth2'
 

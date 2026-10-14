@@ -52,14 +52,18 @@ gem 'nodo'
 gem 'faraday-follow_redirects'
 gem 'retriable'
 
+group :development do
+  gem 'brakeman', require: false
+  gem 'bundler-audit', require: false
+  gem 'ruby_audit', require: false
+end
+
 group :development, :test do
   gem 'awesome_print'
-  gem 'bundler-audit', require: false
-  gem 'brakeman', require: false
+  gem 'factory_bot_rails'
 end
 
 group :test do
-  gem 'factory_bot_rails'
   gem 'faker'
   gem 'rails-controller-testing'
   gem 'rspec-collection_matchers'

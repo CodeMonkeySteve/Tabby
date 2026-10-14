@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # require "rails/test_unit/railtie"
 
 ActiveSupport.on_load(:active_support_test_case) do
