@@ -38,6 +38,13 @@ class Playlist < ApplicationRecord
     reload
   end
 
+  # Moves songs to the given order, keeping any added concurrently at the end and dropping any since removed
+  def reorder_songs!(ids)
+    with_lock do
+      update!(song_ids: (ids & song_ids) | song_ids)
+    end
+  end
+
   # The songs before and after the given one, either of which is nil at the ends (or both, if it isn't in the playlist)
   def neighbors_of(song)
     index = song_ids.index(song.id) or return [nil, nil]

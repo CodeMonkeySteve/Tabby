@@ -14,6 +14,7 @@ pin 'bootstrap', to: 'bootstrap.min.js', preload: true
 pin '@hotwired/turbo-rails', to: 'turbo.min.js', preload: true
 pin '@hotwired/stimulus', to: 'stimulus.min.js', preload: true
 pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js', preload: true
+pin 'sortablejs' # @1.15.7
 #pin 'turbo_power' # @0.7.0
 
 #pin 'stimulus-timeago', to: 'https://ga.jspm.io/npm:stimulus-timeago@4.0.0/dist/stimulus-timeago.es.js'

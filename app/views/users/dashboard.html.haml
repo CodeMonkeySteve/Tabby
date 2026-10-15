@@ -44,11 +44,13 @@
                     = playlist.name
                     %span.badge.text-bg-secondary.rounded-pill.ms-2= songs.size
                 .accordion-collapse.collapse{id: "playlist-#{playlist.id}", data: { bs: { parent: '#playlists' } }}
-                  .list-group.list-group-flush
+                  .list-group.list-group-flush{data: { controller: 'playlist-order', playlist_order_url_value: order_playlist_path(playlist) }}
                     - songs.each do |song|
-                      = link_to playlist_player_path(playlist, song), class: 'list-group-item list-group-item-action' do
-                        = song.title
-                        %small.text-body-secondary= song.artist
+                      .list-group-item.list-group-item-action.d-flex.align-items-center.gap-2{data: { song_id: song.id }}
+                        %i.bi.bi-grip-vertical.drag-handle.text-body-secondary{title: "Drag to reorder"}
+                        = link_to playlist_player_path(playlist, song), class: 'flex-grow-1 text-truncate text-reset text-decoration-none' do
+                          = song.title
+                          %small.text-body-secondary= song.artist
                     = link_to playlist, class: 'list-group-item list-group-item-action small text-body-secondary' do
                       %i.bi.bi-pencil.me-1
                       Edit playlist
@@ -85,6 +87,7 @@
               = current_user.instrument_types.map(&:humanize).to_sentence
           - else
             = link_to "Choose your instruments", settings_path, class: 'ms-auto small'
+
         - if @dashboard.recent_songs.any?
           .list-group.list-group-flush
             - @dashboard.recent_songs.each do |song|

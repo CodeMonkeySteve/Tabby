@@ -17,6 +17,15 @@ RSpec.describe Playlist do
     expect(playlist.ordered_songs).to eq [songs.first, songs.third]
   end
 
+  it "reorders songs, keeping songs added since at the end and dropping songs removed since" do
+    playlist.reorder_songs!(songs.first(2).reverse.map(&:id))
+    expect(playlist.ordered_songs).to eq songs.first(2).reverse
+
+    playlist.include_song!(songs.third)
+    playlist.reorder_songs!([songs.first.id, create(:song).id, songs.second.id])
+    expect(playlist.reload.ordered_songs).to eq songs
+  end
+
   it "finds the songs before and after a song" do
     playlist.include_song!(songs.third)
     expect(playlist.neighbors_of(songs.first)).to eq [nil, songs.second]

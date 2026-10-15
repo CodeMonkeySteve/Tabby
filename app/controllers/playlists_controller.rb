@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class PlaylistsController < ApplicationController
-  before_action :find_playlist, only: %i[show edit update destroy]
+  before_action :find_playlist, only: %i[show edit update order destroy]
 
   def show; end
 
@@ -26,6 +26,12 @@ class PlaylistsController < ApplicationController
     else
       render :edit, status: :unprocessable_content
     end
+  end
+
+  # Reorders the playlist's songs, e.g. dragged on the dashboard
+  def order
+    @playlist.reorder_songs!(params.expect(song_ids: []))
+    head :no_content
   end
 
   def destroy

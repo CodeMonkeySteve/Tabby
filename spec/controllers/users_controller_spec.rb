@@ -66,6 +66,12 @@ RSpec.describe UsersController do
 
         page = response.parsed_body
         expect(page.at_css('#playlists .accordion-button').text).to include "Warmups"
+        expect(page.at_css('#playlists [data-controller="playlist-order"]')['data-playlist-order-url-value'])
+          .to eq order_playlist_path(Playlist.last)
+        expect(page.css('#playlists [data-song-id]').pluck('data-song-id')).to eq [song.id]
+        expect(page.at_css('#playlists [data-song-id] .drag-handle + a')['href']).to eq playlist_player_path(Playlist.last, song)
+        expect(page.at_css('#toasts')).to be_present
+        expect(page.at_css('template#error-toast').inner_html).to include 'toast-body'
         expect(page.css('.activity-week')).to have(Dashboard::ACTIVITY_WEEKS).items
         expect(page.css('.activity-grid .activity-day.level-2')).to have(1).item
         expect(page.css('.list-group-item').map(&:text).join).to include "Bass Song"
