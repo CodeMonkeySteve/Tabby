@@ -71,7 +71,8 @@ class AlphaTabInspector < AlphaTab
       const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(Buffer.from(base64, 'base64'), new alphaTab.Settings());
       return score.tracks[0].staves[0].bars[0].voices[0].beats.map((beat) => ({
         slap: beat.slap, pop: beat.pop, tap: beat.tap, brush: [beat.brushType, beat.brushDuration], pickStroke: beat.pickStroke,
-        rasgueado: beat.rasgueado, tremoloMarks: beat.tremoloPicking?.marks ?? null, vibrato: beat.notes[0].vibrato,
+        rasgueado: beat.rasgueado, wah: beat.wahPedal, tremoloMarks: beat.tremoloPicking?.marks ?? null,
+        vibrato: beat.notes[0].vibrato,
         trillFret: beat.notes[0].isTrill ? beat.notes[0].trillFret : null,
         slide: [beat.notes[0].slideInType, beat.notes[0].slideOutType],
       }));
@@ -261,17 +262,17 @@ RSpec.describe AlphaTab do
           beat.('brushStroke' => { 'direction' => 'up', 'duration' => 60, 'shift' => 100 }, 'downStroke' => 1),
           beat.('tremolo' => [1, 32], 'tapping' => true, 'arpeggio' => { 'direction' => 'up', 'duration' => 60, 'shift' => 100 },
                 'notes' => [{ 'fret' => 5, 'string' => 2, 'trill' => { 'auxiliaryFret' => 7, 'speed' => 62 } }]),
-          beat.('notes' => [{ 'string' => 2, 'dead' => true, 'pickScrape' => 'down' }]),
+          beat.('wahwah' => 'open', 'notes' => [{ 'string' => 2, 'dead' => true, 'pickScrape' => 'down' }]),
           beat.('arpeggio' => { 'direction' => 'down', 'duration' => 240, 'shift' => 100 }, 'downArpeggio' => 1,
                 'notes' => [{ 'fret' => 5, 'string' => 2, 'pickScrape' => 'up' }]),
           # slides in and then out are named by joining their in and out slides
           beat.('hasRasgueado' => true, 'upStroke' => 1, 'notes' => [{ 'fret' => 5, 'string' => 2, 'slide' => 'belowshift' }]),
-          beat.('notes' => [{ 'fret' => 5, 'string' => 2, 'slide' => 'abovedownwards' }])
+          beat.('wahwah' => 'closed', 'notes' => [{ 'fret' => 5, 'string' => 2, 'slide' => 'abovedownwards' }])
         ] }] }]
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Techniques", 'tracks' => [{ 'title' => "Bass" }] }, [part])
       none = { 'slap' => false, 'pop' => false, 'tap' => false, 'brush' => [0, 0], 'pickStroke' => 0, 'rasgueado' => 0,
-               'tremoloMarks' => nil, 'vibrato' => 0, 'slide' => [0, 0], 'trillFret' => nil }
+               'wah' => 0, 'tremoloMarks' => nil, 'vibrato' => 0, 'slide' => [0, 0], 'trillFret' => nil }
 
       expect(result['warnings']).to eq []
       expect(AlphaTabInspector.new.techniques(result['gp'])).to eq [
@@ -280,11 +281,11 @@ RSpec.describe AlphaTab do
         none.merge('brush' => [2, 30], 'pickStroke' => 1, 'pop' => true), # BrushDown, PickStroke.Up
         none.merge('brush' => [1, 60], 'pickStroke' => 2), # BrushUp, PickStroke.Down
         none.merge('tremoloMarks' => 3, 'tap' => true, 'brush' => [3, 60], 'trillFret' => 7), # ArpeggioUp
-        none.merge('slide' => [0, 5]), # SlideOutType.PickSlideDown
+        none.merge('slide' => [0, 5], 'wah' => 1), # SlideOutType.PickSlideDown, WahPedal.Open
         none.merge('slide' => [0, 6], 'brush' => [4, 240]), # SlideOutType.PickSlideUp, ArpeggioDown
         # SlideInType.IntoFromBelow + SlideOutType.Shift, Rasgueado.Ii, PickStroke.Up
         none.merge('slide' => [1, 1], 'rasgueado' => 1, 'pickStroke' => 1),
-        none.merge('slide' => [2, 4]) # SlideInType.IntoFromAbove + SlideOutType.OutDown
+        none.merge('slide' => [2, 4], 'wah' => 2) # SlideInType.IntoFromAbove + SlideOutType.OutDown, WahPedal.Closed
       ]
     end
 
