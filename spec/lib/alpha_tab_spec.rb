@@ -113,6 +113,7 @@ RSpec.describe AlphaTab do
 
   describe '#songsterr_to_gp' do
     it "converts Songsterr tracks into a Guitar Pro 7 score" do
+      parts[0]['measures'][0]['tempo'] = { 'bpm' => 108, 'type' => 4 }
       result = alpha_tab.songsterr_to_gp(page.metadata, parts)
 
       Tempfile.create(['score', '.gp'], binmode: true) do |file|
