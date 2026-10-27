@@ -1,0 +1,4 @@
+// @tonaljs/collection@4.9.0 downloaded from https://ga.jspm.io/npm:@tonaljs/collection@4.9.0/dist/index.mjs
+
+function ascR(t,e){const n=[];for(;e--;n[e]=e+t);return n}function descR(t,e){const n=[];for(;e--;n[e]=t-e);return n}function range(t,e){return t<e?ascR(t,e-t+1):descR(t,t-e+1)}function rotate(t,e){const n=e.length;const r=(t%n+n)%n;return e.slice(r,n).concat(e.slice(0,r))}function compact(t){return t.filter((t=>t===0||t))}function shuffle(t,e=Math.random){let n;let r;let c=t.length;while(c){n=Math.floor(e()*c--);r=t[c];t[c]=t[n];t[n]=r}return t}function permutations(t){return t.length===0?[[]]:permutations(t.slice(1)).reduce(((e,n)=>e.concat(t.map(((e,r)=>{const c=n.slice();c.splice(r,0,t[0]);return c})))),[])}var t={compact:compact,permutations:permutations,range:range,rotate:rotate,shuffle:shuffle};export{compact,t as default,permutations,range,rotate,shuffle};
+

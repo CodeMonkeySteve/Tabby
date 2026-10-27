@@ -368,6 +368,16 @@ RSpec.describe SongsController do
       expect(player_song).to include('trackTypes' => %w[guitar bass drums], 'tracks' => [1, 2])
     end
 
+    it "has the fretboard panel and its button" do
+      get :player, params: { id: song }
+      body = response.parsed_body
+      panel = '.at-dock[data-controller="fretboard"] .at-fretboard[hidden][data-fretboard-target="panel"]'
+      expect(body.at_css(panel)).to be_present
+      expect(body.at_css('[data-controller="player"]')['data-player-fretboard-outlet']).to eq '.at-dock'
+      expect(body.at_css('.at-dock .at-player-right a.at-fretboard-toggle[data-action="fretboard#toggle"]')).to be_present
+      expect(body.at_css('.at-fretboard select[data-fretboard-target="key"]')).to be_present
+    end
+
     it "includes the user's note" do
       create(:song_note, user:, song:, speed: 0.75, looping: true)
       create(:song_note, song:, speed: 0.5)

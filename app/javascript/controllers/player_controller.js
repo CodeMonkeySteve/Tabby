@@ -6,13 +6,15 @@ import TrackTab from "lib/track_tab"
 import TabEditor from "lib/tab_editor"
 import { noteNames, tuningGroups } from "lib/tunings"
 
+const FRETTED_TYPES = ["guitar", "bass"]
+
 export default class extends Controller {
   static values = {
     song: Object,
     previousUrl: String,  // the player of the previous song in the playlist being played, if any
   }
 
-  static outlets = ["sync-editor"]
+  static outlets = ["sync-editor", "fretboard"]
 
   static targets = [
     "canvas", "dock", "trackList", "trackPanel", "playerLoading",
@@ -140,6 +142,7 @@ export default class extends Controller {
       trackItem.classList.toggle("active", isActive)
       trackItem.querySelector(".at-track-check").checked = isActive
     }
+    this.updateFretboardTrack()
   }
 
   handleSoundFontLoad(args) {
@@ -190,6 +193,8 @@ export default class extends Controller {
         this.syncEditorOutlet.initWithApi(this.api, score)
       }
     }
+
+    if (this.hasFretboardOutlet) this.fretboardOutlet.loadScore(score)
   }
 
   toggleSyncEditor(e) {
@@ -200,6 +205,11 @@ export default class extends Controller {
   }
 
   handlePlayerPositionChanged(args) {
+    if (this.hasFretboardOutlet) {
+      const beat = this.api.tickCache?.findBeat(new Set(this.api.tracks.map(track => track.index)), args.currentTick)
+      if (beat) this.fretboardOutlet.showBar(beat.masterBar.masterBar.index)
+    }
+
     const currentSeconds = (args.currentTime / 1000) | 0
     if (currentSeconds === this.previousTime) return
     this.previousTime = currentSeconds
@@ -687,10 +697,24 @@ export default class extends Controller {
     const tab = this.alternateTab(index, tuning)
     if (tuning && !tab) {
       trackTab.apply(null, this.alternateTab(index, null)?.strings)
+      this.updateFretboardTrack()
       return false
     }
     trackTab.apply(tuning, tab?.strings)
+    this.updateFretboardTrack()
     return true
+  }
+
+  // Shows the first checked guitar or bass track on the fretboard, in its current tuning
+  updateFretboardTrack() {
+    if (!this.hasFretboardOutlet) return
+    const trackItem = this.trackItems.find(item => item.querySelector(".at-track-check").checked && this.isFretted(item.track))
+    if (!trackItem) {
+      this.fretboardOutlet.showTrack(null)
+      return
+    }
+    const tuning = [...this.trackTabs.get(trackItem.track.index).staves[0].tuning]
+    this.fretboardOutlet.showTrack(trackItem.track, tuning, alphaTab.model.Tuning.findTuning(tuning)?.name ?? noteNames(tuning))
   }
 
   // Fills a stringed track's tuning pulldown: "Original" and the presets it can be played in, marking those with a tab
@@ -721,6 +745,13 @@ export default class extends Controller {
       option.text = `${this.alternateTab(index, JSON.parse(option.value)) ? "• " : ""}${option.dataset.label}`
     }
     trackItem.querySelector(".at-track-tuning-reset").disabled = !this.alternateTab(index, tuning)
+  }
+
+  // Whether a track is played on a fretboard: stringed, and not classified as another instrument (scores give vocal and keys
+  // tracks string tunings too)
+  isFretted(track) {
+    const type = this.songValue.trackTypes?.[track.index]
+    return this.trackTabs.has(track.index) && (!type || FRETTED_TYPES.includes(type))
   }
 
   trackItem(index) {

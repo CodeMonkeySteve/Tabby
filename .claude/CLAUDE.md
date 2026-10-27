@@ -84,6 +84,9 @@ Users can re-finger stringed tracks (see `AlternateTab`): each track's tuning pu
 tuning with an optimizer (`lib/fingering.js`), and the edit mode moves notes to other strings (`lib/tab_editor.js`).
 `lib/track_tab.js` indexes a track's notes and applies fingerings to AlphaTab's model, and `lib/alternate_tabs.js` saves them.
 
+The fretboard panel (`fretboard_controller.js`, at the top of the dock) shows the first selected guitar or bass track's neck
+in the key at the current bar, found by `lib/key_finder.js` (named by `lib/scales.js` with Tonal, drawn by `lib/fretboard.js`).
+
 ## Style
 
 * HAML element attributes should use Ruby numeric and boolean literals instead of strings

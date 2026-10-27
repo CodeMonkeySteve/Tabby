@@ -493,7 +493,7 @@ input[type='range']
     font-size: 8px
 
 @media screen and (max-width: 920px)
-  .at-player-right > *:not(.at-logo)
+  .at-player-right > *:not(.at-logo, .at-fretboard-toggle)
     display: none !important
 
   .at-wrap
@@ -505,6 +505,109 @@ input[type='range']
 
   .at-logo img
     height: 18px
+
+// the fretboard panel, at the top of the dock (so the score and track panel stay above it, see --dock-height)
+.at-fretboard
+  --fb-background: #f8f9fa
+  --fb-text: #212529
+  --fb-muted: #6c757d
+  --fb-line: #adb5bd
+  --fb-string: #888
+  --fb-nut: #212529
+  --fb-marker: #fff
+  --fb-chromatic-text: #495057
+  background: var(--fb-background)
+  color: var(--fb-text)
+  border-top: 1px solid rgba(0, 0, 0, 0.12)
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.15)
+  font-size: 13px
+
+  .at-fretboard-header
+    display: flex
+    align-items: center
+    gap: 12px
+    padding: 6px 14px
+
+    .form-select
+      width: auto
+
+  .at-fretboard-label
+    color: var(--fb-muted)
+
+  .at-fretboard-diagram
+    padding: 0 8px 4px
+    overflow-x: auto
+
+  // a reference strip: on wide windows the neck stops growing taller and centers
+  svg.fb
+    display: block
+    width: 100%
+    height: auto
+    max-height: 30vh
+
+  @media screen and (max-width: 768px)
+    svg.fb
+      min-width: 900px
+
+.fb
+  .fb-nut, .fb-octave
+    stroke: var(--fb-nut)
+
+  .fb-nut
+    stroke-width: 5
+
+  .fb-fret
+    stroke: var(--fb-line)
+    stroke-width: 2
+
+  .fb-octave
+    stroke-width: 3
+
+  .fb-string
+    stroke: var(--fb-string)
+
+  .fb-fret-number, .fb-open-name
+    fill: var(--fb-muted)
+    font-size: 13px
+
+  .fb-fret-number, .fb-name, .fb-degree
+    text-anchor: middle
+
+  .fb-marker
+    circle
+      fill: var(--fb-marker)
+      stroke: var(--fb-text)
+      stroke-width: 1
+
+    text
+      fill: var(--fb-text)
+
+  .fb-name
+    font-size: 14px
+    font-weight: 700
+
+  .fb-degree
+    font-size: 8.5px
+    opacity: 0.85
+
+  @each $role, $color in (root: #e8590c, third: #2b8a3e, fifth: #1971c2)
+    .fb-#{$role}
+      circle
+        fill: $color
+        stroke: $color
+
+      text
+        fill: #fff
+
+  .fb-chromatic
+    circle
+      fill: none
+      stroke: var(--fb-string)
+      stroke-width: 1.2
+      stroke-dasharray: 3 2
+
+    text
+      fill: var(--fb-chromatic-text)
 
 // Dark theme overrides
 [data-bs-theme="dark"]
@@ -560,5 +663,19 @@ input[type='range']
 
   .progress::after
     border-color: #495057
+
+  .at-fretboard
+    --fb-background: #2b3035
+    --fb-text: #dee2e6
+    --fb-muted: #adb5bd
+    --fb-line: #495057
+    --fb-string: #868e96
+    --fb-nut: #dee2e6
+    --fb-marker: #dee2e6
+    --fb-chromatic-text: #ced4da
+    border-top-color: rgba(255, 255, 255, 0.12)
+
+    .fb-scale text, .fb-note text
+      fill: #212529
 
 @import 'sync_editor'

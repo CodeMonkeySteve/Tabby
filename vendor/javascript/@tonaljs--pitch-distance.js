@@ -1,0 +1,4 @@
+// @tonaljs/pitch-distance@5.0.5 downloaded from https://ga.jspm.io/npm:@tonaljs/pitch-distance@5.0.5/dist/index.mjs
+
+import{interval as t,coordToInterval as n}from"@tonaljs/pitch-interval";import{note as o,coordToNote as r}from"@tonaljs/pitch-note";function transpose(n,s){const e=o(n);const c=Array.isArray(s)?s:t(s).coord;if(e.empty||!c||c.length<2)return"";const i=e.coord;const a=i.length===1?[i[0]+c[0]]:[i[0]+c[0],i[1]+c[1]];return r(a).name}function tonicIntervalsTransposer(t,n){const o=t.length;return r=>{if(!n)return"";const s=r<0?(o- -r%o)%o:r%o;const e=Math.floor(r/o);const c=transpose(n,[0,e]);return transpose(c,t[s])}}function distance(t,r){const s=o(t);const e=o(r);if(s.empty||e.empty)return"";const c=s.coord;const i=e.coord;const a=i[0]-c[0];const p=c.length===2&&i.length===2?i[1]-c[1]:-Math.floor(a*7/12);const l=e.height===s.height&&e.midi!==null&&s.oct===e.oct&&s.step>e.step;return n([a,p],l).name}export{distance,tonicIntervalsTransposer,transpose};
+

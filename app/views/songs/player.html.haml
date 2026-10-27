@@ -36,7 +36,7 @@
                           alternateTabs: @song.alternate_tabs.where(user: current_user).map(&:for_player) }
     - previous_url = playlist_player_path(@playlist, @previous_song) if @previous_song
     .at-wrap.loading{data: { controller: 'player', player: { song_value: song_attributes.to_json, previous_url_value: previous_url,
-                                                             sync_editor_outlet: '.sync-editor' } } }
+                                                             sync_editor_outlet: '.sync-editor', fretboard_outlet: '.at-dock' } } }
       .at-overlay
         .at-overlay-content
           .spinner-border{role: 'status', style: 'width: 3rem; height: 3rem;'}
@@ -52,7 +52,14 @@
           %h4 Tracks
           .at-track-list{data: { player: { target: 'trackList' } }}
       -# stays at the bottom of the window as the page scrolls, either way
-      .at-dock{data: { player: { target: 'dock' } }}
+      .at-dock{data: { controller: 'fretboard', player: { target: 'dock' } }}
+        .at-fretboard{hidden: true, data: { fretboard: { target: 'panel' } }}
+          .at-fretboard-header
+            %strong Fretboard
+            %span.at-fretboard-label{data: { fretboard: { target: 'label' } }}
+            %select.form-select.form-select-sm{title: "Key", data: { action: 'change->fretboard#chooseKey', fretboard: { target: 'key' } }}
+            %button.btn-close.ms-auto{type: 'button', title: "Close", aria: { label: "Close" }, data: { action: 'fretboard#toggle' }}
+          .at-fretboard-diagram{data: { fretboard: { target: 'diagram' } }}
         - if @song.audio.present?
           .sync-editor{data: { controller: 'sync-editor', sync_editor: { song_id_value: @song.to_param } }}
             .sync-toolbar
@@ -168,6 +175,8 @@
                   %a.dropdown-item{href: '#', data: { layout: 'page', action: 'player#changeLayout' }}
                     %i.fas.fa-caret-square-down
                     Vertical Layout
+              %a.at-fretboard-toggle{href: '#', title: "Fretboard", data: { action: 'fretboard#toggle', fretboard: { target: 'toggle' } }}
+                %i.fas.fa-table-cells
               %a.at-tab-edit{href: '#', title: "Edit Tab",
                              data: { action: 'player#toggleTabEditing', player: { target: 'tabEdit' } }}
                 %i.fas.fa-guitar
