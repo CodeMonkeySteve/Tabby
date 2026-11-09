@@ -218,7 +218,8 @@ RSpec.describe AlphaTab do
               beat.([{ 'fret' => 5, 'string' => 2 }], 'vibratoWithTremoloBar' => 'wide')
             ] }] },
           rest_measure('repeat' => 3),
-          { 'doubleBarline' => true, 'keySignature' => { 'accidentalCount' => 1, 'mode' => 'minor', 'transposeAs' => '#' },
+          { 'doubleBarline' => true, 'tripletFeel' => 'off',
+            'keySignature' => { 'accidentalCount' => 1, 'mode' => 'minor', 'transposeAs' => '#' },
             'voices' => [{ 'beats' => [
               { 'type' => 64, 'duration' => [1, 64], 'graceNote' => 'onBeat', 'notes' => [{ 'fret' => 3, 'string' => 2 }] },
               beat.([{ 'fret' => 5, 'string' => 2, 'accentuated' => 2, 'leftHandVibrato' => 'wide' }],
@@ -234,12 +235,13 @@ RSpec.describe AlphaTab do
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Effects", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
       # AlphaTab enum values
-      model = { triplet16th: 1, artificial: 2, tap: 4, slight: 1, wide: 2, on_beat: 1, heavy: 2, crescendo: 1, from_below: 1,
-                light_light: 7, error: 4 }
+      model = { no_triplet_feel: 0, triplet16th: 1, artificial: 2, tap: 4, slight: 1, wide: 2, on_beat: 1, heavy: 2, crescendo: 1,
+                from_below: 1, light_light: 7, error: 4 }
 
       expect(result['warnings']).to eq []
       expect(AlphaTabInspector.new.effects(result['gp'])).to eq(
-        'tripletFeels' => [model[:triplet16th]] * 4, 'repeatCounts' => [0, 3, 0, 0],
+        'tripletFeels' => model.values_at(:triplet16th, :triplet16th, :no_triplet_feel, :no_triplet_feel),
+        'repeatCounts' => [0, 3, 0, 0],
         'keySignatures' => [[-3, 0], [-3, 0], [1, 1], [1, 1]], # E♭ major, then E minor
         'ghost' => true, 'letRing' => true, 'harmonics' => [[model[:artificial], 12], [model[:tap], 12]],
         'noteVibrato' => model[:slight], 'beatVibrato' => [0, model[:wide]], 'chord' => "Asus2",
