@@ -34,7 +34,7 @@ bin/bundler-audit            # Gem vulnerability scan
 
 ## Architecture
 
-**Database**: PostgreSQL via ActiveRecord. Migrations are checked by `online_migrations`, so create indexes concurrently in a migration with `disable_ddl_transaction!`. `Playlist` stores its ordered songs in a `song_ids` array column (`belongs_to_many` from `torque-postgresql`). `rethinkdb:import` is a one-time task that copies the legacy RethinkDB data into an empty database.
+**Database**: PostgreSQL via ActiveRecord. Migrations are checked by `online_migrations`, so create indexes concurrently in a migration with `disable_ddl_transaction!`. `Playlist` stores its ordered songs in a `song_ids` array column (`belongs_to_many` from `torque-postgresql`).
 
 **Background jobs**: Production runs Active Job on Solid Queue, with its tables in the primary database (like Solid Cable's).
 `falcon.rb` runs it in a `jobs` service (`SolidQueueService`, production only) of one process, which Falcon forks, restarts,
