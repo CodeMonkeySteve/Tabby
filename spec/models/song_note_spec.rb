@@ -36,7 +36,7 @@ RSpec.describe SongNote do
     expect(notes.map { it.reload.slice(:range_end_tick, :tracks, :solo_tracks).values })
       .to eq [[960, nil, nil], [nil, [1], nil], [nil, nil, [0]]]
 
-    song.update!(score: upload_fixture('Tears for Fears - Head Over Heels.gpx', 'audio/x-gtp'))
+    song.update!(score: upload_fixture('Practice Etude.gp', 'audio/x-gtp'))
     expect(notes.map { it.reload.slice(:speed, *Song::SCORE_NOTE_SETTINGS) })
       .to all(eq('speed' => 0.5, **Song::SCORE_NOTE_SETTINGS.to_h { [it.to_s, nil] }))
   end

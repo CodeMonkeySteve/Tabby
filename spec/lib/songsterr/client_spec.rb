@@ -6,8 +6,8 @@ require 'songsterr'
 RSpec.describe Songsterr::Client do
   let(:page) { Songsterr::Page.new(file_fixture('songsterr/page.html').read) }
   let(:client) { described_class.new(page) }
-  let(:track_url) { 'https://dqsljvtekg760.cloudfront.net/2687597/3537915/v4-6-3-EAi4zBWPBvY-23HR/%d.json' }
-  let(:video_points_url) { 'https://www.songsterr.com/api/video-points/2687597/3537915/list' }
+  let(:track_url) { 'https://d111111abcdef8.cloudfront.net/1001/2002/v4-1-1-PracticeEtude/%d.json' }
+  let(:video_points_url) { 'https://www.songsterr.com/api/video-points/1001/2002/list' }
 
   def stub_track(part_id, body = file_fixture("songsterr/#{part_id}.json.gz").binread)
     stub_request(:get, format(track_url, part_id)).to_return(body:)
@@ -18,12 +18,12 @@ RSpec.describe Songsterr::Client do
       stub_track(1)
       track = client.track(1)
       expect(track).to include('instrument' => "Electric Bass (finger)", 'tuning' => [43, 38, 33, 28])
-      expect(track['measures']).to have(150).items
+      expect(track['measures']).to have(24).items
     end
 
     it "accepts track JSON that is already decompressed" do
       stub_track(1, Zlib.gunzip(file_fixture('songsterr/1.json.gz').binread))
-      expect(client.track(1)['measures']).to have(150).items
+      expect(client.track(1)['measures']).to have(24).items
     end
 
     it "raises on HTTP errors" do
@@ -45,13 +45,13 @@ RSpec.describe Songsterr::Client do
 
     it "returns the points for the given video" do
       points = client.video_points(original)
-      expect(points).to have(150).items
-      expect(points.first(2)).to eq [0, 2.12]
+      expect(points).to have(24).items
+      expect(points.first(2)).to eq [0, 2.5]
     end
 
     it "distinguishes videos of the same YouTube video by their Songsterr ID" do
       video_points.unshift(video_points.first.merge('id' => 1, 'feature' => 'alternative', 'points' => [0, 4.24]))
-      expect(client.video_points(original)).to have(150).items
+      expect(client.video_points(original)).to have(24).items
       expect(client.video_points(original.merge('id' => 1))).to eq [0, 4.24]
     end
 

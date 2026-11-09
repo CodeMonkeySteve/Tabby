@@ -96,37 +96,37 @@ RSpec.describe SongsController do
     end
 
     it "shows Songsterr matches as cards, linking already-imported songs" do
-      imported = create(:song, title: "Head Over Heels", artist: "Accept", songsterr_song: build(:songsterr_song, id: 1041, song: nil))
+      imported = create(:song, title: "Practice Etude", artist: "Study Group", songsterr_song: build(:songsterr_song, id: 1002, song: nil))
       user.update!(instrument_types: %w[guitar bass])
-      allow(Songsterr::Search).to receive(:call).with("head over heels").and_return(results)
-      get :songsterr_search, params: { q: "head over heels" }
+      allow(Songsterr::Search).to receive(:call).with("practice etude").and_return(results)
+      get :songsterr_search, params: { q: "practice etude" }
 
       doc = response.parsed_body
       cards = doc.css('turbo-frame .songsterr.card')
-      expect(cards.map { it.at_css('.card-title').text }).to eq ["Head Over Heels", "Head Over Heels"]
+      expect(cards.map { it.at_css('.card-title').text }).to eq ["Practice Etude", "Practice Etude"]
       expect(cards.first.css('.badge.text-bg-secondary').map(&:text)).to eq %w[drums bass guitar keys vocals]
 
-      tff = doc.at_css('turbo-frame#songsterr_20361')
-      expect(tff.at_css('a[target=_blank][rel=noopener]')['href'])
-        .to eq 'https://www.songsterr.com/a/wsa/tears-for-fears-head-over-heels-tab-s20361t1' # the user's main instrument, guitar
-      expect(tff.at_css('form[action="/s/songsterr_import"] button').text).to include "Import"
-      expect(tff.at_css('input[name=song_id]')['value']).to eq '20361'
-      expect(tff.css('input[name="track_types[]"]').pluck('value')).to eq %w[vocals guitar bass keys drums]
+      etude = doc.at_css('turbo-frame#songsterr_1001')
+      expect(etude.at_css('a[target=_blank][rel=noopener]')['href'])
+        .to eq 'https://www.songsterr.com/a/wsa/tabby-practice-etude-tab-s1001t1' # the user's main instrument, guitar
+      expect(etude.at_css('form[action="/s/songsterr_import"] button').text).to include "Import"
+      expect(etude.at_css('input[name=song_id]')['value']).to eq '1001'
+      expect(etude.css('input[name="track_types[]"]').pluck('value')).to eq %w[vocals guitar bass keys drums]
 
-      accept = doc.at_css('turbo-frame#songsterr_1041')
-      expect(accept.at_css('form[action="/s/songsterr_import"]')).to be_nil
-      expect(accept.at_css("a[href='#{player_path(imported)}']")).to be_present
-      expect(accept.at_css(".dropdown-menu form[action='#{playlist_song_path(imported)}']")).to be_present
+      study_group = doc.at_css('turbo-frame#songsterr_1002')
+      expect(study_group.at_css('form[action="/s/songsterr_import"]')).to be_nil
+      expect(study_group.at_css("a[href='#{player_path(imported)}']")).to be_present
+      expect(study_group.at_css(".dropdown-menu form[action='#{playlist_song_path(imported)}']")).to be_present
     end
 
     it "links songs already in the library by title and artist, since importing would replace them" do
-      manual = create(:song, title: "HEAD OVER HEELS", artist: "tears for fears")
+      manual = create(:song, title: "PRACTICE ETUDE", artist: "tabby")
       allow(Songsterr::Search).to receive(:call).and_return(results)
-      get :songsterr_search, params: { q: "head over heels" }
+      get :songsterr_search, params: { q: "practice etude" }
 
-      tff = response.parsed_body.at_css('turbo-frame#songsterr_20361')
-      expect(tff.at_css('form[action="/s/songsterr_import"]')).to be_nil
-      expect(tff.at_css("a[href='#{player_path(manual)}']")).to be_present
+      etude = response.parsed_body.at_css('turbo-frame#songsterr_1001')
+      expect(etude.at_css('form[action="/s/songsterr_import"]')).to be_nil
+      expect(etude.at_css("a[href='#{player_path(manual)}']")).to be_present
     end
 
     it "renders into the search results frame" do
@@ -154,9 +154,9 @@ RSpec.describe SongsController do
     include ActiveJob::TestHelper
     include ActiveSupport::Testing::TimeHelpers
 
-    let(:params) { { song_id: '20361', artist: "Tears for Fears", title: "Head Over Heels", track_types: %w[bass keys evil] } }
+    let(:params) { { song_id: '1001', artist: "Tabby", title: "Practice Etude", track_types: %w[bass keys evil] } }
     let(:match) do
-      Song::SongsterrMatch.new(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels", track_types: %w[bass keys other])
+      Song::SongsterrMatch.new(song_id: 1001, artist: "Tabby", title: "Practice Etude", track_types: %w[bass keys other])
     end
 
     it "imports in the background, showing the card's progress" do
@@ -165,10 +165,10 @@ RSpec.describe SongsController do
           .to have_enqueued_job(SongsterrImportJob).with(user, match.to_h).at(SongsterrImportJob::START_DELAY.from_now)
       end
 
-      frame = response.parsed_body.at_css('turbo-frame#songsterr_20361')
+      frame = response.parsed_body.at_css('turbo-frame#songsterr_1001')
       expect(frame.text).to include "Importing…"
       expect(frame.at_css('turbo-cable-stream-source')).to be_present
-      expect(frame.at_css('ul#songsterr_20361_log')).to be_present
+      expect(frame.at_css('ul#songsterr_1001_log')).to be_present
       expect(frame.at_css('form')).to be_nil
     end
 
@@ -220,7 +220,7 @@ RSpec.describe SongsController do
     end
 
     it "saves an uploaded score" do
-      score = Rack::Test::UploadedFile.new(file_fixture('Tears for Fears - Head Over Heels.gpx'), 'application/octet-stream')
+      score = Rack::Test::UploadedFile.new(file_fixture('Practice Etude.gp'), 'application/octet-stream')
       audio = Rack::Test::UploadedFile.new(file_fixture('empty.mp3'), 'audio/mpeg')
       expect do
         patch :update, params: { id: song, song: { score:, audio: } }
@@ -229,7 +229,7 @@ RSpec.describe SongsController do
 
     it "detects a new score's track types instead of the submitted ones" do
       song.update!(track_types: %w[keys])
-      score = upload_fixture('Tears for Fears - Head Over Heels.gpx', 'audio/x-gtp').to_json
+      score = upload_fixture('Practice Etude.gp', 'audio/x-gtp').to_json
       patch :update, params: { id: song, song: { score:, track_types: %w[keys] } }
       expect(song.reload.track_types).to eq %w[bass]
     end
@@ -280,8 +280,8 @@ RSpec.describe SongsController do
 
   describe "cover buttons" do
     let(:match) do
-      CoverArt::Match.new(source: :deezer, artist: "Tears for Fears", title: "Shout", album: "Songs from the Big Chair",
-                          image_url: 'https://cdn.example/big-chair.jpg')
+      CoverArt::Match.new(source: :deezer, artist: "Tabby", title: "Warmup", album: "Exercises",
+                          image_url: 'https://cdn.example/exercises.jpg')
     end
 
     def cover = Rack::Test::UploadedFile.new(file_fixture('cover.jpg'), 'image/jpeg')
@@ -289,17 +289,17 @@ RSpec.describe SongsController do
     before { stub_request(:get, match.image_url).to_return(body: file_fixture('cover.jpg').binread) }
 
     it "finds a cover for the form's title and artist, redisplaying the form unsaved until it's saved" do
-      allow(CoverArt).to receive(:search).with(artist: "Tears for Fears", title: "Shout").and_return(match)
-      patch :find_cover, params: { id: song, song: { title: "Shout" } }
+      allow(CoverArt).to receive(:search).with(artist: "Tabby", title: "Warmup").and_return(match)
+      patch :find_cover, params: { id: song, song: { title: "Warmup" } }
 
       expect(response).to have_http_status(:ok)
-      expect(flash.now[:notice]).to eq "Found the cover of Songs from the Big Chair on Deezer.  Save to keep it."
-      expect(response.body).to include 'value="Shout"'
-      expect(song.reload).to have_attributes(title: "Head Over Heels", cover: nil)
+      expect(flash.now[:notice]).to eq "Found the cover of Exercises on Deezer.  Save to keep it."
+      expect(response.body).to include 'value="Warmup"'
+      expect(song.reload).to have_attributes(title: "Practice Etude", cover: nil)
 
       cover_data = response.parsed_body.at_css('input[type=hidden][name="song[cover]"]')['value']
-      patch :update, params: { id: song, song: { title: "Shout", cover: cover_data } }
-      expect(song.reload.cover).to have_attributes(original_filename: "Tears for Fears - Songs from the Big Chair.jpg")
+      patch :update, params: { id: song, song: { title: "Warmup", cover: cover_data } }
+      expect(song.reload.cover).to have_attributes(original_filename: "Tabby - Exercises.jpg")
     end
 
     it "accepts the edit form's CSRF token from each of its buttons, which submit it to different actions" do
@@ -320,7 +320,7 @@ RSpec.describe SongsController do
     it "says when no cover is found, or the search fails" do
       allow(CoverArt).to receive(:search).and_return(nil)
       patch :find_cover, params: { id: song, song: { title: song.title } }
-      expect(flash.now[:error]).to eq "No cover art found for Tears for Fears - Head Over Heels."
+      expect(flash.now[:error]).to eq "No cover art found for Tabby - Practice Etude."
 
       allow(CoverArt).to receive(:search).and_raise(CoverArt::Error, "Failed to fetch")
       patch :find_cover, params: { id: song, song: { title: song.title } }
@@ -420,11 +420,11 @@ RSpec.describe SongsController do
       it "skips to the previous and next songs in the playlist being played" do
         get :player, params: { playlist_id: playlist, id: songs.second }
         expect(response).to be_successful
-        expect(previous_url).to eq '/p/practice/one-tears-for-fears'
-        expect(next_link['href']).to eq '/p/practice/three-tears-for-fears'
+        expect(previous_url).to eq '/p/practice/one-tabby'
+        expect(next_link['href']).to eq '/p/practice/three-tabby'
 
         get :player, params: { playlist_id: playlist, id: songs.third }
-        expect(previous_url).to eq '/p/practice/two-tears-for-fears'
+        expect(previous_url).to eq '/p/practice/two-tabby'
         expect(next_link['href']).to be_nil
         expect(next_link['class']).to include 'unavailable'
       end
@@ -444,11 +444,11 @@ RSpec.describe SongsController do
         old_slug = playlist.slug
         playlist.update!(name: "Warmups")
         get :player, params: { playlist_id: old_slug, id: songs.first, track: '1' }
-        expect(response).to redirect_to '/p/warmups/one-tears-for-fears?track=1'
+        expect(response).to redirect_to '/p/warmups/one-tabby?track=1'
         expect(response).to have_http_status :moved_permanently
 
         get :player, params: { playlist_id: playlist.id, id: songs.first }
-        expect(response).to redirect_to '/p/warmups/one-tears-for-fears'
+        expect(response).to redirect_to '/p/warmups/one-tabby'
       end
 
       it "only finds the user's playlists" do

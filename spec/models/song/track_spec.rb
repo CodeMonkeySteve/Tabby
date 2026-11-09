@@ -69,7 +69,7 @@ RSpec.describe Song::Track do
   end
 
   it "builds from AlphaTab track info" do
-    info = AlphaTab.new.score_info(file_fixture('Tears for Fears - Head Over Heels.gpx').to_s)
+    info = AlphaTab.new.score_info(file_fixture('Practice Etude.gp').to_s)
     track = described_class.from_info(info['tracks'].sole)
     expect(track).to have_attributes(name: "Electric Bass", program: 33, percussion: false, strings: 4)
     expect(track.instrument_type).to eq :bass

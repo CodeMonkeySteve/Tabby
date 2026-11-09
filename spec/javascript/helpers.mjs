@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { importer } from '@coderline/alphatab'
 
 // Loads a score from spec/fixtures with AlphaTab
-export function loadScore(name = 'Tears for Fears - Head Over Heels.gpx') {
+export function loadScore(name = 'Practice Etude.gp') {
   const bytes = readFileSync(new URL(`../fixtures/${name}`, import.meta.url))
   return importer.ScoreLoader.loadScoreFromBytes(new Uint8Array(bytes))
 }

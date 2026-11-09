@@ -54,7 +54,7 @@ RSpec.describe AlternateTab do
     song.update!(title: "New Title")
     expect(AlternateTab.exists?(tab.id)).to be true
 
-    song.update!(score: upload_fixture('Tears for Fears - Head Over Heels.gpx', 'audio/x-gtp'))
+    song.update!(score: upload_fixture('Practice Etude.gp', 'audio/x-gtp'))
     expect(AlternateTab.exists?(tab.id)).to be false
   end
 end

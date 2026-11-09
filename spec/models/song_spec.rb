@@ -7,7 +7,7 @@ RSpec.describe Song do
     song = Song.create!(
       title: "Title",
       artist: "Artist",
-      score: file_fixture('Tears for Fears - Head Over Heels.gpx').open,
+      score: file_fixture('Practice Etude.gp').open,
       audio: file_fixture('empty.mp3').open,
       sync_points: [
         { barIndex: 0, barOccurence: 0, barPosition: 0, millisecondOffset: 356 },
@@ -41,21 +41,21 @@ RSpec.describe Song do
     it "keeps finding a renamed song by its old slugs, which other songs can't take" do
       song = create(:song)
       old_slug = song.slug
-      song.update!(title: "Shout")
-      expect(song.slug).to eq 'shout-tears-for-fears'
+      song.update!(title: "Warmup")
+      expect(song.slug).to eq 'warmup-tabby'
       expect(Song.friendly.find(old_slug)).to eq song
       expect(Song.friendly.find(song.id)).to eq song
       expect(create(:song).slug).to eq "#{old_slug}-2"
 
-      song.update!(title: "Head Over Heels")
+      song.update!(title: "Practice Etude")
       expect(song.slug).to eq old_slug
     end
 
     it "keeps the saved slug as its URL param until it's saved" do
       song = create(:song)
-      song.title = "Shout"
+      song.title = "Warmup"
       expect(song).to be_valid
-      expect(song.to_param).to eq 'head-over-heels-tears-for-fears'
+      expect(song.to_param).to eq 'practice-etude-tabby'
     end
   end
 
@@ -68,13 +68,13 @@ RSpec.describe Song do
 
     it "classifies the tracks of a new score" do
       song = create(:song, track_types: %w[guitar])
-      song.update!(score: upload_fixture('Tears for Fears - Head Over Heels.gpx', 'audio/x-gtp'))
+      song.update!(score: upload_fixture('Practice Etude.gp', 'audio/x-gtp'))
       expect(song.reload.track_types).to eq %w[bass]
       expect(create(:song).track_types).to eq %w[bass]
     end
 
     it "classifies the tracks of a MusicXML score" do
-      song = create(:song, score: upload_fixture('Tabby - Practice Etude.musicxml', 'application/vnd.recordare.musicxml+xml'))
+      song = create(:song, score: upload_fixture('Practice Etude.musicxml', 'application/vnd.recordare.musicxml+xml'))
       expect(song.reload.track_types).to eq %w[keys guitar]
     end
 

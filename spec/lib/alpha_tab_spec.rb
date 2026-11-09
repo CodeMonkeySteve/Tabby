@@ -115,7 +115,7 @@ RSpec.describe AlphaTab do
   describe '#score_info' do
     %w[musicxml mxl].each do |extension|
       it "reads a MusicXML score (.#{extension})" do
-        info = alpha_tab.score_info(file_fixture("Tabby - Practice Etude.#{extension}").to_s)
+        info = alpha_tab.score_info(file_fixture("Practice Etude.#{extension}").to_s)
         # AlphaTab's MusicXML importer turns the title's spaces into non-breaking spaces
         expect(info).to include('title' => /\APractice[[:space:]]Etude\z/, 'artist' => "Tabby", 'tempo' => 96)
         expect(info['tracks'].pluck('name', 'isPercussion', 'stringCount')).to eq [["Piano", false, 0], ["Guitar", false, 6]]
@@ -126,19 +126,19 @@ RSpec.describe AlphaTab do
 
   describe '#songsterr_to_gp' do
     it "converts Songsterr tracks into a Guitar Pro 7 score" do
-      parts[0]['measures'][0]['tempo'] = { 'bpm' => 108, 'type' => 4 }
+      parts[0]['measures'][0]['tempo'] = { 'bpm' => 96, 'type' => 4 }
       result = alpha_tab.songsterr_to_gp(page.metadata, parts)
 
       Tempfile.create(['score', '.gp'], binmode: true) do |file|
         file.write(result['gp'].unpack1('m'))
         file.flush
         info = alpha_tab.score_info(file.path)
-        expect(info).to include('title' => "W.M.A.", 'artist' => "Pearl Jam", 'tempo' => 108)
+        expect(info).to include('title' => "Practice Etude", 'artist' => "Tabby", 'tempo' => 96)
         expect(info['tracks'].pluck('name')).to eq ["Distortion Guitar", "Electric Bass (finger)", "Drums"]
         expect(info['tracks'].pluck('isPercussion', 'stringCount')).to eq [[false, 6], [false, 4], [true, 0]]
         expect(info['tracks'].map { Song::Track.from_info(it).instrument_type }).to eq %i[guitar bass drums]
       end
-      expect(result['playedBars']).to have(150).items
+      expect(result['playedBars']).to have(24).items
       expect(result['playedBars'].first(2)).to eq [[0, 0], [1, 0]]
       expect(result['warnings']).to eq []
     end

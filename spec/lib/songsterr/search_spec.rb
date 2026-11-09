@@ -7,13 +7,13 @@ RSpec.describe Songsterr::Search do
   let(:api_url) { 'https://www.songsterr.com/api/songs' }
 
   it "returns the non-junk matches for a query" do
-    stub_request(:get, api_url).with(query: { pattern: 'head over heels', size: '20' })
+    stub_request(:get, api_url).with(query: { pattern: 'practice etude', size: '20' })
       .to_return(body: file_fixture('songsterr/search.json').read)
-    results = described_class.call("head over heels")
+    results = described_class.call("practice etude")
 
-    expect(results.map(&:song_id)).to eq [20361, 1041]
-    expect(results.first).to have_attributes(artist: "Tears for Fears", title: "Head Over Heels")
-    expect(results.first.tracks.pluck('hash')).to include 'other_xMtjYRgy'
+    expect(results.map(&:song_id)).to eq [1001, 1002]
+    expect(results.first).to have_attributes(artist: "Tabby", title: "Practice Etude")
+    expect(results.first.tracks.pluck('hash')).to include 'other_EtudeKey1'
   end
 
   it "decodes the HTML entities in some older songs' names" do

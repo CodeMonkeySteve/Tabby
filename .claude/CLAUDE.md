@@ -66,7 +66,8 @@ RSpec with FactoryBot and transactional fixtures. Test helpers in `spec/support/
 - `uploaded_file.rb` — `upload_fixture` for file upload tests
 - `shrine.rb` — in-memory Shrine storage
 
-Fixtures (audio/score files) are in `spec/fixtures/`.
+Fixtures (audio/score files) are in `spec/fixtures/`. `Practice Etude.gp` and the `songsterr/` song (except `search.json`) are
+generated from `Practice Etude.alphatex` by `node spec/fixtures/generate.mjs`, so edit the source and regenerate them.
 
 JavaScript modules in `app/javascript/lib/` are tested with Node's built-in test runner (`spec/javascript/**/*.test.mjs`).
 `spec/javascript/resolve.mjs` resolves the importmap's bare specifiers (`lib/…`, `@coderline/alphatab`) for Node, and

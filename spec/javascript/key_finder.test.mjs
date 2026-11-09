@@ -204,15 +204,15 @@ test('finds the region of a bar in either direction', () => {
 })
 
 test("reads the fixture's notes and key signatures", () => {
-  // Head Over Heels: signatures G major (bars 0–11, where the bass rests), A major (12–27), G major (28–103)
+  // Practice Etude: signatures G major (bars 0–7), A major (8–15), G major (16–23)
   const score = loadScore()
   const data = barData(score)
   assert.equal(data.length, score.masterBars.length)
-  assert.deepEqual([data[0].signature, data[12].signature], [{ id: '1/0', tonic: 7 }, { id: '3/0', tonic: 9 }])
+  assert.deepEqual([data[0].signature, data[8].signature], [{ id: '1/0', tonic: 7 }, { id: '3/0', tonic: 9 }])
   assert.ok(data.some(b => b.weights.some(w => w > 0)))
   assert.ok(data.every(b => b.weights.length === 12 && b.cues.length === 12))
   const regions = analyzeScore(score)
-  assert.deepEqual(regions.map(r => [r.start, r.end, r.key.tonic]), [[0, 28, 9], [28, 104, 7]])
+  assert.deepEqual(regions.map(r => [r.start, r.end, r.key.tonic]), [[0, 8, 7], [8, 16, 9], [16, 24, 7]])
 })
 
 test('leaves signatures out when the score has none, and skips percussion', () => {

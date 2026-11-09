@@ -5,20 +5,20 @@ require 'songsterr'
 
 RSpec.describe Song::SongsterrMatch do
   let(:tracks) { JSON.parse(file_fixture('songsterr/search.json').read).first['tracks'] }
-  let(:result) { Songsterr::Result.new(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels", tracks:) }
+  let(:result) { Songsterr::Result.new(song_id: 1001, artist: "Tabby", title: "Practice Etude", tracks:) }
 
   it "classifies tracks by Songsterr's part, or like a score track for other parts" do
     match = described_class.from_result(result)
     # the "other" piano track is keys
-    expect(match).to have_attributes(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels",
+    expect(match).to have_attributes(song_id: 1001, artist: "Tabby", title: "Practice Etude",
                                      track_types: %w[vocals guitar bass keys drums],
                                      instrument_types: %w[drums bass guitar keys vocals])
   end
 
   it "builds Songsterr page URLs from the id and a slug" do
     match = described_class.from_result(result)
-    expect(match.url).to eq 'https://www.songsterr.com/a/wsa/tears-for-fears-head-over-heels-tab-s20361'
-    expect(match.frame_id).to eq 'songsterr_20361'
+    expect(match.url).to eq 'https://www.songsterr.com/a/wsa/tabby-practice-etude-tab-s1001'
+    expect(match.frame_id).to eq 'songsterr_1001'
 
     odd = described_class.new(song_id: 7, artist: "AC/DC", title: "Motörhead / ../../evil?x=1#y", track_types: [])
     expect(URI(odd.url)).to have_attributes(scheme: 'https', host: 'www.songsterr.com', query: nil, fragment: nil)

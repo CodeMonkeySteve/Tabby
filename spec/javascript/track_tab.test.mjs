@@ -15,7 +15,7 @@ const pitches = tab => tab.notes.map(note => note.realValue)
 test('indexes the notes of the stringed staves', () => {
   const tab = new TrackTab(bassTrack())
   assert.ok(TrackTab.isStringed(tab.track))
-  assert.equal(tab.notes.length, 477)
+  assert.equal(tab.notes.length, 151)
   assert.deepEqual(tab.originalTuning, STANDARD)
   assert.deepEqual(tab.original[0], {
     string: 2, fret: 0, open: 33, pitch: 33, tuning: STANDARD, trill: -1, natural: false, bend: false, dead: false,
@@ -108,7 +108,7 @@ test('describes the fingering problem, and keeps an optimizer\'s changed strings
   const tab = new TrackTab(bassTrack())
   const problem = tab.problem(FIVE_STRING)
   assert.equal(problem.stringCount, 5)
-  assert.equal(problem.notes.length, 477)
+  assert.equal(problem.notes.length, 151)
   assert.deepEqual(problem.notes[0], {
     positions: tab.positions(0, FIVE_STRING), pitch: tab.original[0].pitch, chain: tab.chains[0], beat: 0, free: false,
   })

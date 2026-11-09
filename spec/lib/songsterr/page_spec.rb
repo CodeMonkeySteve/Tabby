@@ -4,7 +4,7 @@ require 'rails_helper'
 require 'songsterr'
 
 RSpec.describe Songsterr::Page do
-  let(:url) { 'https://www.songsterr.com/a/wsa/pearl-jam-wma-bass-tab-s2687597' }
+  let(:url) { 'https://www.songsterr.com/a/wsa/tabby-practice-etude-bass-tab-s1001' }
   let(:html) { file_fixture('songsterr/page.html').read }
 
   def page_with_meta(meta)
@@ -14,12 +14,12 @@ RSpec.describe Songsterr::Page do
   it "extracts song metadata" do
     page = described_class.new(html)
     expect(page).to have_attributes(
-      song_id: 2687597, revision_id: 3537915, image: 'v4-6-3-EAi4zBWPBvY-23HR',
-      title: "W.M.A.", artist: "Pearl Jam", recording_video_ids: %w[K1NcoxzNgbM U4-mKh4anJk],
-      cloudfront_host: 'dqsljvtekg760.cloudfront.net',
+      song_id: 1001, revision_id: 2002, image: 'v4-1-1-PracticeEtude',
+      title: "Practice Etude", artist: "Tabby", recording_video_ids: %w[EtudeOrigin EtudeAltern],
+      cloudfront_host: 'd111111abcdef8.cloudfront.net',
     )
     expect(page.tracks.pluck('partId', 'title')).to eq [[0, "Distortion Guitar"], [1, "Electric Bass (finger)"], [2, "Drums"]]
-    expect(page.metadata).to include('songId' => 2687597, 'tracks' => page.tracks)
+    expect(page.metadata).to include('songId' => 1001, 'tracks' => page.tracks)
   end
 
   it "ignores original videos that aren't done processing" do
@@ -56,7 +56,7 @@ RSpec.describe Songsterr::Page do
   describe '.fetch' do
     it "downloads and parses the page" do
       stub_request(:get, url).to_return(body: html)
-      expect(described_class.fetch(url)).to have_attributes(title: "W.M.A.", url:)
+      expect(described_class.fetch(url)).to have_attributes(title: "Practice Etude", url:)
     end
 
     it "raises on HTTP errors" do

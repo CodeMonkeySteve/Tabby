@@ -26,13 +26,13 @@ RSpec.describe SongsterrSong do
 
   describe "#backfill" do
     let(:page) { Songsterr::Page.new(file_fixture('songsterr/page.html').read) }
-    let(:track_url) { 'https://dqsljvtekg760.cloudfront.net/2687597/3537915/v4-6-3-EAi4zBWPBvY-23HR/%d.json' }
-    let(:audio) { upload_fixture('empty.mp3', 'audio/mpeg').tap { it.metadata['filename'] = 'K1NcoxzNgbM.m4a' } }
-    let(:song) { create(:song, title: "W.M.A.", artist: "Pearl Jam", audio:) }
-    let(:songsterr_song) { create(:songsterr_song, id: 2687597, song:) }
+    let(:track_url) { 'https://d111111abcdef8.cloudfront.net/1001/2002/v4-1-1-PracticeEtude/%d.json' }
+    let(:audio) { upload_fixture('empty.mp3', 'audio/mpeg').tap { it.metadata['filename'] = 'EtudeOrigin.m4a' } }
+    let(:song) { create(:song, title: "Practice Etude", artist: "Tabby", audio:) }
+    let(:songsterr_song) { create(:songsterr_song, id: 1001, song:) }
 
     before do
-      allow(Songsterr::Page).to receive(:fetch).with('https://www.songsterr.com/a/wsa/pearl-jam-w-m-a-tab-s2687597')
+      allow(Songsterr::Page).to receive(:fetch).with('https://www.songsterr.com/a/wsa/tabby-practice-etude-tab-s1001')
                                   .and_return(page)
       (0..2).each do |part_id|
         stub_request(:get, format(track_url, part_id)).to_return(body: file_fixture("songsterr/#{part_id}.json.gz").binread)
@@ -43,10 +43,10 @@ RSpec.describe SongsterrSong do
       songsterr_song.backfill
       song.save!
 
-      expect(songsterr_song.reload).to have_attributes(revision_id: 3537915, recording_video_id: 'K1NcoxzNgbM', tempo: 108,
+      expect(songsterr_song.reload).to have_attributes(revision_id: 2002, recording_video_id: 'EtudeOrigin', tempo: 96,
                                                        track_types: %w[guitar bass drums])
       expect(songsterr_song.parts).to have(3).items
-      expect(song.reload.genres).to include 'grunge'
+      expect(song.reload.genres).to include 'etude'
       expect(described_class.without_data).to be_empty
     end
 
@@ -56,7 +56,7 @@ RSpec.describe SongsterrSong do
       songsterr_song.backfill
       song.save!
 
-      expect(songsterr_song.reload).to have_attributes(revision_id: nil, tempo: 108)
+      expect(songsterr_song.reload).to have_attributes(revision_id: nil, tempo: 96)
       expect(song.reload.genres).to eq %w[seattle]
     end
 
@@ -66,7 +66,7 @@ RSpec.describe SongsterrSong do
       expect(songsterr_song.recording_video_id).to be_nil
 
       page.metadata['songId'] = 1
-      expect { songsterr_song.backfill }.to raise_error(Songsterr::Error, /is Songsterr song 1, not 2687597/)
+      expect { songsterr_song.backfill }.to raise_error(Songsterr::Error, /is Songsterr song 1, not 1001/)
     end
   end
 end

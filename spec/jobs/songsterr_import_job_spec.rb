@@ -16,7 +16,7 @@ RSpec.describe SongsterrImportJob do
 
   let(:user) { create(:user, instrument_types: %w[bass]) }
   let(:match) do
-    Song::SongsterrMatch.new(song_id: 20361, artist: "Tears for Fears", title: "Head Over Heels", track_types: %w[vocals bass])
+    Song::SongsterrMatch.new(song_id: 1001, artist: "Tabby", title: "Practice Etude", track_types: %w[vocals bass])
   end
   let(:stream) { described_class.stream(user, match) }
 
@@ -26,18 +26,18 @@ RSpec.describe SongsterrImportJob do
     create(:playlist, name: "Gig", user:)
     allow(Song).to receive(:from_songsterr).with(match.url) do |_url, &log|
       log.("Downloading 3 tracks")
-      build(:song, songsterr_song: build(:songsterr_song, id: 20361, song: nil))
+      build(:song, songsterr_song: build(:songsterr_song, id: 1001, song: nil))
     end
 
     broadcasts = capture_turbo_stream_broadcasts(stream) { perform }
-    song = SongsterrSong.find(20361).song
+    song = SongsterrSong.find(1001).song
     player_path = Rails.application.routes.url_helpers.player_path(song)
 
-    expect(broadcasts.map { [it['action'], it['target']] }).to eq [%w[append songsterr_20361_log], %w[replace songsterr_20361]]
+    expect(broadcasts.map { [it['action'], it['target']] }).to eq [%w[append songsterr_1001_log], %w[replace songsterr_1001]]
     expect(broadcasts.first.at_css('template li').text).to eq "Downloading 3 tracks"
     expect(broadcasts.last.at_css("a[href='#{player_path}']").text).to include "Play"
     expect(broadcasts.last.css('.dropdown-menu .form-check-label').map(&:text)).to eq ["Gig"]
-    expect(broadcasts.last.at_css('a[target=_blank]')['href']).to end_with '-tab-s20361t1' # the user's bass track
+    expect(broadcasts.last.at_css('a[target=_blank]')['href']).to end_with '-tab-s1001t1' # the user's bass track
   end
 
   it "keeps the import log on the song's card when it has warnings, highlighting them" do
@@ -45,7 +45,7 @@ RSpec.describe SongsterrImportJob do
     allow(Song).to receive(:from_songsterr).with(match.url) do |_url, &log|
       log.("Downloading 3 tracks")
       log.(warning)
-      build(:song, songsterr_song: build(:songsterr_song, id: 20361, song: nil))
+      build(:song, songsterr_song: build(:songsterr_song, id: 1001, song: nil))
     end
 
     card = capture_turbo_stream_broadcasts(stream) { perform }.last
@@ -57,7 +57,7 @@ RSpec.describe SongsterrImportJob do
   it "drops the import log from the song's card when it has no warnings" do
     allow(Song).to receive(:from_songsterr).with(match.url) do |_url, &log|
       log.("Downloading 3 tracks")
-      build(:song, songsterr_song: build(:songsterr_song, id: 20361, song: nil))
+      build(:song, songsterr_song: build(:songsterr_song, id: 1001, song: nil))
     end
 
     expect(capture_turbo_stream_broadcasts(stream) { perform }.last.at_css('.songsterr-log')).to be_nil
