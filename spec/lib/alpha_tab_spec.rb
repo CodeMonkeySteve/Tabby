@@ -112,6 +112,18 @@ RSpec.describe AlphaTab do
     { 'voices' => [{ 'beats' => [whole_rest] }], **options }
   end
 
+  describe '#score_info' do
+    %w[musicxml mxl].each do |extension|
+      it "reads a MusicXML score (.#{extension})" do
+        info = alpha_tab.score_info(file_fixture("Tabby - Practice Etude.#{extension}").to_s)
+        # AlphaTab's MusicXML importer turns the title's spaces into non-breaking spaces
+        expect(info).to include('title' => /\APractice[[:space:]]Etude\z/, 'artist' => "Tabby", 'tempo' => 96)
+        expect(info['tracks'].pluck('name', 'isPercussion', 'stringCount')).to eq [["Piano", false, 0], ["Guitar", false, 6]]
+        expect(info['tracks'].map { Song::Track.from_info(it).instrument_type }).to eq %i[keys guitar]
+      end
+    end
+  end
+
   describe '#songsterr_to_gp' do
     it "converts Songsterr tracks into a Guitar Pro 7 score" do
       parts[0]['measures'][0]['tempo'] = { 'bpm' => 108, 'type' => 4 }

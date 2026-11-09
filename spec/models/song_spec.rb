@@ -73,6 +73,11 @@ RSpec.describe Song do
       expect(create(:song).track_types).to eq %w[bass]
     end
 
+    it "classifies the tracks of a MusicXML score" do
+      song = create(:song, score: upload_fixture('Tabby - Practice Etude.musicxml', 'application/vnd.recordare.musicxml+xml'))
+      expect(song.reload.track_types).to eq %w[keys guitar]
+    end
+
     it "finds the tracks played by instrument types" do
       song = build(:song, track_types: %w[guitar bass vocals bass])
       expect(song.track_indexes_for(%w[bass keys])).to eq [1, 3]
