@@ -360,18 +360,20 @@ RSpec.describe AlphaTab do
       expect(AlphaTabInspector.new.clefs(result['gp'])).to eq [[3, 3, 4, 4], [3, 3, 3, 3]]
     end
 
-    it "converts tracks whose bars have different numbers of voices" do
+    it "converts tracks whose bars have different numbers of voices, or rest voices without beats" do
       whole = ->(fret) { { 'type' => 1, 'duration' => [1, 1], 'notes' => [{ 'fret' => fret, 'string' => 2 }] } }
       part = {
         'instrumentId' => 27, 'strings' => 6, 'tuning' => [64, 59, 55, 50, 45, 40],
         'measures' => [
           { 'signature' => [4, 4], 'voices' => [{ 'beats' => [whole.(5)] }] },
           { 'voices' => [{ 'beats' => [whole.(5)] }, { 'beats' => [whole.(7)] }] },
-          { 'voices' => [{ 'beats' => [whole.(5)] }] }
+          { 'voices' => [{ 'beats' => [whole.(5)] }] },
+          { 'voices' => [{ 'beats' => [whole.(5)] }, { 'rest' => true }] }
         ]
       }
       result = alpha_tab.songsterr_to_gp({ 'title' => "Voices", 'tracks' => [{ 'title' => "Guitar" }] }, [part])
-      expect(AlphaTabInspector.new.voices(result['gp'])).to eq [[1, 'empty'], [1, 1], [1, 'empty']]
+      expect(AlphaTabInspector.new.voices(result['gp'])).to eq [[1, 'empty'], [1, 1], [1, 'empty'], [1, 'empty']]
+      expect(result['warnings']).to eq []
     end
 
     it "reports Songsterr keys it doesn't map" do
