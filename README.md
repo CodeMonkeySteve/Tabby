@@ -2,6 +2,12 @@
 
 Tabby is a music learning and practice application for all instruments, providing play-along sheet music and tablature. Each song combines a score with a backing track and cover art, and the player follows the score in sync with the recording.
 
+*Player*
+![The player, following a bass part's notation and tablature in sync with the recording, with a looped range highlighted](docs/screenshots/player.png)
+
+*Dashboard*
+![The dashboard, with a calendar of daily practice time, this week's and today's practice statistics, playlists, and recently played and added songs](docs/screenshots/dashboard.png)
+
 ## Features
 
 - **Song library** — upload a score, and Tabby reads its title, artist, tempo, and tracks, classifying each track by instrument (guitar, bass, keys, drums, vocals, strings, brass, woodwinds); cover art is found automatically in online music catalogs (Deezer, iTunes)
