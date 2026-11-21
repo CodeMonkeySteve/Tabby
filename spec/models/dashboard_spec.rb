@@ -34,6 +34,16 @@ RSpec.describe Dashboard do
     ]
   end
 
+  it "shows all songs played today or yesterday, even beyond the recent limit" do
+    play(bass_song, 2, 30)
+    lately_played = Array.new(Dashboard::RECENT_LIMIT + 1) { |index| create(:song).tap { play(it, index % 2, 10) } }
+    play(lately_played.first, 6, 5)
+
+    expect(dashboard.recent_plays.map(&:song)).to match_array lately_played
+    expect(dashboard.recent_plays.find { it.song == lately_played.first }.seconds).to eq 900.0
+    expect(described_class.new(user, today: today + 2).recent_plays.map(&:song)).to have(Dashboard::RECENT_LIMIT).items
+  end
+
   it "shows recently added songs for the user's instruments, or all songs without any" do
     bass_song.update!(created_at: 2.days.ago)
     keys_song

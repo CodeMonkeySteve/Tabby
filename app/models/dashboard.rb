@@ -43,9 +43,10 @@ class Dashboard
   # The user's most recently played songs, with the last date each was played and its total practice time
   def recent_plays
     @recent_plays ||= begin
+      played_lately = user.play_histories.where(date: today.yesterday..).distinct.count(:song_id)
       rows = user.play_histories.group(:song_id)
                .order(Arel.sql('MAX(date) DESC, SUM(duration) DESC'))
-               .limit(RECENT_LIMIT)
+               .limit(played_lately.clamp(RECENT_LIMIT..))
                .pluck(:song_id, Arel.sql('MAX(date)'), Arel.sql('SUM(duration)'))
       songs = Song.where(id: rows.map(&:first)).index_by(&:id)
       rows.filter_map { |song_id, date, seconds| RecentPlay.new(songs[song_id], date, seconds) if songs[song_id] }
