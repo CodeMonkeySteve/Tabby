@@ -11,7 +11,7 @@ service hostname do
   include Falcon::Environment::Rack
 
   append preload 'preload.rb'
-  endpoint Async::HTTP::Endpoint.parse("http://0.0.0.0:#{port}")
+  endpoint Async::HTTP::Endpoint.parse("http://[::]:#{port}")
 end
 
 # Solid Queue's jobs, in one process; only in production, as development uses the :async adapter
