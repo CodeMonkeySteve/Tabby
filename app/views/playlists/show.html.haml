@@ -1,25 +1,31 @@
-- content_for :title, @playlist.name
+- content_for :title, @playlist.name_in_database
 
-%h1= @playlist.name
-
-- content_for :buttons do
-  = button_to @playlist, method: :delete, class: 'btn btn-danger btn-sm ms-5 float-end' do
-    %i.bi.bi-x-circle
+.d-flex.align-items-center.gap-3.mb-3
+  = form_with model: @playlist, class: 'inline-edit flex-grow-1',
+              data: { controller: 'inline-edit', action: 'keydown.enter->inline-edit#commit keydown.esc->inline-edit#cancel' } do |f|
+    = f.text_field :name, required: true, class: 'form-control-plaintext h1 mb-0', title: "Click to rename",
+                          aria: { label: "Playlist name" }, data: { inline_edit_target: 'input', action: 'change->inline-edit#save' }
+  = button_to @playlist, method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: "Delete #{@playlist.name_in_database}?" } } do
+    %i.bi.bi-trash
     Delete
+
+- if @playlist.errors.any?
+  .alert.alert-danger
+    - @playlist.errors.full_messages.each do |message|
+      %div= message
 
 - songs = @playlist.ordered_songs
 - if songs.any?
-  .list-group.mb-3
+  .list-group.playlist-songs.mb-3{data: { controller: 'playlist-order', playlist_order_url_value: order_playlist_path(@playlist) }}
     - songs.each do |song|
-      .list-group-item.d-flex.justify-content-between.align-items-center
-        %div
-          = link_to playlist_player_path(@playlist, song) do
-            %strong= song.title
-          %small.text-muted= song.artist
-
+      .list-group-item.list-group-item-action.d-flex.align-items-center.gap-2{data: { song_id: song.id }}
+        %i.bi.bi-grip-vertical.drag-handle.text-body-secondary{title: "Drag to reorder"}
+        = link_to playlist_player_path(@playlist, song), class: 'flex-grow-1 text-truncate text-reset text-decoration-none' do
+          %strong= song.title
+          %small.text-body-secondary= song.artist
 - else
-  %p.text-muted No songs in this playlist yet
+  %p.text-body-secondary No songs in this playlist yet
 
-.mt-3
-  = link_to 'Edit', edit_playlist_path(@playlist), class: 'btn btn-secondary me-2'
-  = link_to 'Back to Playlists', playlists_path, class: 'btn btn-outline-secondary'
+= link_to playlists_path, class: 'btn btn-outline-secondary' do
+  %i.bi.bi-arrow-left
+  All Playlists

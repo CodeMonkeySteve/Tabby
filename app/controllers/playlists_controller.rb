@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
 class PlaylistsController < ApplicationController
-  before_action :find_playlist, only: %i[show edit update order destroy]
+  before_action :find_playlist, only: %i[show update order destroy]
+
+  def index
+    @playlists = Current.user.playlists.order(:name)
+  end
 
   def show; end
 
   def new
     @playlist = Playlist.new
   end
-
-  def edit; end
 
   def create
     @playlist = Playlist.new(playlist_params.merge(user: Current.user))
@@ -22,9 +24,9 @@ class PlaylistsController < ApplicationController
 
   def update
     if @playlist.update(playlist_params)
-      redirect_to @playlist, notice: "Playlist was successfully updated", status: :see_other
+      redirect_to @playlist, status: :see_other
     else
-      render :edit, status: :unprocessable_content
+      render :show, status: :unprocessable_content
     end
   end
 
